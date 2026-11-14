@@ -50,8 +50,8 @@ def test_ring_is_closed_counterclockwise_and_in_peru():
 def test_run_writes_one_file_per_year(tmp_path):
     src = tmp_path / "cd.parquet"
     _cell_days().to_parquet(src, index=False)
-    gj.run(src, tmp_path, "PE-UCA-CPO", gj.series.REGION_BBOX, [2024])
-    data = json.loads((tmp_path / "cells_PE-UCA-CPO_2024.geojson").read_text(encoding="utf-8"))
+    gj.run(src, tmp_path, "PE-UCA", gj.series.REGION_BBOX, [2024])
+    data = json.loads((tmp_path / "cells_PE-UCA_2024.geojson").read_text(encoding="utf-8"))
     assert len(data["features"]) == 3 and all(f["properties"]["year"] == 2024 for f in data["features"])
 
 
