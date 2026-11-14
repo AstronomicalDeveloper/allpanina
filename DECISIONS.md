@@ -36,13 +36,25 @@ Fuego Perú, 2013-2024: Ucayali lidera con ~350,600 ha).
   rectángulo), igual que antes — la caja solo acota la descarga de FIRMS, el
   filtro final del indicador se hace con el polígono real, no con la caja.
 
-**Polígono oficial — pendiente, NO se usa el provisional:** Marco propuso usar
-el polígono INEI-2007 del repo `juaneladio/peru-geojson` (licencia MPL-2.0,
-confirmada) como límite provisional del departamento mientras se consigue el
-GeoPackage oficial del INEI. **Aldo decidió NO usarlo** y esperar el
-GeoPackage oficial. Hasta que ese polígono oficial exista, el indicador final
-sigue acotado por la caja de coordenadas de arriba, no por un polígono real —
-esto es una limitación conocida, documentarla en `method.json`.
+**Polígono oficial — EN USO (14-nov-2026):** se usa el GeoPackage oficial del
+INEI, como decidió Aldo (no el provisional de `juaneladio/peru-geojson`).
+- Fuente: Infraestructura de Datos Espaciales del INEI, archivo
+  `https://ide.inei.gob.pe/files/Departamento.rar` ("Departamental (Actualizado
+  al 2023)"; SHA-256 del .rar `c6c2b3075229e1b4bfb33e9bfe4979d0a71dbf452f4b04b7c831928bdfc574da`).
+  Contiene `DEPARTAMENTO.gpkg` (EPSG:4326, 25 departamentos; campos `ccdd`,
+  `nombdep`, `fuente`).
+- Se extrajo Ucayali (`ccdd = 25`) sin modificar la geometría a
+  `docs/region/ucayali_inei_2023.geojson` (MultiPolygon válido, 25,928 vértices;
+  lon -75.948 a -70.494, lat -11.448 a -7.262).
+- Área geodésica calculada: ~105,100 km². Difiere en ~2.7% del ~102,400 km² del
+  Compendio Estadístico; se reporta la diferencia, no se corrige.
+- Regla: una celda de 1 km pertenece a Ucayali si su **centro** cae dentro del
+  polígono. La caja de arriba contiene todo el polígono y solo se usa como
+  prefiltro rápido.
+- Impacto (2013–2024): la caja contaba 65,459 días-celda MODIS y 233,671 VIIRS;
+  con el polígono quedan 32,439 y 107,854. La diferencia caía sobre todo en
+  Huánuco, Junín, Pasco y Loreto. Las series hechas con la caja quedan
+  reemplazadas.
 
 **Descarga de FIRMS — no se repite (verificado):** los archivos que ya están en
 `docs/` cubren todo el Perú (MODIS: lat -18.16 a -0.03, lon -81.28 a -68.72;
