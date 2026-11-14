@@ -221,3 +221,19 @@ signed_error = estimate - modis_observed
 
 Esta convención es la misma en `validation.json`, en `method.json` y en cualquier
 gráfico que Landry construya con el signo del error — nadie la invierte por su cuenta.
+
+### Valor congelado para T29 (14-nov-2026, aprobado por Aldo + Antonella en T27)
+
+- **κ = 0.2936037257560573**
+  (Σ MODIS train 24,902 / Σ VIIRS train 84,815; 120 meses, 2013-01 a 2022-12)
+- Serie de entrada: `docs/ejemplo/monthly_series.csv`
+  (sha256 `47f833ebf27f710847d68179b495c1a1b5033abb4b762af5617622223c02f171`, polígono INEI).
+- **Método elegido para el test: B1.** Criterio: menor WAPE en valid
+  (B1 0.178 vs B0 2.06; 24 meses, 2023-01 a 2024-12). Revisión: `docs/REVISION_T27.md`.
+- Métricas que se reportan en test: MAE, WAPE, sesgo, n de meses emparejados
+  y residuos mensuales ordenados por error absoluto. Se reportan B0 y B1.
+- Ejecución: una sola vez, con
+  `python scripts/06_calibrate.py <serie_con_test> --split test --autorizado-aldo-antonella`.
+  Antes de mirar métricas se verifica que el script imprima κ = 0.2936…;
+  si no coincide, se detiene y se revisa con Aldo.
+- Nada de lo anterior se modifica después de ver el resultado del test.
