@@ -1,0 +1,159 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "cell_id": "DEMO-cell-001",
+        "year": 2024,
+        "month": 8,
+        "sensor": "MODIS",
+        "n_detections": 12
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -75.1,
+              -12.1
+            ],
+            [
+              -75,
+              -12.1
+            ],
+            [
+              -75,
+              -12
+            ],
+            [
+              -75.1,
+              -12
+            ],
+            [
+              -75.1,
+              -12.1
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cell_id": "DEMO-cell-001",
+        "year": 2024,
+        "month": 8,
+        "sensor": "VIIRS",
+        "n_detections": 20
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -75.1,
+              -12.1
+            ],
+            [
+              -75,
+              -12.1
+            ],
+            [
+              -75,
+              -12
+            ],
+            [
+              -75.1,
+              -12
+            ],
+            [
+              -75.1,
+              -12.1
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cell_id": "DEMO-cell-001",
+        "year": 2024,
+        "month": 9,
+        "sensor": "MODIS",
+        "n_detections": 0
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -75.1,
+              -12.1
+            ],
+            [
+              -75,
+              -12.1
+            ],
+            [
+              -75,
+              -12
+            ],
+            [
+              -75.1,
+              -12
+            ],
+            [
+              -75.1,
+              -12.1
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cell_id": "DEMO-cell-001",
+        "year": 2024,
+        "month": 9,
+        "sensor": "VIIRS",
+        "n_detections": 0
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -75.1,
+              -12.1
+            ],
+            [
+              -75,
+              -12.1
+            ],
+            [
+              -75,
+              -12
+            ],
+            [
+              -75.1,
+              -12
+            ],
+            [
+              -75.1,
+              -12.1
+            ]
+          ]
+        ]
+      }
+    }
+  ],
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "EPSG:4326"
+    }
+  }
+}

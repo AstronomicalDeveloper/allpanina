@@ -1,0 +1,117 @@
+import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+import { test } from 'node:test'
+import type { TestContext } from 'node:test'
+import { createElement, act } from 'react'
+import { createRoot } from 'react-dom/client'
+import { JSDOM } from 'jsdom'
+import HistoricalCalendar from '../src/components/calendar/HistoricalCalendar.tsx'
+import CalendarPage from '../src/components/calendar/CalendarPage.tsx'
+import { MONTHS } from '../src/services/data/calendar.ts'
+import { parseMonthlySeries } from '../src/services/data/validators.ts'
+
+const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'http://localhost/' })
+Object.defineProperties(globalThis, {
+  window: { value: dom.window, configurable: true },
+  document: { value: dom.window.document, configurable: true },
+  IS_REACT_ACT_ENVIRONMENT: { value: true, configurable: true },
+})
+const csv = await readFile(new URL('../public/data/demo/monthly_series.csv', import.meta.url), 'utf8')
+const records = parseMonthlySeries(csv)
+
+async function mount(t: TestContext, element: ReturnType<typeof createElement>) {
+  const host = document.createElement('div')
+  document.body.append(host)
+  const root = createRoot(host)
+  await act(async () => root.render(element))
+  t.after(async () => { await act(async () => root.unmount()); host.remove() })
+  return host
+}
+function cell(host: HTMLElement, name: string): HTMLButtonElement {
+  const button = [...host.querySelectorAll<HTMLButtonElement>('button')].find(button => button.getAttribute('aria-label') === name)
+  assert.ok(button, `Falta la celda ${name}`)
+  return button
+}
+async function select(host: HTMLElement, id: string, value: string) {
+  const control = host.querySelector<HTMLSelectElement>(`#${id}`)
+  assert.ok(control)
+  await act(async () => { control.value = value; control.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
+}
+test('renderiza años, doce meses y etiquetas distintas para cero, insuficiente y ausente', async t => {
+  const host = await mount(t, createElement(HistoricalCalendar, { records: [...records, { ...records[0], year: 2023 }] }))
+  assert.deepEqual([...host.querySelectorAll('tbody th')].map(th => th.textContent), ['2023', '2024'])
+  assert.deepEqual([...host.querySelectorAll('thead th')].slice(1).map(th => th.textContent), [...MONTHS])
+  assert.equal(host.querySelectorAll('tbody button').length, 24)
+  assert.equal(cell(host, 'Septiembre 2024, MODIS, 0 · válido').textContent, '0 · válido')
+  assert.equal(cell(host, 'Octubre 2024, MODIS, Insuficiente').textContent, 'Insuficiente')
+  assert.equal(cell(host, 'Enero 2024, MODIS, Ausente').textContent, 'Ausente')
+})
+test('seleccionar celda muestra contrato completo y cambiar sensor actualiza valores y borra detalle anterior', async t => {
+  const host = await mount(t, createElement(HistoricalCalendar, { records }))
+  const august = cell(host, 'Agosto 2024, MODIS, 3')
+  await act(async () => august.click())
+  assert.equal(august.getAttribute('aria-pressed'), 'true')
+  const detail = host.querySelector('#calendar-detail')!
+  const fields = Object.fromEntries([...detail.querySelectorAll('dl > div')].map(item => [item.querySelector('dt')!.textContent, item.querySelector('dd')!.textContent]))
+  assert.deepEqual(fields, { Región: 'PE-DEMO', Año: '2024', Mes: 'Agosto (8)', Sensor: 'MODIS', 'indicator (días-celda)': '3', 'n_detections (detecciones)': '12', qc_status: 'ok', source_version: 'DEMO-MODIS-v0', 'updated_at (fecha del archivo)': '2026-11-14' })
+  await select(host, 'calendar-sensor', 'VIIRS')
+  assert.match(detail.textContent!, /Selecciona un mes/)
+  assert.equal(host.querySelectorAll('[aria-pressed="true"]').length, 0)
+  await act(async () => cell(host, 'Agosto 2024, VIIRS, 5').click())
+  assert.match(detail.textContent!, /DEMO-VIIRS-v0/)
+  assert.match(detail.textContent!, /20/)
+  assert.ok(cell(host, 'Octubre 2024, VIIRS, Sin paso'))
+})
+test('detalle mantiene cero y null distintos; ausencia de fila no fabrica qc_status', async t => {
+  const host = await mount(t, createElement(HistoricalCalendar, { records }))
+  await act(async () => cell(host, 'Septiembre 2024, MODIS, 0 · válido').click())
+  assert.deepEqual([...host.querySelectorAll('#calendar-detail dd')].slice(4, 7).map(dd => dd.textContent), ['0', '0', 'ok'])
+  await act(async () => cell(host, 'Octubre 2024, MODIS, Insuficiente').click())
+  assert.deepEqual([...host.querySelectorAll('#calendar-detail dd')].slice(4, 7).map(dd => dd.textContent), ['Sin dato', 'Sin dato', 'insufficient_data'])
+  await act(async () => cell(host, 'Enero 2024, MODIS, Ausente').click())
+  assert.match(host.querySelector('#calendar-detail')!.textContent!, /No disponible: fila ausente/)
+})
+test('selector de región evita mezclar registros de regiones diferentes', async t => {
+  const host = await mount(t, createElement(HistoricalCalendar, { records: [...records, { ...records[0], region_id: 'ZZ-OTRA', indicator: 15 }] }))
+  await act(async () => cell(host, 'Agosto 2024, MODIS, 3').click())
+  await select(host, 'calendar-region', 'ZZ-OTRA')
+  assert.ok(cell(host, 'Agosto 2024, MODIS, 15'))
+  assert.match(host.querySelector('#calendar-detail')!.textContent!, /Selecciona un mes/)
+})
+test('sin datos y sensor sin registros muestran estado vacío explícito', async t => {
+  const empty = await mount(t, createElement(HistoricalCalendar, { records: [] }))
+  assert.match(empty.querySelector('[role="status"]')!.textContent!, /No hay datos disponibles/)
+  assert.equal(empty.querySelector('table'), null)
+  const host = await mount(t, createElement(HistoricalCalendar, { records: [records[0]] }))
+  await select(host, 'calendar-sensor', 'VIIRS')
+  assert.match(host.querySelector('[role="status"]')!.textContent!, /No hay registros para VIIRS/)
+  assert.equal(host.querySelectorAll('tbody button.calendar-cell--absent').length, 12)
+})
+test('página carga CSV por loader existente y muestra loading antes de la tabla', async t => {
+  let resolve!: (response: Response) => void
+  t.mock.method(globalThis, 'fetch', () => new Promise<Response>(done => { resolve = done }))
+  const host = await mount(t, createElement(CalendarPage, { dataUrl: '/data/demo/monthly_series.csv' }))
+  assert.match(host.querySelector('[role="status"]')!.textContent!, /Cargando/)
+  assert.match(host.textContent!, /DATOS DEMO — NO SON OBSERVACIONES REALES/)
+  await act(async () => resolve(new Response(csv)))
+  assert.ok(host.querySelector('table'))
+  assert.ok(cell(host, 'Agosto 2024, MODIS, 3'))
+})
+test('HTTP y CSV incorrectos muestran error y reintentar permite recuperación', async t => {
+  let response = new Response('no encontrado', { status: 404 })
+  t.mock.method(globalThis, 'fetch', async () => response)
+  const host = await mount(t, createElement(CalendarPage, { dataUrl: '/monthly.csv' }))
+  assert.match(host.querySelector('[role="alert"]')!.textContent!, /HTTP 404/)
+  response = new Response('mal,formado\n1,2')
+  await act(async () => host.querySelector<HTMLButtonElement>('button')!.click())
+  assert.match(host.querySelector('[role="alert"]')!.textContent!, /columna obligatoria/)
+  response = new Response(csv)
+  await act(async () => host.querySelector<HTMLButtonElement>('button')!.click())
+  assert.ok(host.querySelector('table'))
+  assert.equal(host.querySelector('[role="alert"]'), null)
+})
+test('CSV válido sin filas muestra empty state después de cargar', async t => {
+  t.mock.method(globalThis, 'fetch', async () => new Response(csv.split(/\r?\n/)[0]))
+  const host = await mount(t, createElement(CalendarPage, { dataUrl: '/empty.csv' }))
+  assert.match(host.querySelector('[role="status"]')!.textContent!, /No hay datos disponibles/)
+})

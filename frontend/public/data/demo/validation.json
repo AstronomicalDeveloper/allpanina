@@ -1,0 +1,27 @@
+{
+  "region_id": "PE-DEMO",
+  "methods": {
+    "B0": {
+      "split": "test",
+      "metrics": {
+        "mae": null,
+        "wape": null,
+        "bias": null
+      },
+      "n_months_matched": 0,
+      "residuals": [],
+      "detalle_mensual": "no disponible"
+    },
+    "B1": {
+      "split": "test",
+      "metrics": {
+        "mae": null,
+        "wape": null,
+        "bias": null
+      },
+      "n_months_matched": 0,
+      "residuals": [],
+      "detalle_mensual": "no disponible"
+    }
+  }
+}

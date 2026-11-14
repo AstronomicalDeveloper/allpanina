@@ -1,0 +1,20 @@
+{
+  "indicator": "dias-celda con deteccion",
+  "sensors": [
+    "MODIS (DEMO)",
+    "VIIRS (DEMO)"
+  ],
+  "period_train": "2024-08:2024-08",
+  "period_valid": "2024-09:2024-09",
+  "period_test": "2024-10:2024-10",
+  "calibration": "DEMO: no se calibro B1. B0 copia indicator de VIIRS sintetico solo para comprobar la estructura; B1 permanece ausente.",
+  "limitations": [
+    "DATOS DEMO - NO SON OBSERVACIONES REALES. PE-DEMO y las coordenadas son ficticias.",
+    "No hubo entrenamiento, validacion ni evaluacion: los periodos y splits solo ilustran el formato oficial.",
+    "Metricas nulas: no se calcularon, no hay meses comparables en test. No constituyen evidencia cientifica.",
+    "Octubre tiene informacion insuficiente/sin paso y se omite del GeoJSON; septiembre tiene ceros validos.",
+    "n_detections es conteo crudo; indicator expresa dias-celda. No se equiparan ni representan incendios confirmados o superficie quemada.",
+    "La agregacion regional de indicator y su limite 0-31 requieren confirmacion cientifica. No se implementa metodologia ni algoritmos.",
+    "source_version y updated_at son metadatos DEMO; no acreditan descarga NASA."
+  ]
+}

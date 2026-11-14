@@ -1,0 +1,31 @@
+.historical-calendar { max-width: 90rem; margin: auto; padding: 1.5rem; font: 1rem/1.5 system-ui, sans-serif; color: #172033; }
+.historical-calendar h1 { font-size: 1.8rem; font-weight: 700; }
+.historical-calendar h2 { font-size: 1.2rem; font-weight: 600; margin-bottom: .5rem; }
+.historical-calendar p { margin-block: .75rem; }
+.calendar-demo { padding: .75rem; background: #fff3ce; border: 1px solid #947125; }
+.calendar-source { overflow-wrap: anywhere; font-size: .9rem; }
+.calendar-filters { display: flex; flex-wrap: wrap; gap: 1rem; margin-block: 1.5rem; }
+.calendar-filters label { display: grid; gap: .25rem; font-weight: 600; }
+.calendar-filters select, .historical-calendar button { font: inherit; border: 1px solid #687386; border-radius: .25rem; padding: .4rem .6rem; }
+.calendar-filters select { background: white; min-width: 9rem; }
+.historical-calendar button { cursor: pointer; }
+.historical-calendar :focus-visible { outline: 3px solid #125ac5; outline-offset: 3px; }
+.calendar-table-scroll { overflow-x: auto; padding: .25rem; }
+.calendar-table { border-collapse: separate; border-spacing: .25rem; width: 100%; }
+.calendar-table caption { text-align: left; font-weight: 600; margin-bottom: .5rem; }
+.calendar-table th { padding: .5rem; text-align: center; }
+.calendar-cell { min-height: 4rem; min-width: 6.5rem; width: 100%; color: #172033; }
+.calendar-cell[aria-pressed="true"] { outline: 3px solid #172033; outline-offset: -3px; }
+.calendar-cell--zero { background: #e7f5eb; }
+.calendar-cell--insufficient_data { background: repeating-linear-gradient(135deg, #fff3ce, #fff3ce 6px, #f5e6b5 6px, #f5e6b5 12px); }
+.calendar-cell--no_pass { background: #f2e8f7; }
+.calendar-cell--absent { background: #f0f1f3; border-style: dashed !important; }
+.calendar-legend, .calendar-detail { margin-top: 1.5rem; padding: 1rem; border: 1px solid #c9ced6; border-radius: .25rem; }
+.calendar-legend ul { display: flex; gap: .75rem 1.5rem; flex-wrap: wrap; padding: 0; list-style: none; }
+.calendar-legend li { display: flex; align-items: center; gap: .5rem; }
+.calendar-swatch { flex: 0 0 1.5rem; height: 1.5rem; border: 1px solid #687386; }
+.calendar-swatch--value { background: linear-gradient(to right, hsl(210 50% 96%), hsl(210 50% 65%)); }
+.calendar-detail dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .75rem; }
+.calendar-detail dt { font-weight: 600; }
+.calendar-detail dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 40rem) { .historical-calendar { padding: 1rem; } }

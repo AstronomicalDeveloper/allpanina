@@ -1,0 +1,28 @@
+{
+  "generated_at": "2026-11-14T18:00:00Z",
+  "region": "PE-DEMO",
+  "files": [
+    {
+      "name": "monthly_series.csv",
+      "version": "DEMO-v0",
+      "rows": 6
+    },
+    {
+      "name": "calibrated_series.csv",
+      "version": "DEMO-v0",
+      "rows": 6
+    },
+    {
+      "name": "validation.json",
+      "version": "DEMO-v0"
+    },
+    {
+      "name": "method.json",
+      "version": "DEMO-v0"
+    },
+    {
+      "name": "cells_PE-DEMO_2024.geojson",
+      "version": "DEMO-v0"
+    }
+  ]
+}

@@ -136,6 +136,9 @@ poetry.toml
 # 5. DATA — SATELLITE / GEOSPATIAL / TEMPORARY OUTPUTS
 # ============================================================
 
+# Contrato de datos
+/docs/
+
 # Local datasets and generated outputs
 data/raw/
 data/processed/

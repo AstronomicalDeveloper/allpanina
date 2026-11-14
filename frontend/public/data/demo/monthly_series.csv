@@ -1,0 +1,7 @@
+region_id,year,month,sensor,n_detections,indicator,qc_status,source_version,updated_at
+PE-DEMO,2024,8,MODIS,12,3,ok,DEMO-MODIS-v0,2026-11-14
+PE-DEMO,2024,8,VIIRS,20,5,ok,DEMO-VIIRS-v0,2026-11-14
+PE-DEMO,2024,9,MODIS,0,0,ok,DEMO-MODIS-v0,2026-11-14
+PE-DEMO,2024,9,VIIRS,0,0,ok,DEMO-VIIRS-v0,2026-11-14
+PE-DEMO,2024,10,MODIS,,,insufficient_data,DEMO-MODIS-v0,2026-11-14
+PE-DEMO,2024,10,VIIRS,,,no_pass,DEMO-VIIRS-v0,2026-11-14
