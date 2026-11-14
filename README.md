@@ -143,3 +143,11 @@ If you are unsure how to resolve a conflict, ask another team member before proc
 ---
 
 **Our priority:** Deliver a functional, integrated, and reproducible solution within the hackathon timeframe. Collaboration practices should support development, not slow it down.
+
+## 🛰️ Data sources and acknowledgements
+
+AllpaNina uses active-fire detections from NASA's Fire Information for Resource Management System (FIRMS), which is part of NASA's Land, Atmosphere Near real-time Capability for EO (LANCE) and is operated by NASA's Earth Science Data and Information System (ESDIS) project. Sensors used: MODIS (Terra and Aqua, Collection 6.1) and VIIRS (Suomi NPP, 375 m, Collection 2).
+
+FIRMS data are provided "as is". NASA advises against using them for tactical decisions or for conditions at a local scale; AllpaNina is a scientific prototype and must not be used for that purpose. Our acknowledgement follows NASA's request for anyone who shares FIRMS data: see the official acknowledgements and full disclaimer at https://www.earthdata.nasa.gov/data/tools/firms.
+
+Provenance of the files we downloaded (request IDs, hashes, columns and limitations) is documented in [`docs/datos.md`](docs/datos.md). Raw FIRMS files are not part of the final content of `main`.
