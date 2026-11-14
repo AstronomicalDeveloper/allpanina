@@ -18,8 +18,10 @@ Cuando un mes queda como `missing` (por sensor):
      trata como hueco de datos, no como ausencia de fuego (regla de este script; no esta
      escrita en DECISIONS.md, confirmar con Aldo).
 
-Region: area de estudio de DECISIONS.md (seccion 1), una caja APROXIMADA (~1.2 veces la
-provincia), no la provincia. Falta el poligono oficial. Se filtra por el centro de la celda.
+Region: departamento de Ucayali (DECISIONS.md, seccion 1). Se filtra por el centro de la celda
+con la CAJA de coordenadas de esa seccion, que contiene todo el departamento pero es mas grande
+que el (sobra territorio de Loreto, Huanuco, Pasco, Junin, Cusco y Brasil). Falta el poligono
+oficial (GeoPackage del INEI) para recortar al departamento.
 
 Test reservado (DECISIONS.md, regla de oro): por defecto la serie termina en 2024-12
 (train + validacion). La serie completa hasta 2026-07 requiere --include-test y solo se
@@ -40,8 +42,8 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
-REGION_ID = "PE-UCA-CPO"
-REGION_BBOX = (-75.10, -10.00, -73.90, -7.00)  # lon_min, lat_min, lon_max, lat_max (aproximada)
+REGION_ID = "PE-UCA"
+REGION_BBOX = (-76.10, -11.55, -70.40, -7.15)  # lon_min, lat_min, lon_max, lat_max (DECISIONS.md, seccion 1)
 FIRST_MONTH = (2013, 1)
 DEFAULT_LAST_MONTH = (2024, 12)
 TEST_LAST_MONTH = (2026, 7)
