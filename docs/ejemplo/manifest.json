@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-14T18:56:57Z",
+  "generated_at": "2026-11-14T19:15:45Z",
   "region_id": "PE-UCA",
   "producto": "MCD14ML v6.1 / VNP14IMGML v2",
   "files": [
@@ -7,8 +7,8 @@
     "cells_PE-UCA_2024.geojson"
   ],
   "hash": {
-    "monthly_series.csv": "sha256:823e72ceedfa49f17a7c2c760b3edaa3a46b3f7d5e573cfaeb7c26c20d6c1228",
-    "cells_PE-UCA_2024.geojson": "sha256:9ad660f0ab045c26ec10b34309d181ef41490db3db7aa5651b5e33a584fb2889"
+    "monthly_series.csv": "sha256:85325d833a0325bac61bea6f559062cd284c186bfdc6a322098a4d5763c8669c",
+    "cells_PE-UCA_2024.geojson": "sha256:0a58aa3e087d6e093703ea6e82a3d94af7b295ee3a4244767af75dad70495233"
   },
   "sources": {
     "MODIS": {
