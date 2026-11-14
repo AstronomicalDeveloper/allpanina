@@ -44,12 +44,13 @@ noviembre de 2026; NASA indica que la entrega de nuevos datos científicos cesó
 2 de noviembre de 2026 (fuente: NASA LP DAAC). El archivo histórico no se ve
 afectado. Documentado como limitación en `method.json`.
 
-**Otra limitación real de VIIRS (nueva):** NASA lanzó VIIRS Version 2 el 29 de
-agosto de 2023, cubriendo el periodo 2018 en adelante (reprocesado). Antes de
-2018 solo existe Version 1. Como nuestro train empieza en 2013, **los años
-2013-2017 de VIIRS quedan en V1 y 2018 en adelante en V2** — un cambio de versión
-dentro del propio periodo de entrenamiento, no solo en la frontera con validación.
-Se documenta en `method.json` igual que el cambio de versión de MODIS.
+**Corrección sobre VIIRS Version 2 (verificado contra datos reales de Marco):**
+NASA lanzó VIIRS Version 2 el 29 de agosto de 2023 anunciando cobertura "desde
+2018 en adelante", lo que hizo pensar que 2013-2017 se quedaría en Version 1.
+**Eso ya no es así**: en el archivo real descargado por Marco, todos los
+registros VIIRS de 2012 a 2026 vienen con `version = 2` — NASA terminó de
+reprocesar el archivo histórico completo a V2. No hay mezcla de versiones
+dentro de nuestro periodo train. Se retira esta limitación de `method.json`.
 
 ## 3. Periodo de referencia
 
@@ -64,11 +65,13 @@ congelado — solo para el mapa observacional, si acaso, y marcado como tal.
 - **Validation:** 2023-01 a 2024-12 (2 años) — compara B0 vs B1 y elige método.
 - **Test (reservado):** 2025-01 a 2026-07.
 
-**Riesgo documentado (fecha confirmada con fuente oficial NASA):** MODIS cambia
-de versión (V6 → V6.1) justo donde arranca nuestra validación — NASA LP DAAC
-confirma que el procesamiento V6 terminó el 15 de febrero de 2023
-(https://www.earthdata.nasa.gov/news/modis-version-6-forward-processing-ends-feb-15-2023),
-a semanas de nuestro corte de enero 2023. Esto puede meter un salto en los
+**Riesgo documentado (fecha corregida — la primera cita estaba mal):** MODIS
+cambia de versión (V6 → V6.1) justo donde arranca nuestra validación. La fecha
+correcta, según el anuncio final de NASA LP DAAC (no el anuncio preliminar del
+15 de febrero, que fue superado por una actualización), es:
+**Terra: 17 de febrero de 2023. Aqua: 23 de febrero de 2023**
+(https://www.earthdata.nasa.gov/data/alerts-outages/modis-version-6-forward-processing-has-been-discontinued).
+Esto cae a semanas de nuestro corte de enero 2023 — puede meter un salto en los
 datos que no es un cambio real de incendios, sino un cambio de algoritmo. Se
 documenta como limitación explícita en `method.json`; si Antonella ve un salto raro
 justo ahí, no se interpreta como señal real sin revisarlo primero con Aldo.
