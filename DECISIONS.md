@@ -48,6 +48,8 @@ INEI, como decidió Aldo (no el provisional de `juaneladio/peru-geojson`).
   lon -75.948 a -70.494, lat -11.448 a -7.262).
 - Área geodésica calculada: ~105,100 km². Difiere en ~2.7% del ~102,400 km² del
   Compendio Estadístico; se reporta la diferencia, no se corrige.
+  **Aprobado por Aldo (14-nov-2026):** se reporta así, sin corregir; el filtro
+  usa el polígono oficial. Mencionar la diferencia en `method.json` (limitaciones).
 - Regla: una celda de 1 km pertenece a Ucayali si su **centro** cae dentro del
   polígono. La caja de arriba contiene todo el polígono y solo se usa como
   prefiltro rápido.
@@ -162,6 +164,13 @@ cobertura que no se puede calcular desde los CSV de FIRMS:
   después de un cese documentado como el de VIIRS S-NPP en nov-2026, o cualquier
   otro vacío oficialmente documentado). Nunca se usa `missing` solo porque
   `cell_days` dio 0 — eso es `ok`.
+- **Segundo caso de `missing` (aprobado por Aldo, 14-nov-2026, propuesto por
+  Marco):** el sensor estaba en su ventana pero ese mes **no tiene ninguna
+  detección en todo Perú** (no solo en Ucayali). Un mes entero sin un solo foco
+  en el país no es creíble y se trata como hueco de datos. Si Ucayali tiene 0 y
+  el resto de Perú sí tiene detecciones, el mes es `ok` con `cell_days = 0`.
+  En 2013-2024 esta regla no se activa; queda escrita por si se amplía el periodo.
+  Implementada en `scripts/04_monthly_series.py`.
 
 No existe un tercer estado ambiguo. Si en algún momento se necesita distinguir
 nubosidad/mala pasada de ausencia real de fuego, eso requeriría datos de cobertura
