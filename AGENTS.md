@@ -87,3 +87,31 @@ Treat this as the intended layout, not as proof that every folder or dependency 
 
 ## Definition of done
 A task is complete when the intended behavior is implemented, integrations/contracts are consistent, relevant checks have been attempted, documentation is updated where needed, and any known limitations are explicitly stated.
+
+## Continuous Integration — GitHub Actions
+
+The project will use GitHub Actions for automated
+continuous integration (CI).
+
+Create a workflow at:
+`.github/workflows/ci.yml`
+
+The workflow must:
+
+- Run on pull requests targeting `main`.
+- Run on pushes to `main`.
+- Validate the React + TypeScript frontend.
+- Install dependencies using `npm ci`.
+- Run frontend lint and build checks.
+- Validate the Python backend.
+- Install backend dependencies.
+- Run backend tests using pytest.
+- Keep frontend and backend checks independent.
+- Fail when a required validation fails.
+- Avoid deployment and unnecessary external services.
+
+Inspect existing scripts and tests before implementing
+the workflow. Do not invent commands that do not exist.
+
+Keep the workflow simple, fast and compatible with
+GitHub-hosted runners.
