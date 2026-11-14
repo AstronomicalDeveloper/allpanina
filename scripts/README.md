@@ -33,20 +33,21 @@ python scripts/08_manifest.py
   `type != 0`, MODIS con confianza < 30 y VIIRS con confianza fuera de {n, h}.
 - Celda de 1 km en EPSG:6933. Terra y Aqua cuentan una sola vez por celda-dia.
 - Un mes con sensor operativo y cero detecciones vale `0` con `status = ok`. Un mes sin datos queda
-  **vacio** con `status = insufficient_data`. Nunca se confunden.
-- Region: caja provisional de `DECISIONS.md` (seccion 1), filtrada por el centro de la celda.
+  **vacio** con `status = missing`. Nunca se confunden.
+- Region: "area de estudio Pucallpa-Coronel Portillo" de `DECISIONS.md` (seccion 1): caja aproximada
+  (lat -10.00 a -7.00, lon -75.10 a -73.90, ~1.2 veces la provincia), filtrada por el centro de la celda.
+  No es la provincia: falta el poligono oficial.
 
 ## Test reservado
 
 `04` termina en 2024-12 y `05` rechaza los anios 2025-2026 salvo `--include-test`. Solo se usa con la
 autorizacion conjunta de Aldo y Antonella (`DECISIONS.md`, "Test reservado").
 
-## Puntos pendientes de acordar (no bloquean la ejecucion)
+## Puntos pendientes (no bloquean la ejecucion)
 
-- `VIIRS_TYPE_FILTER` (`02_normalize.py`): `DECISIONS.md` dice que VIIRS no trae `type`, pero el archivo
-  estandar si lo trae. Se aplica a ambos sensores; en la version 2 de VIIRS algunos puntos de tipo 2
-  quedaron como tipo 0.
-- `status`: `DECISIONS.md` (seccion 8) usa un valor unico ambiguo; aqui se usa `ok` / `insufficient_data`
-  del contrato para cumplir T19.
-- `manifest.json`: se agregan `sha256`, `sources` y `period` para T31; falta reflejarlo en el contrato.
-- Region: la caja es provisional hasta tener el poligono oficial de la provincia.
+- Region: reemplazar la caja por el poligono oficial de la provincia (INEI/IDEP o GADM).
+- Un mes dentro de la ventana de un sensor, sin ninguna deteccion en todo Peru, sale como `missing`
+  (hueco de datos). Es una regla de `04_monthly_series.py` que no esta escrita en `DECISIONS.md`.
+- `VIIRS_TYPE_FILTER` (`02_normalize.py`): en la version 2 de VIIRS algunos puntos de tipo 2 quedaron
+  como tipo 0, asi que el filtro puede dejar fuentes estaticas.
+- `manifest.json`: `sources` es un campo extra (no esta en el contrato).

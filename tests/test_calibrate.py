@@ -56,3 +56,65 @@ def test_factor_solo_usa_train():
     alterado[-1]["modis"] = 9999
     alterado[-2]["viirs"] = 1
     assert cal.fit_factor_on_train(alterado) == pytest.approx(base) == pytest.approx(2.0)
+
+
+def test_assign_split_con_cortes_de_decisions():
+    f = cal.assign_split  # defaults: 2022-12 / 2024-12
+    assert f("2022-12") == "train" and f("2023-01") == "valid"
+    assert f("2024-12") == "valid" and f("2025-01") == "test"
+
+
+def test_calibrated_series_contrato_y_residual_solo_en_test():
+    rows = [
+        {"year": 2020, "month": 1, "modis": 10, "viirs": 5, "split": "train"},
+        {"year": 2025, "month": 8, "modis": 10, "viirs": 5, "split": "test"},
+        {"year": 2025, "month": 9, "modis": 20, "viirs": None, "split": "test"},
+    ]
+    out = cal.build_calibrated_series(rows, 2.0, "X")
+    assert set(out[0]) == {"region_id", "year", "month", "method", "value", "split", "status", "residual"}
+    b1 = [r for r in out if r["method"] == "B1"]
+    assert b1[0]["residual"] is None            # train: sin residual
+    assert b1[1]["value"] == 10 and b1[1]["residual"] == 0
+    assert b1[2]["value"] is None and b1[2]["status"] == "sin_dato_viirs"
+    assert all(r["value"] == r["value"] for r in out)  # ningun NaN
+
+
+def test_calibrated_series_b1_no_estimable():
+    out = cal.build_calibrated_series(
+        [{"year": 2025, "month": 1, "modis": 10, "viirs": 5, "split": "test"}], None, "X")
+    b1 = [r for r in out if r["method"] == "B1"][0]
+    assert b1["value"] is None and b1["status"] == "b1_no_estimable"
+
+
+def _write_monthly(path):
+    lines = ["region_id,year,month,sensor_group,cell_days,status,source_version,updated_at"]
+    for y, m, mod, vii in [(2020, 1, 20, 10), (2020, 2, 40, 20), (2023, 1, 30, 15), (2025, 1, 50, 25)]:
+        lines.append(f"X,{y},{m},MODIS,{mod},ok,6.03,2026-11-14")
+        lines.append(f"X,{y},{m},VIIRS,{vii},ok,2,2026-11-14")
+    lines.append("X,2023,2,MODIS,,insufficient_data,61.03,2026-11-14")
+    lines.append("X,2023,2,VIIRS,9,ok,2,2026-11-14")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def test_run_de_punta_a_punta_valid(tmp_path):
+    import csv
+    import json
+
+    src = tmp_path / "monthly_series.csv"
+    _write_monthly(src)
+    factor, val = cal.run(str(src), str(tmp_path / "out"), split="valid")
+    assert factor == pytest.approx(2.0)
+    b1 = val["methods"]["B1"]
+    assert b1["split"] == "valid" and b1["n_months_matched"] == 1  # 2023-02 sin MODIS se excluye
+    assert b1["metrics"]["mae"] == 0
+    rows = list(csv.DictReader(open(tmp_path / "out" / "calibrated_series.csv")))
+    assert set(rows[0]) == {"region_id", "year", "month", "method", "value", "split", "status", "residual"}
+    assert all(r["residual"] == "" for r in rows if r["split"] != "test")
+    assert json.load(open(tmp_path / "out" / "validation.json"))["region_id"] == "X"
+
+
+def test_cli_rechaza_test_sin_autorizacion(tmp_path):
+    src = tmp_path / "m.csv"
+    _write_monthly(src)
+    with pytest.raises(SystemExit):
+        cal.main([str(src), "--out", str(tmp_path / "o"), "--split", "test"])

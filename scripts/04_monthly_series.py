@@ -8,20 +8,18 @@ source_version, updated_at.
   * sensor_group: MODIS | VIIRS.
   * cell_days: pares (celda, dia) con deteccion en toda la region ese mes.
   * Un mes con sensor operativo y cero detecciones vale 0 y status `ok`.
-  * Un mes sin datos vale VACIO (nunca 0) y status `insufficient_data`. Nunca se confunden
-    (criterio de T19 en la matriz v1.4).
-  * `no_pass` del contrato no se emite: los CSV de FIRMS no traen informacion de pases.
+  * Un mes sin datos vale VACIO (nunca 0) y status `missing`. Nunca se confunden
+    (criterio de T19 en la matriz v1.4; DECISIONS.md, seccion 8).
 
-Cuando un mes queda como `insufficient_data` (por sensor):
+Cuando un mes queda como `missing` (por sensor):
   1. Esta fuera de la ventana estandar del sensor: MODIS antes de 2003-01; VIIRS S-NPP antes
      de 2012-02 (FIRMS lo ofrece desde el 2012-01-20, asi que enero de 2012 es incompleto).
   2. Dentro de la ventana, el sensor no tiene NINGUNA deteccion en todo Peru ese mes: se
-     interpreta como hueco de cobertura, no como ausencia de fuego.
-  Propuesta pendiente de acordar con Aldo: DECISIONS.md (seccion 8) usa un status unico
-  ambiguo (`sin_actividad_o_sin_cobertura`) que no distingue estos casos.
+     trata como hueco de datos, no como ausencia de fuego (regla de este script; no esta
+     escrita en DECISIONS.md, confirmar con Aldo).
 
-Region: caja de DECISIONS.md (seccion 1), PROVISIONAL hasta tener el poligono oficial de la
-provincia. Se filtra por el centro de la celda.
+Region: area de estudio de DECISIONS.md (seccion 1), una caja APROXIMADA (~1.2 veces la
+provincia), no la provincia. Falta el poligono oficial. Se filtra por el centro de la celda.
 
 Test reservado (DECISIONS.md, regla de oro): por defecto la serie termina en 2024-12
 (train + validacion). La serie completa hasta 2026-07 requiere --include-test y solo se
@@ -43,12 +41,13 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 REGION_ID = "PE-UCA-CPO"
-REGION_BBOX = (-75.60, -10.00, -73.30, -7.00)  # lon_min, lat_min, lon_max, lat_max (provisional)
+REGION_BBOX = (-75.10, -10.00, -73.90, -7.00)  # lon_min, lat_min, lon_max, lat_max (aproximada)
 FIRST_MONTH = (2013, 1)
 DEFAULT_LAST_MONTH = (2024, 12)
 TEST_LAST_MONTH = (2026, 7)
 SENSOR_FIRST_COMPLETE_MONTH = {"MODIS": (2003, 1), "VIIRS": (2012, 2)}
 SENSORS = tuple(SENSOR_FIRST_COMPLETE_MONTH)
+STATUS_OK, STATUS_MISSING = "ok", "missing"
 COLUMNS = ["region_id", "year", "month", "sensor_group", "cell_days", "status", "source_version", "updated_at"]
 
 
@@ -101,9 +100,9 @@ def build_monthly_series(
             in_window = index >= _month_index(SENSOR_FIRST_COMPLETE_MONTH[sensor])
             key = (sensor, year, month)
             if in_window and key in covered:
-                rows.append((region_id, year, month, sensor, int(counts.get(key, 0)), "ok", versions.get(key, ""), stamp))
+                rows.append((region_id, year, month, sensor, int(counts.get(key, 0)), STATUS_OK, versions.get(key, ""), stamp))
             else:
-                rows.append((region_id, year, month, sensor, None, "insufficient_data", "", stamp))
+                rows.append((region_id, year, month, sensor, None, STATUS_MISSING, "", stamp))
 
     series = pd.DataFrame(rows, columns=COLUMNS)
     series["cell_days"] = series["cell_days"].astype("Int64")
