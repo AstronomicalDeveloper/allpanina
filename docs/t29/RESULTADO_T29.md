@@ -4,7 +4,7 @@
 - **Fecha:** 14-nov-2026, ~15:55 (hora de Lima). Corrida **única**, con Aldo y Antonella presentes.
 - **Autorización y procedimiento:** `docs/t29/AUTORIZACION_T29.md`.
 - **Método congelado antes de ver el test:** `DECISIONS.md` §10 (κ = 0.2936037257560573, método B1) y `docs/REVISION_T27.md`.
-- **Estado:** pendiente de firma de Aldo sobre este texto.
+- **Estado:** ✅ **FIRMADO por Aldo**, 14-nov-2026. Verificación independiente en la sección 8. Pendientes de publicación en la sección 7.
 
 ## 1. Ejecución
 
@@ -81,3 +81,26 @@ En test, el error relativo (WAPE) es mayor que en validación, aunque el error a
 
 - **T30 (Antonella):** exportar el `validation.json` final con los residuos de test y actualizar `method.json` con el resultado del test y la limitación del punto 4.
 - **T38 (Marco + Antonella):** reproducir desde cero, con el repositorio limpio, y comparar con los hashes de este documento.
+
+## 8. Verificación de Aldo (independiente)
+
+Se recalculó todo desde `docs/ejemplo/monthly_series_con_test.csv` y κ congelado, sin usar los scripts del equipo:
+
+- κ = 24,902 / 84,815 = 0.2936037257560573, igual al valor de la ejecución. ✅
+- Test: n = 19, Σ MODIS = 1,829, Σ VIIRS = 7,711. ✅
+- B0: MAE 309.579, WAPE 3.2160, sesgo +309.579. B1: MAE 29.676, WAPE 0.3083, sesgo +22.894. Coinciden con `validation.json`. ✅
+- Los 5 meses con más error suman el 71.1% del error. B1 sobreestima en 14 de 19 meses. Proporción MODIS/VIIRS: 0.237 en el test, 0.241 en 2025 y 0.203 en 2026. ✅
+- `calibrated_series.csv` de `docs/t29/`: 326 filas (train 240, valid 48, test 38), B0 = VIIRS y B1 = B0 × κ en todas. ✅
+- `method.json` conserva las métricas de validación y agrega las del test, así que no se perdió nada al reemplazar `validation.json`. ✅
+
+**Nota sobre los hashes de la sección 1:** se calcularon en Windows, con saltos de línea CRLF. El repositorio guarda los archivos con LF (`.gitattributes`). El contenido es idéntico. Hashes de los archivos tal como están en el repositorio:
+
+- `docs/t29/validation.json`: `ea9ab3a6d297dde39af34806e4ede2a342dbe10ed93b9efb3a67eed23d877eb0`
+- `docs/t29/calibrated_series.csv`: `b1ddeab98b973f0063e65b24a72d52ba9e14f0cc55df504875022d51db191d5c`
+
+Para comparar en T38, usar estos hashes (LF).
+
+### Pendientes para publicar (no cambian el resultado)
+
+- ⏳ **Marco:** volver a correr `08_manifest.py`. Ahora hay 3 hashes desactualizados (`calibrated_series.csv`, `validation.json`, `method.json`), y `periodo.hasta` tiene que pasar de 2024-12 a 2026-07, porque `frontend/public/data/` ya incluye el test.
+- ⏳ **Antonella:** cambiar `method.json` → `estado` a "aprobado por Aldo (T27 y T29)".
