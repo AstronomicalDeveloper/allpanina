@@ -1,5 +1,48 @@
 # React + TypeScript + Vite
 
+## L9: Exportación CSV del Calendario
+
+En el Calendario, el botón **Descargar CSV** exporta los registros ya cargados de
+la región y sensor seleccionados. No hace peticiones HTTP adicionales. Se comparte
+`filterCalendarRecords` con la cuadrícula y se ordena una copia por año/mes.
+Actualmente no hay filtro temporal: se exportan todos los años cargados de esa
+serie. Seleccionar una celda abre el detalle y no filtra la descarga.
+
+Se conservan las nueve columnas oficiales de `monthly_series.csv`, los estados de
+calidad y los ceros. Los nulos se escriben como campos vacíos. Los meses sin fila
+no se añaden al CSV, aunque aparezcan como «Ausente» en la cuadrícula. No se
+recalculan indicadores ni se incluyen B0/B1. El botón queda deshabilitado si no
+hay registros exportables; los errores de generación/inicio de descarga son visibles.
+
+`services/data/csvExport.ts` incluye serialización reutilizable, nombre sanitizado
+y descarga nativa mediante Blob y URL temporal. El archivo es UTF-8 con BOM y
+filas CRLF, con escape de comas, comillas y saltos de línea. Los textos que puedan
+interpretarse como fórmulas se prefijan con un apóstrofo antes de escaparlos; ese
+prefijo es una protección de exportación y no modifica los registros en memoria.
+Los valores numéricos permanecen numéricos. La interpretación final depende del
+programa de hojas de cálculo; no se garantiza un comportamiento idéntico en todos.
+
+La descarga usa `allpanina_<region>_<sensor>_demo.csv`; el origen actual es DEMO y
+el marcador no se infiere del código de región. El enlace temporal se elimina tras
+el clic y la URL se revoca un segundo después, incluso si el clic lanza un error.
+Iniciar la descarga no permite confirmar que el usuario guardó el archivo.
+
+Ejemplo actual para PE-DEMO / MODIS, sin filas inventadas:
+
+```csv
+region_id,year,month,sensor,n_detections,indicator,qc_status,source_version,updated_at
+PE-DEMO,2024,8,MODIS,12,3,ok,DEMO-MODIS-v0,2026-11-14
+PE-DEMO,2024,9,MODIS,0,0,ok,DEMO-MODIS-v0,2026-11-14
+PE-DEMO,2024,10,MODIS,,,insufficient_data,DEMO-MODIS-v0,2026-11-14
+```
+
+Ejecutar desde `frontend/`: `npm test`, `npm run lint`, `npm run build` y
+`npm run dev`. En PowerShell con scripts deshabilitados usar `npm.cmd`.
+Las pruebas cubren columnas oficiales, filtros, orden, cero/null, estados, Unicode,
+escape, fórmulas, nombre DEMO, botón deshabilitado, Blob/enlace/URL y errores. Los
+clics de descarga están simulados en jsdom: no equivalen a verificar un archivo
+guardado por un navegador real. No se añaden dependencias ni se cambian fixtures.
+
 ## L6: Método y evaluación
 
 Ejecutar `npm ci` y `npm run dev` desde `frontend/` (Node.js 24). Abrir

@@ -9,6 +9,7 @@ import HistoricalCalendar from '../src/components/calendar/HistoricalCalendar.ts
 import CalendarPage from '../src/components/calendar/CalendarPage.tsx'
 import { MONTHS } from '../src/services/data/calendar.ts'
 import { parseMonthlySeries } from '../src/services/data/validators.ts'
+import { downloadCsv } from '../src/services/data/csvExport.ts'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'http://localhost/' })
 Object.defineProperties(globalThis, {
@@ -114,4 +115,85 @@ test('CSV válido sin filas muestra empty state después de cargar', async t => 
   t.mock.method(globalThis, 'fetch', async () => new Response(csv.split(/\r?\n/)[0]))
   const host = await mount(t, createElement(CalendarPage, { dataUrl: '/empty.csv' }))
   assert.match(host.querySelector('[role="status"]')!.textContent!, /No hay datos disponibles/)
+})
+
+function exportButton(host: HTMLElement): HTMLButtonElement {
+  const button = [...host.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'Descargar CSV')
+  assert.ok(button)
+  return button
+}
+
+function captureDownloads(t: TestContext) {
+  const blobs: Blob[] = []
+  const files: { name: string; url: string }[] = []
+  t.mock.method(URL, 'createObjectURL', (blob: Blob) => { blobs.push(blob); return 'blob:calendar-export' })
+  const revoke = t.mock.method(URL, 'revokeObjectURL', () => {})
+  t.mock.method(dom.window.HTMLAnchorElement.prototype, 'click', function (this: HTMLAnchorElement) {
+    files.push({ name: this.download, url: this.href })
+  })
+  return { blobs, files, revoke }
+}
+
+test('Descargar CSV usa registros ya cargados, respeta sensor y libera enlace/URL temporal', async t => {
+  const fetch = t.mock.method(globalThis, 'fetch', async () => new Response(csv))
+  const host = await mount(t, createElement(CalendarPage, { dataUrl: '/data/demo/monthly_series.csv' }))
+  const downloads = captureDownloads(t)
+  t.mock.timers.enable({ apis: ['setTimeout'] })
+  await act(async () => exportButton(host).click())
+  assert.equal(downloads.files[0].name, 'allpanina_PE-DEMO_MODIS_demo.csv')
+  assert.equal(downloads.files[0].url, 'blob:calendar-export')
+  assert.equal(downloads.blobs[0].type, 'text/csv;charset=utf-8')
+  const bytes = new Uint8Array(await downloads.blobs[0].arrayBuffer())
+  assert.deepEqual([...bytes.slice(0, 3)], [0xef, 0xbb, 0xbf])
+  assert.deepEqual(parseMonthlySeries(await downloads.blobs[0].text()), records.filter(row => row.sensor === 'MODIS'))
+  assert.equal(document.querySelector('a[download]'), null)
+  assert.equal(downloads.revoke.mock.callCount(), 0)
+  t.mock.timers.tick(1000)
+  assert.deepEqual(downloads.revoke.mock.calls[0].arguments, ['blob:calendar-export'])
+  await select(host, 'calendar-sensor', 'VIIRS')
+  await act(async () => exportButton(host).click())
+  assert.equal(downloads.files[1].name, 'allpanina_PE-DEMO_VIIRS_demo.csv')
+  assert.deepEqual(parseMonthlySeries(await downloads.blobs[1].text()), records.filter(row => row.sensor === 'VIIRS'))
+  assert.equal(fetch.mock.callCount(), 1)
+  assert.match(host.textContent!, /DATOS DEMO — NO SON OBSERVACIONES REALES/)
+  t.mock.timers.tick(1000)
+})
+test('exportación respeta región seleccionada y no considera el mes de detalle como filtro', async t => {
+  const other = { ...records[0], region_id: 'ZZ-OTRA', indicator: 15 }
+  const host = await mount(t, createElement(HistoricalCalendar, { records: [...records, other] }))
+  const downloads = captureDownloads(t)
+  t.mock.timers.enable({ apis: ['setTimeout'] })
+  await act(async () => cell(host, 'Enero 2024, MODIS, Ausente').click())
+  await act(async () => exportButton(host).click())
+  assert.equal(parseMonthlySeries(await downloads.blobs[0].text()).length, 3)
+  await select(host, 'calendar-region', 'ZZ-OTRA')
+  await act(async () => exportButton(host).click())
+  assert.equal(downloads.files[1].name, 'allpanina_ZZ-OTRA_MODIS_demo.csv')
+  assert.deepEqual(parseMonthlySeries(await downloads.blobs[1].text()), [other])
+  t.mock.timers.tick(1000)
+})
+test('botón de exportar queda deshabilitado con serie vacía o sensor sin filas', async t => {
+  const empty = await mount(t, createElement(HistoricalCalendar, { records: [] }))
+  assert.equal(exportButton(empty).disabled, true)
+  const host = await mount(t, createElement(HistoricalCalendar, { records: [records[0]] }))
+  assert.equal(exportButton(host).disabled, false)
+  await select(host, 'calendar-sensor', 'VIIRS')
+  assert.equal(exportButton(host).disabled, true)
+})
+test('fallo de descarga muestra error controlado que se limpia al cambiar filtro', async t => {
+  const host = await mount(t, createElement(HistoricalCalendar, { records }))
+  t.mock.method(URL, 'createObjectURL', () => { throw new Error('Blob no disponible') })
+  await act(async () => exportButton(host).click())
+  assert.match(host.querySelector('[role="alert"]')!.textContent!, /No se pudo generar o iniciar la descarga CSV.*Blob no disponible/)
+  await select(host, 'calendar-sensor', 'VIIRS')
+  assert.equal(host.querySelector('[role="alert"]'), null)
+})
+test('si el clic de descarga falla, también se eliminan el enlace y su URL temporal', t => {
+  const downloads = captureDownloads(t)
+  t.mock.timers.enable({ apis: ['setTimeout'] })
+  t.mock.method(dom.window.HTMLAnchorElement.prototype, 'click', () => { throw new Error('Descarga bloqueada') })
+  assert.throws(() => downloadCsv('columna\r\nvalor\r\n', 'prueba_demo.csv'), /Descarga bloqueada/)
+  assert.equal(document.querySelector('a[download]'), null)
+  t.mock.timers.tick(1000)
+  assert.equal(downloads.revoke.mock.callCount(), 1)
 })

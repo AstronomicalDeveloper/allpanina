@@ -9,6 +9,8 @@
 .calendar-filters select, .historical-calendar button { font: inherit; border: 1px solid #687386; border-radius: .25rem; padding: .4rem .6rem; }
 .calendar-filters select { background: white; min-width: 9rem; }
 .historical-calendar button { cursor: pointer; }
+.historical-calendar button:disabled { cursor: not-allowed; opacity: .55; }
+.calendar-export-button { align-self: end; }
 .historical-calendar :focus-visible { outline: 3px solid #125ac5; outline-offset: 3px; }
 .calendar-table-scroll { overflow-x: auto; padding: .25rem; }
 .calendar-table { border-collapse: separate; border-spacing: .25rem; width: 100%; }

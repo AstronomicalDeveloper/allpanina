@@ -16,12 +16,16 @@ export function calendarStatus(record: MonthlyRecord | null): CalendarStatus {
   return record.indicator === 0 ? 'zero' : 'value'
 }
 
+export function filterCalendarRecords(records: MonthlyRecord[], region: string, sensor: Sensor): MonthlyRecord[] {
+  return records.filter(record => record.region_id === region && record.sensor === sensor)
+}
+
 /** Already validated L3 records; never aggregate regions or infer missing zeros. */
 export function buildCalendar(records: MonthlyRecord[], region: string, sensor: Sensor): CalendarYear[] {
   const regional = records.filter(record => record.region_id === region)
   // Keep the same years when switching sensors, even if one sensor has no rows.
   const years = [...new Set(regional.map(record => record.year))].sort((a, b) => a - b)
-  const lookup = new Map(regional.filter(record => record.sensor === sensor).map(record => [`${record.year}-${record.month}`, record]))
+  const lookup = new Map(filterCalendarRecords(records, region, sensor).map(record => [`${record.year}-${record.month}`, record]))
   return years.map(year => ({
     year,
     cells: MONTHS.map((_, index) => {

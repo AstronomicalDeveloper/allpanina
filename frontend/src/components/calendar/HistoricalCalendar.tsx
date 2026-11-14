@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import type { MonthlyRecord, Sensor } from '../../types/data.ts'
-import { buildCalendar } from '../../services/data/calendar.ts'
+import { buildCalendar, filterCalendarRecords } from '../../services/data/calendar.ts'
 import type { CalendarCell } from '../../services/data/calendar.ts'
+import { calendarCsvFilename, downloadCsv, serializeMonthlySeries } from '../../services/data/csvExport.ts'
 import CalendarGrid from './CalendarGrid.tsx'
 import CalendarDetail from './CalendarDetail.tsx'
 
@@ -10,25 +11,40 @@ export default function HistoricalCalendar({ records }: { records: MonthlyRecord
   const [region, setRegion] = useState(regions[0] ?? '')
   const [sensor, setSensor] = useState<Sensor>('MODIS')
   const [selected, setSelected] = useState<CalendarCell | null>(null)
+  const [exportError, setExportError] = useState<string | null>(null)
   const years = buildCalendar(records, region, sensor)
-  const sensorHasRows = records.some(record => record.region_id === region && record.sensor === sensor)
+  const filteredRecords = filterCalendarRecords(records, region, sensor)
+  const sensorHasRows = filteredRecords.length > 0
 
-  if (!records.length) return <p role="status">No hay datos disponibles en la serie mensual.</p>
+  function exportCsv() {
+    setExportError(null)
+    try {
+      downloadCsv(serializeMonthlySeries(filteredRecords), calendarCsvFilename(region, sensor))
+    } catch (error) {
+      setExportError(`No se pudo generar o iniciar la descarga CSV: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+    }
+  }
+  const exportButton = <button className="calendar-export-button" type="button" disabled={!sensorHasRows} onClick={exportCsv}>Descargar CSV</button>
+
+  if (!records.length) return <><p role="status">No hay datos disponibles en la serie mensual.</p>{exportButton}</>
 
   return (
     <>
       <div className="calendar-filters">
         <label htmlFor="calendar-region">Región
-          <select id="calendar-region" value={region} onChange={event => { setRegion(event.target.value); setSelected(null) }}>
+          <select id="calendar-region" value={region} onChange={event => { setRegion(event.target.value); setSelected(null); setExportError(null) }}>
             {regions.map(id => <option key={id} value={id}>{id}</option>)}
           </select>
         </label>
         <label htmlFor="calendar-sensor">Sensor
-          <select id="calendar-sensor" value={sensor} onChange={event => { setSensor(event.target.value as Sensor); setSelected(null) }}>
+          <select id="calendar-sensor" value={sensor} onChange={event => { setSensor(event.target.value as Sensor); setSelected(null); setExportError(null) }}>
             <option value="MODIS">MODIS</option><option value="VIIRS">VIIRS</option>
           </select>
         </label>
+        {exportButton}
       </div>
+      <p>CSV DEMO: {filteredRecords.length} registros de {region} / {sensor}, todos los años cargados. Los meses ausentes no generan filas.</p>
+      {exportError && <p role="alert">{exportError}</p>}
       {!sensorHasRows && <p role="status">No hay registros para {sensor} en {region}. Los meses se muestran como ausentes.</p>}
       <CalendarGrid years={years} region={region} sensor={sensor} selected={selected} onSelect={setSelected} />
       <section className="calendar-legend" aria-label="Leyenda">
