@@ -38,7 +38,7 @@ Conteos mensuales observados (MODIS y VIIRS), por región y mes.
 | `month` | int | 1-12 |
 | `sensor_group` | enum | `MODIS` \| `VIIRS` (agrupa Terra+Aqua o S-NPP) |
 | `cell_days` | int | **suma de pares celda-día con detección en toda la región ese mes.** No está acotado a 0-31 — ese rango solo aplica a una sola celda; a escala región-mes puede ser del orden de miles (ej. 4,491 en agosto de 2024) |
-| `status` | enum | `ok` \| `insufficient_data` \| `no_pass` |
+| `status` | enum | `ok` (incluye cell_days=0 con sensor operando) \| `missing` (fuera de la ventana de disponibilidad del sensor) |
 | `source_version` | string | **el valor literal de la columna `version` del CSV de FIRMS descargado** (ej. `6.03`, `61.03`, `2`) — no el nombre del producto (MCD14DL es el NRT de Collection 61; nosotros usamos el estándar MCD14ML, que trae su propia columna `version`) |
 | `updated_at` | string (ISO 8601) | `YYYY-MM-DD` |
 
@@ -71,11 +71,14 @@ eliminó; GeoJSON es WGS84 por definición, no hace falta declararlo).
 Propiedades por feature: `cell_id`, `year`, `month`, `sensor_group`, `cell_days`
 (valores **observados**, nunca calibración regional aplicada a celda).
 
-## 6. `manifest.json` — produce Marco, usa todo el equipo
+## 6. `manifest.json` — produce Marco, usa todo el equipo (T31 de la matriz)
 
 - `region_id` (no `region` — mismo nombre que en los demás archivos)
-- `files`: lista simple de nombres, no de objetos: `["monthly_series.csv", "calibrated_series.csv", "validation.json", "method.json", "cells_<region>_<year>.geojson"]`
+- `files`: lista simple de nombres: `["monthly_series.csv", "calibrated_series.csv", "validation.json", "method.json", "cells_<region>_<year>.geojson"]`
 - `generated_at`
+- **`producto`**: nombre y versión del producto fuente (ej. `"MCD14ML v6.1"`, `"VNP14IMGML v2"`) — para que quede trazable de qué collection salió cada entrega.
+- **`periodo`**: `{ "desde": "YYYY-MM", "hasta": "YYYY-MM" }` — rango real de fechas que cubren los archivos de esta entrega.
+- **`hash`**: sha256 de cada archivo listado, para que Landry pueda verificar que lo que descargó es exactamente lo que Marco generó (no un archivo corrupto o a medio escribir).
 
 ## Ejemplos DEMO (datos inventados, nunca reales)
 
@@ -84,7 +87,7 @@ Propiedades por feature: `cell_id`, `year`, `month`, `sensor_group`, `cell_days`
 region_id,year,month,sensor_group,cell_days,status,source_version,updated_at
 DEMO-01,2024,8,MODIS,4491,ok,6.03,2026-11-14
 DEMO-01,2024,8,VIIRS,3870,ok,2,2026-11-14
-DEMO-01,2024,9,MODIS,,insufficient_data,6.03,2026-11-14
+DEMO-01,2026,10,VIIRS,,missing,2,2026-11-14
 ```
 
 **calibrated_series.csv**
@@ -146,12 +149,18 @@ DEMO-01,2025,8,B1,9.1,test,ok,-1.5
 {
   "generated_at": "2026-11-14T18:00:00Z",
   "region_id": "DEMO-01",
+  "producto": "MCD14ML v6.1 / VNP14IMGML v2",
+  "periodo": { "desde": "2013-01", "hasta": "2026-07" },
   "files": [
     "monthly_series.csv",
     "calibrated_series.csv",
     "validation.json",
     "method.json",
     "cells_DEMO-01_2024.geojson"
-  ]
+  ],
+  "hash": {
+    "monthly_series.csv": "sha256:REEMPLAZAR_AL_GENERAR",
+    "calibrated_series.csv": "sha256:REEMPLAZAR_AL_GENERAR"
+  }
 }
 ```
