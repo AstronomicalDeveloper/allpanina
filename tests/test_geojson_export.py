@@ -57,3 +57,15 @@ def test_run_writes_one_file_per_year(tmp_path):
 
 def test_test_years_are_reserved_by_default():
     assert gj.main(["--years", "2025"]) == 1
+
+
+def test_run_with_polygon_filters_cells(tmp_path):
+    src = tmp_path / "cell_days.parquet"
+    _cell_days().to_parquet(src, index=False)
+    region = tmp_path / "vacio.geojson"
+    far = [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]]
+    region.write_text(json.dumps({"type": "FeatureCollection", "features": [
+        {"type": "Feature", "properties": {}, "geometry": {"type": "Polygon", "coordinates": [far]}}]}), encoding="utf-8")
+    gj.run(src, tmp_path, "PE-UCA", gj.series.REGION_BBOX, [2024], region)
+    data = json.loads((tmp_path / "cells_PE-UCA_2024.geojson").read_text(encoding="utf-8"))
+    assert data["features"] == []  # ninguna celda cae en un poligono lejano
