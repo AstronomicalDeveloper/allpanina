@@ -1,5 +1,5 @@
 {
-  "estado": "aprobado por Aldo (T27)",
+  "estado": "aprobado por Aldo (T27); actualizado con el resultado del test (T29/T30), pendiente de revisión de Aldo",
   "region_id": "PE-UCA",
   "region": "Departamento de Ucayali, Perú. Celda incluida si su centro cae dentro del polígono oficial INEI 2023 (docs/region/ucayali_inei_2023.geojson).",
   "indicator": "cell_days: número de pares celda-día con al menos una detección de fuego activo en la región, por mes y sensor. Celda de 1 km x 1 km en EPSG:6933; día calendario en hora de Lima (UTC-5). Terra y Aqua cuentan una sola vez por celda-día.",
@@ -22,6 +22,40 @@
   },
   "error_convention": "signed_error = estimate - modis_observed (positivo = sobreestima). bias = promedio de signed_error; MAE = promedio de |signed_error|; WAPE = suma|signed_error| / suma(modis_observed), indefinido si el denominador es 0.",
   "status_rule": "ok = sensor operando ese mes, aunque cell_days sea 0. missing = (1) mes fuera de la ventana de disponibilidad del sensor (antes de su cobertura estándar o después de un cese documentado), (2) mes dentro de la ventana pero sin ninguna detección en todo Perú, que se trata como hueco de datos (DECISIONS.md §8; no se activa en 2013-2024), o (3) valor no estimable en la serie calibrada. El valor queda vacío, nunca 0.",
+  "resultados": {
+    "valid": {
+      "periodo": "2023-01:2024-12",
+      "n_meses": 24,
+      "suma_modis": 7537,
+      "B0": {
+        "mae": 645.9,
+        "wape": 2.057,
+        "bias": 645.9
+      },
+      "B1": {
+        "mae": 55.8,
+        "wape": 0.178,
+        "bias": -32.2
+      }
+    },
+    "test": {
+      "periodo": "2025-01:2026-07",
+      "n_meses": 19,
+      "suma_modis": 1829,
+      "B0": {
+        "mae": 309.6,
+        "wape": 3.216,
+        "bias": 309.6
+      },
+      "B1": {
+        "mae": 29.7,
+        "wape": 0.308,
+        "bias": 22.9
+      },
+      "evaluacion": "corrida única el 14-nov-2026 con κ congelado (DECISIONS.md §10); detalle en docs/t29/RESULTADO_T29.md"
+    },
+    "metodo_elegido": "B1"
+  },
   "limitations": [
     "VIIRS S-NPP: NOAA anunció el cese de entrega de todos los productos el 1 nov 2026; NASA indica cese de datos científicos nuevos el 2 nov 2026. El archivo histórico no se ve afectado. Se usó el producto estándar, con rezago de 2-3 meses.",
     "MODIS cambia de versión V6 a V6.1 en febrero de 2023 (Terra 17 feb, Aqua 23 feb), al inicio del periodo de validación. Un salto en esas fechas puede ser cambio de algoritmo y no de incendios.",
@@ -30,7 +64,8 @@
     "El indicador cuenta detecciones satelitales de anomalías térmicas, no incendios confirmados ni superficie quemada.",
     "FIRMS no entrega cobertura de nubes: un mes con 0 detecciones puede reflejar ausencia de fuego o falta de observación.",
     "B1 puede subestimar los meses pico de temporadas extremas: en 2024-09 (el mes con más actividad del periodo, en validación) B1 estimó 1,639 celdas-día frente a 2,323 de MODIS (−29%). Casi todo el sesgo negativo en validación viene de septiembre y octubre de 2024.",
-    "κ varía de año a año (0.26 a 0.34 en train; 0.35 en 2024) y se usa un solo factor global para toda la región y todo el periodo.",
+    "κ varía de año a año (0.26 a 0.34 en train; 0.35 en 2024 y 0.24 en el test 2025-2026) y se usa un solo factor global para toda la región y todo el periodo.",
+    "En el test (2025-01 a 2026-07), un periodo de poca actividad (~96 celdas-día MODIS por mes frente a ~314 en validación), B1 sobreestimó en 14 de 19 meses (sesgo +22.9) y su WAPE subió a 0.31, frente a 0.18 en validación. El error absoluto fue menor (MAE 29.7 frente a 55.8). Cinco meses concentran el 71% del error; 2025-09 aporta un tercio (+39%).",
     "B1 se valida a escala región-mes. No debe aplicarse a celdas individuales del mapa; el mapa muestra solo valores observados.",
     "Un error retrospectivo de B1 no es un porcentaje de confianza para meses futuros."
   ]
