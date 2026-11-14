@@ -1,5 +1,92 @@
 # React + TypeScript + Vite
 
+## Integración del Mapa de Juan Matías
+
+Desde `frontend/`, con Node.js 24: `npm ci`, `npm run dev` y abrir
+`http://127.0.0.1:5173/?view=map`. La aplicación conserva las tres vistas
+**Calendario | Mapa | Método** y el inspector L3 `?demo=1`.
+
+El mapa se adaptó desde `docs/NASA SAC.zip`, `src/FireMapTest.tsx`, conservando
+el estilo MapLibre, cuatro fondos, capas, filtros, leyenda por percentiles,
+opacidad, selección, inspector, escala, navegación, cuadrícula y fullscreen.
+No se copió `node_modules`, el generador de observaciones ni los puntos de entrada
+del ZIP. Su implementación se distribuye entre:
+
+- `components/map/FireMapTest.tsx`: controles e interacción de Juan adaptados.
+- `mapConstruction.ts`: estilo, fuentes y capas originales.
+- `juanLayers.ts`: fondos, overlays, cuadrícula y utilidades de percentiles de Juan.
+- `MapPage.tsx`: manifiesto, carga por L3, ausencia de archivos y errores visibles.
+- `mapRuntime.ts` y `map-worker.d.ts`: MapLibre y worker cargados bajo demanda.
+- `map.css`: contenedor acotado, sin cambiar scroll global, accesibilidad básica.
+- `services/data/map.ts`: resolución de archivos, filtros, límites y popup textual.
+- `types/selection.ts`: contexto de selección compartido (no un contrato de datos).
+
+Dependencias nuevas: `maplibre-gl@6.18.0` y `@types/geojson@7946.0.16` como tipos de
+desarrollo. El registro oficial rechazó conexiones en este entorno; se instalaron
+desde el espejo público npm npmmirror, registrado en las URLs del lockfile. La
+integridad del paquete MapLibre coincide con la registrada en el lockfile de Juan.
+No se sustituyen React, Vite ni TypeScript por los del ZIP.
+
+### Contexto compartido y datos
+
+Seleccionar una celda del Calendario comparte región, año, mes y sensor con Mapa.
+Los filtros del mapa actualizan ese mismo contexto; regresar al Calendario
+restaura el sensor y el mes seleccionado. **La selección temporal es de detalle**:
+CSV sigue exportando todas las filas de la región y sensor, sin filtrar por mes.
+Los enlaces de navegación preservan ese contexto en query params; «Copiar enlace»
+comparte región/período/sensor. No incluye centro/zoom ni publica en redes sociales.
+
+MapPage lee `manifest.json` y solo solicita `cells_<region>_<year>.geojson` si el
+archivo existe en el manifiesto y la región coincide. El contrato actual describe
+una región por manifiesto; otras regiones/años sin archivo se muestran como no
+disponibles. Para varios conjuntos aprobados, proporcionar su `dataRoot` y sus
+manifiestos sin mezclar regiones dentro de un archivo no identificable.
+
+Cambiar mes/sensor filtra localmente; no descarga el GeoJSON de nuevo. Todos los
+archivos pasan por `loadCells`/`validateCells`: un archivo oficial de cuatro
+features conserva las cuatro al validar, antes de filtrar. Los errores rechazan
+el archivo, sin descartar features silenciosamente. No hay fallback sintético.
+
+Se usa `cell_id`, `sensor=MODIS|VIIRS` y `n_detections`. Las leyendas, popups y
+resúmenes representan **detecciones**, nunca `indicator` regional/días-celda ni
+superficie quemada. Ceros válidos se conservan; ausencia de filas no equivale a
+cero. No se aplica B1. Los percentiles son relativos al conjunto visible y no
+sirven como escala absoluta comparable entre meses ni como riesgo de incendio.
+
+### Seguridad, recursos y límites
+
+- Popups con nodos de texto, sin HTML interpolado.
+- DEMO visible dentro del contenedor incluso en fullscreen; no se exportan imágenes.
+- Carga/error de GeoJSON, worker, WebGL y recursos cartográficos visibles, con
+  reintento. Tras 20 segundos sin cargar se avisa de demora, sin crear datos.
+- Mapas, popups, observadores, listeners y temporizadores se limpian al desmontar;
+  una importación que termine tarde no crea un mapa después de salir de la vista.
+- Selección alternativa por teclado mediante el control de celda; botones y filtros
+  nativos. El contenedor no modifica estilos de body y respeta la navegación común.
+- Se conserva la conectividad externa original: NASA GIBS, ArcGIS/Esri y MINAM.
+  Se mantienen atribuciones. Su disponibilidad/CORS no se garantiza ni se usa para
+  simular observaciones; un fallo se muestra al usuario.
+- Se posponen PNG/JPG, GIF, PDF y GeoTIFF. Incorporaban dependencias y procesos de
+  captura costosos, problemas CORS y rotulado DEMO pendiente. No se instalan
+  geotiff, gifenc ni jsPDF ni se activa preserveDrawingBuffer.
+- Los overlays MINAM y sus descripciones territoriales siguen siendo de Ucayali,
+  como en Juan; son capas de contexto opcionales, no evidencia sobre PE-DEMO.
+- L3 valida estructura, WGS84, cierre y campos numéricos; no certifica topología
+  completa de polígonos. No hay benchmark de archivos grandes ni datos reales.
+
+### Verificación y despliegue
+
+Ejecutar `npm test`, `npm run lint` y `npm run build` (en PowerShell puede requerirse
+`npm.cmd`). Las pruebas nuevas cubren contrato oficial, filtros, XSS, estados,
+selección, fullscreen, montaje/desmontaje y el recorrido Calendario–Mapa–Calendario
+con regresión de CSV. MapLibre se simula en los tests DOM: no certifican WebGL real.
+
+El build genera un worker local y un chunk MapLibre separado, que solo se importa
+al abrir Mapa. Vite advierte que MapLibre supera 500 kB; no se silencia esa alerta.
+Vercel puede conservar raíz `frontend/`, `npm ci`, `npm run build` y salida `dist`.
+No hay rutas de pathname nuevas ni necesidad de backend. Comprobar el worker
+generado, GeoJSON, CSS y servicios externos en una preview antes de publicar.
+
 ## L9: Exportación CSV del Calendario
 
 En el Calendario, el botón **Descargar CSV** exporta los registros ya cargados de

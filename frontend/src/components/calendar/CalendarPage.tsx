@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { loadMonthlySeries, safelyLoad } from '../../services/data/loaders.ts'
 import type { MonthlyRecord } from '../../types/data.ts'
+import type { SharedSelectionProps } from '../../types/selection.ts'
 import HistoricalCalendar from './HistoricalCalendar.tsx'
 
 type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'loaded'; records: MonthlyRecord[] }
 
-function CalendarLoader({ dataUrl }: { dataUrl: string }) {
+function CalendarLoader({ dataUrl, selection, onSelectionChange }: { dataUrl: string } & SharedSelectionProps) {
   const [state, setState] = useState<State>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
   useEffect(() => {
@@ -22,10 +23,10 @@ function CalendarLoader({ dataUrl }: { dataUrl: string }) {
     <p>No se pudo cargar el calendario: {state.message}</p>
     <button type="button" onClick={() => { setState({ status: 'loading' }); setAttempt(attempt + 1) }}>Reintentar carga</button>
   </div>
-  return <HistoricalCalendar records={state.records} />
+  return <HistoricalCalendar records={state.records} selection={selection} onSelectionChange={onSelectionChange} />
 }
 
-export default function CalendarPage({ dataUrl }: { dataUrl: string }) {
+export default function CalendarPage({ dataUrl, selection, onSelectionChange }: { dataUrl: string } & SharedSelectionProps) {
   return (
     <main className="historical-calendar">
       <h1>Calendario histórico</h1>
@@ -33,7 +34,7 @@ export default function CalendarPage({ dataUrl }: { dataUrl: string }) {
       <p>Serie mensual observada según el contrato de Aldo, ilustrada con datos sintéticos. indicator se expresa en días-celda; n_detections cuenta detecciones.</p>
       <p>No representa incendios confirmados ni superficie quemada. updated_at es la fecha de actualización del archivo, no la fecha de una detección.</p>
       <p className="calendar-source">Archivo: {dataUrl}</p>
-      <CalendarLoader key={dataUrl} dataUrl={dataUrl} />
+      <CalendarLoader key={dataUrl} dataUrl={dataUrl} selection={selection} onSelectionChange={onSelectionChange} />
     </main>
   )
 }
