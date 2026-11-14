@@ -6,33 +6,44 @@ No se modifican sin que Aldo + Antonella lo autoricen explícitamente (ver secci
 
 ## 1. Región piloto
 
-**Provincia de Coronel Portillo, departamento de Ucayali, Perú.**
+**Departamento de Ucayali, Perú (región completa) — decisión revisada el
+14-nov-2026 por Aldo.**
 
-Razón: es la región con más hectáreas quemadas acumuladas en el ranking nacional
-satelital (MapBiomas Fuego Perú, 2013-2024: Ucayali lidera con ~350,600 ha, y dentro
-de Ucayali, Coronel Portillo concentra ~204,800 ha).
+**Cambio de alcance respecto a la versión anterior de este documento:** antes
+decía "Provincia de Coronel Portillo" y excluía explícitamente el departamento
+completo ("demasiado grande para procesar a mano"). Se revierte esa decisión
+porque la caja de coordenadas usada para la provincia cubría solo el 61% del
+área real de Coronel Portillo según el polígono INEI (Marco cruzó la caja
+contra el polígono oficial). En vez de parchar la caja de la provincia, Aldo
+decidió subir de escala a todo el departamento.
 
-No se trabaja el departamento de Ucayali completo (102,400 km²) ni Loreto (368,852 km²)
-— demasiado grandes para procesar y revisar a mano en el tiempo del evento.
+Razón original (sigue aplicando, ahora a nivel departamento): es la región con
+más hectáreas quemadas acumuladas en el ranking nacional satelital (MapBiomas
+Fuego Perú, 2013-2024: Ucayali lidera con ~350,600 ha).
 
-**Caja de coordenadas — CORREGIDA (otra vez):** la caja anterior (lat -10.00 a
--7.00, lon -75.60 a -73.30) mide ~84,400 km² — 2.3 veces el área real de la
-provincia (36,236 km²). No hay polígono oficial cargado todavía, así que esto
-**no es la provincia de Coronel Portillo**, es un área de estudio aproximada
-alrededor de ella. Se renombra para ser honestos y se angosta:
+**Caja de coordenadas (cubre el departamento completo):**
+- lat: -11.45 a -8.37 (8°22'S a 11°27'S — límites del departamento)
+- lon: -76.08 a -70.50 (70°30'W a 76°05'W)
+- Área real del departamento: ~102,400 km² (fuente: INEI, Compendio
+  Estadístico Ucayali). La caja rectangular mide más que eso (no es un
+  rectángulo), igual que antes — la caja solo acota la descarga de FIRMS, el
+  filtro final del indicador se hace con el polígono real, no con la caja.
 
-- Nombre correcto: **"Área de estudio Pucallpa–Coronel Portillo (caja aproximada)"**
-  — no decir "provincia de Coronel Portillo" hasta tener el polígono real.
-- lat: -10.00 a -7.00 (≈ 335 km de largo, sin cambio — esto sí viene del dato real
-  de longitud de la provincia)
-- lon: -75.10 a -73.90 (≈ 131 km de ancho — antes 275 km). Área ≈ 43,900 km²,
-  ~1.2× el área real en vez de 2.3×.
+**Polígono oficial — pendiente, NO se usa el provisional:** Marco propuso usar
+el polígono INEI-2007 del repo `juaneladio/peru-geojson` (licencia MPL-2.0,
+confirmada) como límite provisional del departamento mientras se consigue el
+GeoPackage oficial del INEI. **Aldo decidió NO usarlo** y esperar el
+GeoPackage oficial. Hasta que ese polígono oficial exista, el indicador final
+sigue acotado por la caja de coordenadas de arriba, no por un polígono real —
+esto es una limitación conocida, documentarla en `method.json`.
 
-**Pendiente real, no cosmético:** conseguir el polígono oficial (INEI/IDEP o GADM)
-y filtrar las detecciones por el polígono real, no por esta caja — la caja solo
-sirve para acotar la descarga de FIRMS, no para el reporte final del indicador.
-Mapa, calendario y método se construyen todos sobre esta misma área (ninguna
-segunda región, regla de la matriz sección 1).
+**Acción pendiente para Marco (bloqueante, con fecha límite):** la descarga de
+FIRMS que ya existe fue hecha con la caja de la provincia (demasiado chica).
+Hay que repetir la descarga con la caja nueva de arriba **antes del 29 de
+diciembre de 2026** (FIRMS borra los archivos de descarga a los 45 días) y
+actualizar los hashes en `docs/datos.md`. El GeoJSON de 2024 y `monthly_series.csv`
+generados con la caja vieja quedan invalidados y hay que regenerarlos.
+
 
 ## 2. Sensores
 
@@ -124,7 +135,9 @@ que FIRMS no entrega — se deja fuera de alcance para este hackathon.
 
 ## 9. Códigos
 
-- `region_id`: **PE-UCA-CPO** (Perú — Ucayali — Coronel Portillo). Los archivos
+- `region_id`: **PE-UCA** (Perú — departamento de Ucayali). Cambia de
+  `PE-UCA-CPO` a `PE-UCA` por el cambio de alcance de la sección 1
+  (provincia → departamento completo), 14-nov-2026. Los archivos
   DEMO siguen usando `DEMO-01` porque son inventados a propósito.
 - `sensor_group`: `MODIS` | `VIIRS` (ya fijado en el contrato de datos).
 
