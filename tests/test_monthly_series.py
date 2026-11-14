@@ -97,3 +97,43 @@ def test_test_period_is_reserved_by_default():
 def test_missing_input_fails_clearly(tmp_path):
     with pytest.raises(FileNotFoundError, match="03_grid_dedupe"):
         ms.run(tmp_path / "no.parquet", tmp_path / "o.csv", "X", None, (2024, 1), (2024, 1), None)
+
+
+# --- Poligono de la region (DECISIONS.md, seccion 1) ---------------------------------------
+
+TINGO_MARIA = (-9.29, -75.99)  # Huanuco: dentro de la caja pero fuera de Ucayali
+PUCALLPA = (-8.38, -74.55)
+
+
+def _write_square(path, lon_min, lat_min, lon_max, lat_max):
+    import json
+
+    ring = [[lon_min, lat_min], [lon_max, lat_min], [lon_max, lat_max], [lon_min, lat_max], [lon_min, lat_min]]
+    path.write_text(json.dumps({"type": "FeatureCollection", "features": [
+        {"type": "Feature", "properties": {}, "geometry": {"type": "Polygon", "coordinates": [ring]}}]}), encoding="utf-8")
+
+
+def test_polygon_excludes_cells_inside_box_but_outside_region(tmp_path):
+    square = tmp_path / "region.geojson"
+    _write_square(square, -75.0, -9.0, -74.0, -8.0)  # contiene INSIDE (-8.4, -74.5) pero no (-10.5, -71.0)
+    polygon = ms.load_polygon(square)
+    cd = _cell_days([{"cell": "a"}, {"cell": "b", "where": (-10.5, -71.0)}])
+    without = _row(ms.build_monthly_series(cd, first_month=(2024, 8), last_month=(2024, 8), updated_at="x"), "MODIS", 2024, 8)
+    with_poly = _row(ms.build_monthly_series(cd, first_month=(2024, 8), last_month=(2024, 8), updated_at="x", polygon=polygon), "MODIS", 2024, 8)
+    assert without["cell_days"] == 2 and with_poly["cell_days"] == 1
+
+
+def test_missing_polygon_file_fails_clearly(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        ms.load_polygon(tmp_path / "no_existe.geojson")
+
+
+def test_official_ucayali_polygon():
+    import shapely
+
+    polygon = ms.load_polygon(ms.REGION_POLYGON)
+    lon_min, lat_min, lon_max, lat_max = polygon.bounds
+    b_lon_min, b_lat_min, b_lon_max, b_lat_max = ms.REGION_BBOX
+    assert b_lon_min <= lon_min and b_lat_min <= lat_min and lon_max <= b_lon_max and lat_max <= b_lat_max  # la caja lo contiene
+    assert shapely.contains_xy(polygon, PUCALLPA[1], PUCALLPA[0])
+    assert not shapely.contains_xy(polygon, TINGO_MARIA[1], TINGO_MARIA[0])
