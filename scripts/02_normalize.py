@@ -13,11 +13,10 @@ Reglas (DECISIONS.md, secciones 6 y 7):
   * Se excluyen: coordenadas invalidas, fecha/hora invalida, duplicados exactos,
     `type != 0` (0 = fuego de vegetacion presunto), MODIS con confianza < 30 y VIIRS con
     confianza fuera de {n, h}.
-  * VIIRS_TYPE_FILTER: DECISIONS.md dice que VIIRS no trae `type`, pero el archivo estandar
-    de FIRMS si lo trae (valores 0-3, mismo significado). Se aplica a ambos sensores.
-    Limitacion: en la version 2 de VIIRS algunos puntos de tipo 2 quedaron como tipo 0
-    (corregido en la version 3), asi que el filtro puede dejar fuentes estaticas.
-    Para volver a la regla escrita, poner VIIRS_TYPE_FILTER = False (requiere OK de Aldo).
+  * `type != 0` se aplica a MODIS y a VIIRS (el archivo estandar de VIIRS trae `type`, valores
+    0-3 con el mismo significado; DECISIONS.md, seccion 7). Limitacion: en la version 2 de
+    VIIRS algunos puntos de tipo 2 quedaron como tipo 0 (corregido en la version 3), asi que
+    el filtro puede dejar fuentes estaticas. VIIRS_TYPE_FILTER = False lo desactiva para VIIRS.
 
 Uso (sin preguntas interactivas):
     python scripts/02_normalize.py

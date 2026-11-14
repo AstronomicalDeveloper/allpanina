@@ -4,11 +4,10 @@ Entradas: los archivos entregables en --dir (por defecto data/processed) y
           data/processed/source_info.json (lo escribe 02_normalize.py).
 Salida  : manifest.json en --dir.
 
-Campos del contrato (docs/contrato_datos.md, seccion 6): region_id, files (lista de nombres)
-y generated_at. Se AGREGAN, para T31 ("hash, producto y fechas"), `sha256` (nombre -> hash),
-`period` (primer y ultimo mes de monthly_series.csv) y `sources` (producto, version, fechas,
-filas y SHA-256 del zip original por sensor). Pendiente: que Aldo y Landry agreguen estos
-campos al contrato.
+Campos del contrato (docs/contrato_datos.md, seccion 6, T31): generated_at, region_id, producto,
+periodo {desde, hasta}, files (lista de nombres) y hash (nombre -> "sha256:<hex>").
+Ademas se agrega `sources` (extra, no esta en el contrato): por sensor, el valor literal de
+`version`, fechas, filas y SHA-256 del zip original de FIRMS.
 
 Solo se listan los archivos que existen; los que faltan se avisan por pantalla.
 
@@ -42,6 +41,7 @@ PRODUCT = {
     "VIIRS": "VIIRS S-NPP 375 m, Coleccion 2, archivo estandar FIRMS",
 }
 ZIP_OF = {"MODIS": "modis", "VIIRS": "viirs_snpp"}
+PRODUCTO = "MCD14ML v6.1 / VNP14IMGML v2"  # texto del ejemplo del contrato (docs/contrato_datos.md)
 
 
 def sha256_file(path: Path) -> str:
@@ -68,8 +68,8 @@ def period_of(directory: Path) -> dict | None:
     first = frame.sort_values(["year", "month"]).iloc[0]
     last = frame.sort_values(["year", "month"]).iloc[-1]
     return {
-        "first_month": f"{int(first.year)}-{int(first.month):02d}",
-        "last_month": f"{int(last.year)}-{int(last.month):02d}",
+        "desde": f"{int(first.year)}-{int(first.month):02d}",
+        "hasta": f"{int(last.year)}-{int(last.month):02d}",
     }
 
 
@@ -89,13 +89,14 @@ def build_manifest(directory: Path, info_path: Path, region_id: str, generated_a
     manifest = {
         "generated_at": generated_at or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "region_id": region_id,
+        "producto": PRODUCTO,
         "files": files,
-        "sha256": {name: sha256_file(directory / name) for name in files},
+        "hash": {name: "sha256:" + sha256_file(directory / name) for name in files},
         "sources": sources,
     }
-    period = period_of(directory)
-    if period:
-        manifest["period"] = period
+    periodo = period_of(directory)
+    if periodo:
+        manifest["periodo"] = periodo
     return manifest
 
 
