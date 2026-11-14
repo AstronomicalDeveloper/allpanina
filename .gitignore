@@ -1,0 +1,300 @@
+# ============================================================
+# AllpaNina — NASA Space Apps Challenge 2026
+# Global .gitignore
+# ============================================================
+
+
+# ============================================================
+# 1. OPERATING SYSTEMS
+# ============================================================
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.nfs*
+
+
+# ============================================================
+# 2. ENVIRONMENT VARIABLES AND SECRETS
+# ============================================================
+
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.template
+
+*.pem
+*.key
+*.p12
+*.pfx
+*.secret
+secrets/
+credentials/
+credentials.json
+service-account*.json
+
+
+# ============================================================
+# 3. FRONTEND — NODE.JS / REACT / TYPESCRIPT / VITE
+# ============================================================
+
+node_modules/
+
+dist/
+dist-ssr/
+build/
+coverage/
+
+.vite/
+.cache/
+.parcel-cache/
+.turbo/
+.next/
+.nuxt/
+.output/
+
+*.tsbuildinfo
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Local package manager files
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+
+# ============================================================
+# 4. BACKEND — PYTHON
+# ============================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+*.so
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python packaging
+*.egg
+*.egg-info/
+.eggs/
+wheels/
+pip-wheel-metadata/
+site/
+htmlcov/
+
+# Testing and analysis
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+test-results/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python tools
+.python-version
+.pdm-python
+__pypackages__/
+poetry.toml
+
+
+# ============================================================
+# 5. DATA — SATELLITE / GEOSPATIAL / TEMPORARY OUTPUTS
+# ============================================================
+
+# Local datasets and generated outputs
+data/raw/
+data/processed/
+data/cache/
+data/tmp/
+data/temp/
+data/downloads/
+
+outputs/
+artifacts/
+reports/generated/
+
+# Common temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# Geospatial intermediate files
+*.aux.xml
+*.ovr
+
+# Large data files should be reviewed before committing
+# Examples: GeoTIFF, NetCDF, HDF, Parquet
+# Do not ignore all of these globally: some may be useful
+# as small reproducible fixtures.
+
+
+# ============================================================
+# 6. AI AGENTS — CLAUDE / CODEX / CURSOR / COPILOT
+# ============================================================
+
+# Claude Code — local session and user-specific settings
+.claude/settings.local.json
+.claude/projects/
+.claude/todos/
+.claude/tasks/
+.claude/debug/
+.claude/cache/
+.claude/shell-snapshots/
+.claude/session-env/
+
+# Codex — local runtime/session data
+.codex/sessions/
+.codex/log/
+.codex/logs/
+.codex/cache/
+.codex/tmp/
+.codex/history.json
+.codex/auth.json
+
+# Cursor — local user-specific files
+.cursor/cache/
+.cursor/logs/
+
+# Windsurf / Codeium — local caches
+.windsurf/cache/
+.codeium/
+
+# Continue — local runtime data
+.continue/cache/
+.continue/index/
+
+# AI generated temporary files
+.ai-cache/
+.ai-temp/
+.agent-cache/
+.agent-tmp/
+
+
+# ============================================================
+# 7. IDE / EDITORS
+# ============================================================
+
+# VS Code — personal settings
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# JetBrains
+.idea/
+*.iml
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+
+# ============================================================
+# 8. LOGS / RUNTIME
+# ============================================================
+
+logs/
+*.log
+*.pid
+*.pid.lock
+
+tmp/
+temp/
+.cache/
+
+# Local databases
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+
+# ============================================================
+# 9. DOCKER / CONTAINERS
+# ============================================================
+
+# Local overrides
+docker-compose.override.yml
+compose.override.yaml
+
+# Local container data
+.docker-data/
+docker-data/
+
+
+# ============================================================
+# 10. DEPLOYMENT / HOSTING
+# ============================================================
+
+.vercel/
+.netlify/
+
+# Terraform (if infrastructure is added)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+
+
+# ============================================================
+# 11. PROJECT-SPECIFIC EXCEPTIONS
+# ============================================================
+
+# Keep documentation and agent collaboration instructions
+!.gitignore
+!README.md
+!AGENTS.md
+!CLAUDE.md
+
+# Keep shared agent configurations/rules by default
+# .claude/ and .codex/ are intentionally NOT ignored entirely.
+
+# Keep reproducible data directories
+!data/
+!data/README.md
+
+# Keep package-lock.json, pnpm-lock.yaml, yarn.lock,
+# uv.lock, poetry.lock, and other dependency lockfiles.
