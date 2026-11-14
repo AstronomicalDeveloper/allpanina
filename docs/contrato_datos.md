@@ -3,112 +3,95 @@
 Acordado por Aldo + Landry (T03 de la matriz atómica v1.4). Base para que Marco y Antonella
 generen los archivos y para que Landry/Juan los consuman sin ambigüedad.
 
-Estado: **v0 — borrador, pendiente de confirmar con Landry.**
+Estado: **v0 — borrador, nombres de campo alineados con la matriz (no con inventos propios).**
 
 ## Dónde se entregan los archivos finales
 
-**`frontend/public/data/`** — NO en `data/outputs/` ni en ninguna carpeta llamada
-`outputs/`: el `.gitignore` del repo ignora cualquier carpeta con ese nombre, así que
-nada ahí llega nunca a GitHub. `frontend/public/` sí está versionado y, al ser un sitio
-sin backend (Vite/React estático), Landry puede hacer `fetch('/data/<archivo>')`
-directamente sobre estos archivos sin necesitar servidor.
+**`frontend/public/data/`** — no en `data/outputs/` ni en ninguna carpeta llamada
+`outputs/`: el `.gitignore` del repo ignora cualquier carpeta con ese nombre.
+`frontend/public/` sí está versionado y, al ser un sitio sin backend (Vite/React
+estático), Landry puede hacer `fetch('/data/<archivo>')` directamente.
 
 `data/raw/` y `data/processed/` siguen siendo las carpetas de trabajo intermedio de
-Marco y Antonella (ignoradas a propósito — ahí sí pueden crecer los CSV grandes de FIRMS
-sin inflar el repo). Solo lo que ya está listo para Landry se copia a `frontend/public/data/`.
+Marco y Antonella (ignoradas a propósito). Solo lo que ya está listo para Landry se
+copia a `frontend/public/data/`.
+
+## ⚠️ Pendiente de resolver con Landry (CI)
+
+El `.github/workflows/ci.yml` actual solo revisa `backend/requirements.txt` y
+`backend/tests/` — carpetas que no existen en este repo (los scripts y tests del
+equipo de datos viven en la raíz: `scripts/`, `tests/`, `requirements.txt`). Eso
+significa que el job "backend" se salta en silencio y **marca verde sin ejecutar
+ninguna prueba real** — exactamente el "check ficticio" que prohíbe la sección 3
+de la matriz. Falta que Landry actualice el workflow para que apunte a la raíz
+(o para que el equipo de datos mueva su código a `backend/`, lo que decidan).
+No lo toqué yo porque es su pieza del repo.
 
 ## 1. `monthly_series.csv` — produce Marco, usan Antonella + Landry
 
-Conteos mensuales observados (MODIS y VIIRS), por celda/región y mes.
+Conteos mensuales observados (MODIS y VIIRS), por región y mes.
 
-- Clave: `region_id` (o `cell_id`), `year`, `month`, `sensor`
-- Columnas mínimas: `n_detections`, `indicator` (días-celda con detección), `qc_status`
-- `sin detección` ≠ `sin datos`: usar un campo de estado explícito, nunca dejarlo ambiguo con un 0.
-- Evidencia de descarga y pruebas celda-día (ver `test_grid_dedupe.py`).
+| Campo | Tipo | Notas |
+|---|---|---|
+| `region_id` | string | Identificador fijo de la región piloto |
+| `year` | int | |
+| `month` | int | 1-12 |
+| `sensor_group` | enum | `MODIS` \| `VIIRS` (agrupa Terra+Aqua o S-NPP) |
+| `cell_days` | int | **suma de pares celda-día con detección en toda la región ese mes.** No está acotado a 0-31 — ese rango solo aplica a una sola celda; a escala región-mes puede ser del orden de miles (ej. 4,491 en agosto de 2024) |
+| `status` | enum | `ok` \| `insufficient_data` \| `no_pass` |
+| `source_version` | string | **el valor literal de la columna `version` del CSV de FIRMS descargado** (ej. `6.03`, `61.03`, `2`) — no el nombre del producto (MCD14DL es el NRT de Collection 61; nosotros usamos el estándar MCD14ML, que trae su propia columna `version`) |
+| `updated_at` | string (ISO 8601) | `YYYY-MM-DD` |
 
 ## 2. `calibrated_series.csv` — produce Antonella, usa Aldo (Landry lo integra)
 
-- Columnas: `value`, `method` (B0/B1), `split` (train/valid/test), `status`, `residual`
-- Sin ningún `NaN`.
+- Columnas: `region_id`, `year`, `month`, `method` (B0/B1), `value`, `split` (train/valid/test), `status`, `residual`
+- Sin ningún `NaN`: si `residual` no aplica (no es fila de test), se deja vacío.
 
 ## 3. `validation.json` — produce Antonella, usan Aldo + Landry
 
 Por cada método y split:
-- Métricas globales: `MAE`, `WAPE`, `sesgo`
+- Métricas globales: `mae`, `wape`, `bias`
 - `n_months_matched`
-- Colección de residuos mensuales en **test**:
-  `{month, modis_observed, estimate, signed_error, absolute_error}`
-- Ordenado por `absolute_error` (para el top-5 de la vista Método).
-- No mezclar error de entrenamiento con el de test.
-- Si faltan residuos: mostrar solo métricas globales + `"detalle_mensual": "no disponible"` — nunca inventar valores.
+- Residuos mensuales en **test**: `{month, modis_observed, estimate, signed_error, absolute_error}`
+- Ordenado por `absolute_error`. No mezclar train con test.
+- Si faltan residuos: solo métricas globales + `"detalle_mensual": "no disponible"`.
 
 ## 4. `method.json` — producen Aldo + Antonella, usa Landry
 
-Explica en texto plano: indicador usado, sensores, periodos, cómo se calibró B1, limitaciones conocidas.
+Indicador, sensores, periodos, calibración, limitaciones conocidas — incluida la
+limitación real de VIIRS S-NPP (NOAA: cese de entrega de todos los productos el
+1 de noviembre de 2026; NASA: cese de datos científicos nuevos el 2 de noviembre
+de 2026). Esta nota tiene que pasar del DEMO al `method.json` real, no quedarse
+solo de ejemplo.
 
 ## 5. `cells_<region>_<year>.geojson` — produce Marco, usa Juan Matías
 
-- **CRS: WGS84** (para visualización — el EPSG:6933 es solo interno para la malla de cálculo).
-- Identificadores de celda, mes/año/sensor, y valores **observados** (nunca calibración regional aplicada a celda).
+FeatureCollection estándar RFC 7946 — **sin miembro `crs`** (la especificación lo
+eliminó; GeoJSON es WGS84 por definición, no hace falta declararlo).
+Propiedades por feature: `cell_id`, `year`, `month`, `sensor_group`, `cell_days`
+(valores **observados**, nunca calibración regional aplicada a celda).
 
 ## 6. `manifest.json` — produce Marco, usa todo el equipo
 
-- Qué archivos existen, de qué fecha, qué versión/hash, qué región cubren.
-
-## Reglas generales (sección 3 y 5 de la matriz)
-
-- Una tarea termina cuando: el archivo existe, cumple este contrato, tiene pruebas, pasa por PR y revisión, y quien lo consume puede integrarlo.
-- Fixtures DEMO solo durante desarrollo — nunca se presentan como datos reales ni quedan en los artefactos finales.
-
----
-
-## Tipos de campo (para que Landry tipe en TS sin adivinar)
-
-### monthly_series.csv
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `region_id` | string | Identificador fijo de la región piloto, ej. `PE-LOR-01` |
-| `year` | int | |
-| `month` | int | 1-12 |
-| `sensor` | enum | `MODIS` \| `VIIRS` |
-| `n_detections` | int | conteo crudo, puede ser 0 |
-| `indicator` | float | días-celda con detección, 0 a 31 |
-| `qc_status` | enum | `ok` \| `insufficient_data` \| `no_pass` |
-| `source_version` | string | ej. `FIRMS-MCD14DL-v061` |
-| `updated_at` | string (ISO 8601) | `YYYY-MM-DD` |
-
-### calibrated_series.csv
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `region_id` | string | |
-| `year` / `month` | int | |
-| `method` | enum | `B0` \| `B1` |
-| `value` | float | |
-| `split` | enum | `train` \| `valid` \| `test` |
-| `status` | enum | `ok` \| `insufficient_data` |
-| `residual` | float, vacío si no aplica | **nunca escribir la palabra `NaN`** — dejar la celda vacía |
-
-### validation.json / method.json / manifest.json
-
-Ver ejemplos DEMO abajo — los campos se infieren del JSON mismo (no hace falta tabla aparte).
+- `region_id` (no `region` — mismo nombre que en los demás archivos)
+- `files`: lista simple de nombres, no de objetos: `["monthly_series.csv", "calibrated_series.csv", "validation.json", "method.json", "cells_<region>_<year>.geojson"]`
+- `generated_at`
 
 ## Ejemplos DEMO (datos inventados, nunca reales)
 
 **monthly_series.csv**
 ```
-region_id,year,month,sensor,n_detections,indicator,qc_status,source_version,updated_at
-DEMO-01,2026,1,MODIS,12,8.0,ok,FIRMS-MCD14DL-v061,2026-11-14
-DEMO-01,2026,1,VIIRS,0,0.0,ok,FIRMS-VNP14IMGML-v2,2026-11-14
-DEMO-01,2026,2,MODIS,,,insufficient_data,FIRMS-MCD14DL-v061,2026-11-14
+region_id,year,month,sensor_group,cell_days,status,source_version,updated_at
+DEMO-01,2024,8,MODIS,4491,ok,6.03,2026-11-14
+DEMO-01,2024,8,VIIRS,3870,ok,2,2026-11-14
+DEMO-01,2024,9,MODIS,,insufficient_data,6.03,2026-11-14
 ```
 
 **calibrated_series.csv**
 ```
 region_id,year,month,method,value,split,status,residual
-DEMO-01,2026,1,B0,8.0,train,ok,
-DEMO-01,2026,1,B1,8.3,train,ok,
+DEMO-01,2020,1,B0,8.0,train,ok,
+DEMO-01,2020,1,B1,8.3,train,ok,
 DEMO-01,2025,8,B1,9.1,test,ok,-1.5
 ```
 
@@ -132,28 +115,27 @@ DEMO-01,2025,8,B1,9.1,test,ok,-1.5
 **method.json**
 ```json
 {
-  "indicator": "dias-celda con deteccion",
+  "indicator": "cell_days (pares celda-dia con deteccion)",
   "sensors": ["MODIS Terra", "MODIS Aqua", "VIIRS S-NPP"],
-  "period_train": "2015-01:2023-12",
-  "period_valid": "2024-01:2024-12",
-  "period_test": "2025-01:2025-12",
+  "period_train": "2013-01:2022-12",
+  "period_valid": "2023-01:2024-12",
+  "period_test": "2025-01:2026-09",
   "calibration": "B1 = B0 * kappa (factor global ajustado en train)",
   "limitations": [
-    "Suomi NPP VIIRS dejo de operar el 1-2 nov 2026; se usa producto estandar con rezago de 2-3 meses"
+    "VIIRS S-NPP: NOAA anuncio cese de entrega de todos los productos el 1 nov 2026; NASA indica cese de datos cientificos nuevos el 2 nov 2026. Se uso el producto estandar con rezago de 2-3 meses."
   ]
 }
 ```
 
-**cells_DEMO-01_2026.geojson**
+**cells_DEMO-01_2024.geojson**
 ```json
 {
   "type": "FeatureCollection",
-  "crs": { "type": "name", "properties": { "name": "EPSG:4326" } },
   "features": [
     {
       "type": "Feature",
-      "properties": { "cell_id": "C-0001", "year": 2026, "month": 1, "sensor": "MODIS", "n_detections": 3 },
-      "geometry": { "type": "Polygon", "coordinates": [[[-73.3,-6.1],[-73.29,-6.1],[-73.29,-6.09],[-73.3,-6.09],[-73.3,-6.1]]] }
+      "properties": { "cell_id": "C-0001", "year": 2024, "month": 8, "sensor_group": "MODIS", "cell_days": 3 },
+      "geometry": { "type": "Polygon", "coordinates": [[[-74.55,-8.38],[-74.54,-8.38],[-74.54,-8.37],[-74.55,-8.37],[-74.55,-8.38]]] }
     }
   ]
 }
@@ -163,13 +145,13 @@ DEMO-01,2025,8,B1,9.1,test,ok,-1.5
 ```json
 {
   "generated_at": "2026-11-14T18:00:00Z",
-  "region": "DEMO-01",
+  "region_id": "DEMO-01",
   "files": [
-    { "name": "monthly_series.csv", "version": "v0", "rows": 24 },
-    { "name": "calibrated_series.csv", "version": "v0", "rows": 24 },
-    { "name": "validation.json", "version": "v0" },
-    { "name": "method.json", "version": "v0" },
-    { "name": "cells_DEMO-01_2026.geojson", "version": "v0" }
+    "monthly_series.csv",
+    "calibrated_series.csv",
+    "validation.json",
+    "method.json",
+    "cells_DEMO-01_2024.geojson"
   ]
 }
 ```
