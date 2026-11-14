@@ -6,18 +6,8 @@ To keep AllpaNina stable and allow multiple team members to work simultaneously,
 
 The `main` branch contains the latest stable and integrated version of the project.
 
-Each new feature, bug fix, or documentation change must be developed in a separate, temporary branch.
+Cada integrante tiene su propia rama.
 
-**Branch naming conventions:**
-
-| Prefix | Purpose | Example |
-|---|---|---|
-| `feat/` | New functionality | `feat/frontend-map` |
-| `fix/` | Bug fixes | `fix/api-response` |
-| `docs/` | Documentation | `docs/update-readme` |
-| `refactor/` | Code improvements | `refactor/fire-processing` |
-| `test/` | Tests | `test/backend-api` |
-| `chore/` | Maintenance | `chore/update-dependencies` |
 
 ### 2. Step-by-step workflow
 
