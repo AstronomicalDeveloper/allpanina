@@ -48,6 +48,8 @@ def monthly_cells(cell_days: pd.DataFrame, bbox, year: int, polygon=None) -> pd.
     """Dias con deteccion por (grupo-sensor, celda, mes) dentro de la region y el anio."""
     region = series.filter_region(cell_days, bbox, polygon)
     region = region[region["year"] == year]
+    # Mismo limite que la serie mensual: los datos crudos de MODIS llegan a 2026-08, pero el periodo termina en 2026-07.
+    region = region[(region["year"] * 12 + region["month"] - 1) <= (series.TEST_LAST_MONTH[0] * 12 + series.TEST_LAST_MONTH[1] - 1)]
     return (
         region.groupby(["sensor_group", "cell_id", "x_km", "y_km", "year", "month"], sort=True)
         .size()

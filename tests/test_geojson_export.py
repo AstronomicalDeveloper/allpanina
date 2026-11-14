@@ -69,3 +69,19 @@ def test_run_with_polygon_filters_cells(tmp_path):
     gj.run(src, tmp_path, "PE-UCA", gj.series.REGION_BBOX, [2024], region)
     data = json.loads((tmp_path / "cells_PE-UCA_2024.geojson").read_text(encoding="utf-8"))
     assert data["features"] == []  # ninguna celda cae en un poligono lejano
+
+
+def test_months_after_series_end_are_dropped():
+    """Los datos crudos de MODIS llegan a 2026-08, pero el periodo de la serie termina en 2026-07."""
+    pts = pd.DataFrame(
+        {
+            "sensor_group": ["MODIS", "MODIS"],
+            "satellite": ["Terra"] * 2,
+            "latitude": [-8.38, -8.38],
+            "longitude": [-74.55, -74.55],
+            "local_date": pd.to_datetime(["2026-07-31", "2026-08-01"]),
+            "version": ["61.03"] * 2,
+        }
+    )
+    cells = gj.monthly_cells(grid.dedupe_cell_days(pts), gj.series.REGION_BBOX, 2026)
+    assert cells["month"].tolist() == [7]
