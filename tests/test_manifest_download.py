@@ -47,13 +47,13 @@ def test_missing_zip_fails_clearly(tmp_path):
 
 def test_manifest_lists_names_hashes_and_sources(tmp_path):
     (tmp_path / "monthly_series.csv").write_text("region_id,year,month\nX,2024,8\nX,2024,9\n", encoding="utf-8")
-    (tmp_path / "cells_PE-UCA-CPO_2024.geojson").write_text('{"type":"FeatureCollection","features":[]}\n', encoding="utf-8")
+    (tmp_path / "cells_PE-UCA_2024.geojson").write_text('{"type":"FeatureCollection","features":[]}\n', encoding="utf-8")
     info = {"MODIS": {"csv": "m.csv", "rows_raw": 3, "first_date": "2003-01-02", "last_date": "2026-08-31", "versions": ["61.03"]}}
     (tmp_path / "source_info.json").write_text(json.dumps(info), encoding="utf-8")
 
-    manifest = mf.build_manifest(tmp_path, tmp_path / "source_info.json", "PE-UCA-CPO", generated_at="2026-11-14T18:00:00Z")
-    assert manifest["region_id"] == "PE-UCA-CPO" and manifest["generated_at"] == "2026-11-14T18:00:00Z"
-    assert manifest["files"] == ["monthly_series.csv", "cells_PE-UCA-CPO_2024.geojson"]  # lista simple de nombres
+    manifest = mf.build_manifest(tmp_path, tmp_path / "source_info.json", "PE-UCA", generated_at="2026-11-14T18:00:00Z")
+    assert manifest["region_id"] == "PE-UCA" and manifest["generated_at"] == "2026-11-14T18:00:00Z"
+    assert manifest["files"] == ["monthly_series.csv", "cells_PE-UCA_2024.geojson"]  # lista simple de nombres
     expected = hashlib.sha256((tmp_path / "monthly_series.csv").read_bytes()).hexdigest()
     assert manifest["hash"]["monthly_series.csv"] == "sha256:" + expected
     assert manifest["producto"] == "MCD14ML v6.1 / VNP14IMGML v2"
@@ -64,6 +64,6 @@ def test_manifest_lists_names_hashes_and_sources(tmp_path):
 
 def test_missing_deliverables_are_reported_not_listed(tmp_path):
     (tmp_path / "monthly_series.csv").write_text("year,month\n2024,8\n", encoding="utf-8")
-    present, missing = mf.list_deliverables(tmp_path, "PE-UCA-CPO")
+    present, missing = mf.list_deliverables(tmp_path, "PE-UCA")
     assert present == ["monthly_series.csv"]
-    assert "validation.json" in missing and "cells_PE-UCA-CPO_<anio>.geojson" in missing
+    assert "validation.json" in missing and "cells_PE-UCA_<anio>.geojson" in missing
