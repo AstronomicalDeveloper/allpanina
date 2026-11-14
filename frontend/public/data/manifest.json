@@ -1,9 +1,12 @@
 {
-  "generated_at": "2026-11-14T19:48:50Z",
+  "generated_at": "2026-11-14T20:25:41Z",
   "region_id": "PE-UCA",
   "producto": "MCD14ML v6.1 / VNP14IMGML v2",
   "files": [
     "monthly_series.csv",
+    "calibrated_series.csv",
+    "validation.json",
+    "method.json",
     "cells_PE-UCA_2013.geojson",
     "cells_PE-UCA_2014.geojson",
     "cells_PE-UCA_2015.geojson",
@@ -19,6 +22,9 @@
   ],
   "hash": {
     "monthly_series.csv": "sha256:47f833ebf27f710847d68179b495c1a1b5033abb4b762af5617622223c02f171",
+    "calibrated_series.csv": "sha256:55d2c6da90475e2a22c5fbaf5ffa1a2fcab95fe0ff04c9a0280a55c0b009ccc3",
+    "validation.json": "sha256:8f24c8425b00b57d8476f3844f2df3d77aa42c04c60a7cc8dcc0158de665233f",
+    "method.json": "sha256:22b6f5433582ac64d6ed743b2a7a7574d5ce75ef15cf84dfc98773c0465d353c",
     "cells_PE-UCA_2013.geojson": "sha256:4e418c71e5f87a6656b43c5380c35941131146c77cc0350ac495932b086229af",
     "cells_PE-UCA_2014.geojson": "sha256:9c5ca384aadadde2fcac6b4eda7a89f5eba0b8e3634427aff64ae3114588c0fc",
     "cells_PE-UCA_2015.geojson": "sha256:f675586d5a632e9f1e05667e94beff4bf152d9f24350b1eade81ae7a3b29556a",
