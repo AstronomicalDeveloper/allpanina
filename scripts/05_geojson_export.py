@@ -11,7 +11,9 @@ calibracion regional a una celda.
 Cada celda es un rectangulo exacto en longitud/latitud (EPSG:6933 es cilindrica). El anillo
 exterior va en sentido antihorario (RFC 7946) y las coordenadas se redondean a 5 decimales.
 
-Tamano: con la caja actual un anio pesa varios MB. Por eso el valor por defecto es --years 2024;
+Region: centro de celda dentro del poligono INEI de Ucayali (ver 04_monthly_series.py).
+
+Tamano: un anio pesa varios MB sin comprimir. Por eso el valor por defecto es --years 2024;
 acordar con Juan que anios y meses publicar antes de generar mas.
 
 Test reservado: los anios 2025 y 2026 requieren --include-test (autorizacion de Aldo y Antonella).
@@ -42,9 +44,9 @@ FIRST_TEST_YEAR = 2025
 COORD_DECIMALS = 5
 
 
-def monthly_cells(cell_days: pd.DataFrame, bbox, year: int) -> pd.DataFrame:
+def monthly_cells(cell_days: pd.DataFrame, bbox, year: int, polygon=None) -> pd.DataFrame:
     """Dias con deteccion por (grupo-sensor, celda, mes) dentro de la region y el anio."""
-    region = series.filter_region(cell_days, bbox)
+    region = series.filter_region(cell_days, bbox, polygon)
     region = region[region["year"] == year]
     return (
         region.groupby(["sensor_group", "cell_id", "x_km", "y_km", "year", "month"], sort=True)
@@ -78,13 +80,14 @@ def build_geojson(cells: pd.DataFrame) -> dict:
     return {"type": "FeatureCollection", "features": features}
 
 
-def run(cell_days_path: Path, out_dir: Path, region_id: str, bbox, years: list[int]) -> None:
+def run(cell_days_path: Path, out_dir: Path, region_id: str, bbox, years: list[int], polygon_path=None) -> None:
     if not cell_days_path.exists():
         raise FileNotFoundError(f"Falta {cell_days_path}. Ejecuta antes scripts/03_grid_dedupe.py.")
+    polygon = series.load_polygon(polygon_path) if polygon_path else None
     cell_days = pd.read_parquet(cell_days_path)
     out_dir.mkdir(parents=True, exist_ok=True)
     for year in years:
-        collection = build_geojson(monthly_cells(cell_days, bbox, year))
+        collection = build_geojson(monthly_cells(cell_days, bbox, year, polygon))
         path = out_dir / f"cells_{region_id}_{year}.geojson"
         path.write_text(json.dumps(collection, separators=(",", ":"), ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"{path}: {len(collection['features'])} features, {path.stat().st_size / 1e6:.2f} MB")
@@ -96,6 +99,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out-dir", type=Path, default=ROOT / "data" / "processed")
     parser.add_argument("--region-id", default=series.REGION_ID)
     parser.add_argument("--bbox", type=float, nargs=4, metavar=("LON_MIN", "LAT_MIN", "LON_MAX", "LAT_MAX"), default=series.REGION_BBOX)
+    parser.add_argument("--polygon", type=Path, default=series.REGION_POLYGON, help="GeoJSON de la region (por defecto, poligono INEI de Ucayali)")
     parser.add_argument("--years", type=int, nargs="+", default=[2024])
     parser.add_argument("--include-test", action="store_true", help="Permite anios >= 2025 (test reservado).")
     args = parser.parse_args(argv)
@@ -104,7 +108,7 @@ def main(argv: list[str] | None = None) -> int:
         print("ERROR: los anios 2025-2026 son el test reservado. Usa --include-test solo con autorizacion de Aldo y Antonella.", file=sys.stderr)
         return 1
     try:
-        run(args.cell_days, args.out_dir, args.region_id, tuple(args.bbox), args.years)
+        run(args.cell_days, args.out_dir, args.region_id, tuple(args.bbox), args.years, args.polygon)
     except FileNotFoundError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
