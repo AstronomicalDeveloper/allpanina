@@ -69,16 +69,16 @@ def build_calibrated_series(rows, factor, region_id):
 
     rows: dicts con year, month (int), modis, viirs, split.
     Columnas: region_id, year, month, method, value, split, status, residual.
-    value faltante = None (celda vacia), con status explicito; nunca NaN ni 0 inventado.
+    status solo admite "ok" o "missing" (DECISIONS.md seccion 8). Si VIIRS falta, o si
+    B1 no es estimable (factor None), value queda vacio (None) con status "missing";
+    nunca NaN ni 0 inventado.
     residual (= value - modis) solo en filas de test; vacio (None) en las demas.
     """
     out = []
     for r in rows:
         for method in ("B0", "B1"):
-            if not _valid(r["viirs"]):
-                value, status = None, "sin_dato_viirs"
-            elif method == "B1" and factor is None:
-                value, status = None, "b1_no_estimable"
+            if not _valid(r["viirs"]) or (method == "B1" and factor is None):
+                value, status = None, "missing"
             else:
                 value = r["viirs"] if method == "B0" else r["viirs"] * factor
                 status = "ok"
@@ -89,6 +89,22 @@ def build_calibrated_series(rows, factor, region_id):
                         "method": method, "value": value, "split": r["split"],
                         "status": status, "residual": residual})
     return out
+
+
+def _load_metrics_module():
+    """Carga 07_metrics_export.py desde la misma carpeta que este archivo.
+
+    No depende de PYTHONPATH: funciona con `python scripts/06_calibrate.py`,
+    con `python -m scripts.06_calibrate` y desde pytest.
+    """
+    import importlib.util
+    import os
+
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "07_metrics_export.py")
+    spec = importlib.util.spec_from_file_location("allpanina_metrics_export", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 # ---------------------------------------------------------------------------
@@ -124,11 +140,10 @@ def load_monthly_series(path):
 def run(monthly_csv, out_dir, split="valid"):
     """Ajusta B1 en train, escribe calibrated_series.csv y validation.json (split valid por defecto)."""
     import csv
-    import importlib
     import json
     import os
 
-    met = importlib.import_module("scripts.07_metrics_export")
+    met = _load_metrics_module()
     region_id, rows = load_monthly_series(monthly_csv)
     if split != "test":
         # Test reservado (DECISIONS.md): sin autorizacion T29 no se escriben valores ni
