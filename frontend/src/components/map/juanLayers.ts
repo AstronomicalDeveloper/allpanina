@@ -162,11 +162,11 @@ export function percentileColorExpression(
 ): MapLibre.ExpressionSpecification {
   return [
     'case',
-    ['<=', ['get', 'n_detections'], q25],
+    ['<=', ['get', 'cell_days'], q25],
     '#FEE2E2',
-    ['<=', ['get', 'n_detections'], q50],
+    ['<=', ['get', 'cell_days'], q50],
     '#FCA5A5',
-    ['<=', ['get', 'n_detections'], q75],
+    ['<=', ['get', 'cell_days'], q75],
     '#EF4444',
     '#991B1B',
   ];

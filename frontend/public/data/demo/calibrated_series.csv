@@ -1,7 +1,7 @@
 region_id,year,month,method,value,split,status,residual
 PE-DEMO,2024,8,B0,5,train,ok,
-PE-DEMO,2024,8,B1,,train,insufficient_data,
+PE-DEMO,2024,8,B1,,train,missing,
 PE-DEMO,2024,9,B0,0,valid,ok,
-PE-DEMO,2024,9,B1,,valid,insufficient_data,
-PE-DEMO,2024,10,B0,,test,insufficient_data,
-PE-DEMO,2024,10,B1,,test,insufficient_data,
+PE-DEMO,2024,9,B1,,valid,missing,
+PE-DEMO,2024,10,B0,,test,missing,
+PE-DEMO,2024,10,B1,,test,missing,

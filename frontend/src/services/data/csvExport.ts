@@ -1,6 +1,6 @@
 import type { MonthlyRecord, Sensor } from '../../types/data.ts'
 
-export const MONTHLY_COLUMNS = ['region_id', 'year', 'month', 'sensor', 'n_detections', 'indicator', 'qc_status', 'source_version', 'updated_at'] as const satisfies readonly (keyof MonthlyRecord)[]
+export const MONTHLY_COLUMNS = ['region_id', 'year', 'month', 'sensor_group', 'cell_days', 'status', 'source_version', 'updated_at'] as const satisfies readonly (keyof MonthlyRecord)[]
 
 function csvField(value: string | number | null): string {
   if (value === null) return ''
@@ -29,9 +29,9 @@ function filenamePart(value: string): string {
   return value.normalize('NFKC').replace(/[^\p{L}\p{N}_-]/gu, '-').replace(/^-+|-+$/g, '').slice(0, 64) || 'region'
 }
 
-/** Calendar currently consumes DEMO only; never infer provenance from region names. */
-export function calendarCsvFilename(region: string, sensor: Sensor): string {
-  return `allpanina_${filenamePart(region)}_${filenamePart(sensor)}_demo.csv`
+/** Explicit DEMO suffix; production exports preserve the official observed schema. */
+export function calendarCsvFilename(region: string, sensor: Sensor, demo = false): string {
+  return `allpanina_${filenamePart(region)}_${filenamePart(sensor)}${demo ? '_demo' : ''}.csv`
 }
 
 export function downloadCsv(csv: string, filename: string): void {

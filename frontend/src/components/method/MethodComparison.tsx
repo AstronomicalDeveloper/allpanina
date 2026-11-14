@@ -1,7 +1,7 @@
 import type { ValidationResult } from '../../types/data.ts'
 import { METHODS, SPLITS, SPLIT_LABELS, hasMetrics } from '../../services/data/method.ts'
 
-export default function MethodComparison({ validation }: { validation: ValidationResult }) {
+export default function MethodComparison({ validation, validResults }: { validation: ValidationResult; validResults?: ValidationResult | null }) {
   return (
     <section aria-labelledby="method-comparison-title">
       <h2 id="method-comparison-title">Disponibilidad para comparar B0 y B1</h2>
@@ -12,7 +12,7 @@ export default function MethodComparison({ validation }: { validation: Validatio
           <tbody>{SPLITS.map(split => <tr key={split}>
             <th scope="row">{SPLIT_LABELS[split]}</th>
             {METHODS.map(method => {
-              const result = validation.methods[method]
+              const result = split === 'valid' && validResults ? validResults.methods[method] : validation.methods[method]
               const matching = result?.split === split
               const available = matching && hasMetrics({ ...validation, methods: { [method]: result } })
               return <td key={method}>{matching ? `${available ? 'Métricas recibidas' : 'Métricas no disponibles'} · ${result.n_months_matched} meses emparejados` : 'No disponible'}</td>

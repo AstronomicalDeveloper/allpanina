@@ -25,7 +25,7 @@ function initialSelection(): MapSelection {
 
 // dataRoot is injectable for integration tests; production uses Vite's base path.
 function App({ dataRoot, mapRuntimeLoader }: { dataRoot?: string; mapRuntimeLoader?: RuntimeLoader }) {
-	const root = dataRoot ?? `${import.meta.env.BASE_URL}data/demo`
+	const root = dataRoot ?? `${(import.meta.env?.BASE_URL ?? '/')}data${new URLSearchParams(window.location.search).get('data') === 'demo' ? '/demo' : ''}`
 	const [view, setView] = useState<View>(currentView)
 	const [selection, setSelection] = useState<MapSelection>(initialSelection)
 	useEffect(() => {

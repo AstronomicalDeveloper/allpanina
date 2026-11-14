@@ -13,6 +13,8 @@ export default function MethodExplanation({ method }: { method: MethodInfo }) {
       </dl>
       <h3>B0 y B1: declaración de calibración</h3>
       <p>{method.calibration}</p>
+      {method.kappa !== undefined && <p>κ (kappa): {method.kappa}</p>}
+      {method.estado && <p>Estado científico: {method.estado}</p>}
       <p>Este texto procede de method.json. El formato no incluye definiciones separadas de B0 y B1; no se infieren fórmulas adicionales.</p>
       <h3>Limitaciones declaradas</h3>
       {method.limitations.length ? <ul>{method.limitations.map((text, index) => <li key={index}>{text}</li>)}</ul> : <p>No se han declarado limitaciones en el archivo.</p>}

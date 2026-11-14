@@ -301,3 +301,26 @@ crash.log
 
 # Keep package-lock.json, pnpm-lock.yaml, yarn.lock,
 # uv.lock, poetry.lock, and other dependency lockfiles.
+# Approved scientific provenance and T32 integration report
+!/docs/
+/docs/*
+!/docs/contrato_datos.md
+!/docs/datos.md
+!/docs/REVISION_T27.md
+!/docs/region/
+/docs/region/*
+!/docs/region/ucayali_inei_2023.geojson
+!/docs/t29/
+/docs/t29/*
+!/docs/t29/RESULTADO_T29.md
+!/docs/t29/AUTORIZACION_T29.md
+!/docs/t35/
+/docs/t35/*
+!/docs/t35/PRECHECK_T35.md
+!/docs/t38/
+/docs/t38/*
+!/docs/t38/REPRODUCCION_T38.md
+!/docs/t32/
+/docs/t32/*
+!/docs/t32/INTEGRACION_T32.md
+!/docs/t32/PROCEDENCIA_T32.json

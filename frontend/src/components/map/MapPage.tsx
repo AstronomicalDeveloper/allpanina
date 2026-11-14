@@ -25,16 +25,16 @@ function MapData({ dataRoot, selection, onSelectionChange, runtimeLoader }: Prop
     void (async () => {
       const root = dataRoot.replace(/\/$/, '')
       const manifest = await loadManifest(`${root}/manifest.json`, controller.signal)
-      const region = requestedRegion || manifest.region
-      const prefix = `cells_${manifest.region}_`
+      const region = requestedRegion || manifest.region_id
+      const prefix = `cells_${manifest.region_id}_`
       const years = manifest.files.flatMap(file => {
-        const match = file.name.startsWith(prefix) && file.name.endsWith('.geojson') ? file.name.slice(prefix.length, -8) : ''
+        const match = file.startsWith(prefix) && file.endsWith('.geojson') ? file.slice(prefix.length, -8) : ''
         return /^\d{4}$/.test(match) ? [Number(match)] : []
       }).sort((a, b) => a - b)
       const year = requestedYear ?? years[0] ?? null
       const file = cellsFile(manifest, { region, year })
       const data = file ? await loadCells(`${root}/${encodeURIComponent(file)}`, controller.signal) : null
-      if (!controller.signal.aborted) setState({ status: 'loaded', data, region, year, years, manifestRegion: manifest.region })
+      if (!controller.signal.aborted) setState({ status: 'loaded', data, region, year, years, manifestRegion: manifest.region_id })
     })().catch(error => {
       if (!controller.signal.aborted) setState({ status: 'error', message: error instanceof Error ? error.message : 'Error de lectura' })
     })
@@ -57,7 +57,7 @@ function MapData({ dataRoot, selection, onSelectionChange, runtimeLoader }: Prop
       </select></label>
     </div>
     {!state.data ? <p role="status">No hay GeoJSON disponible para {state.region} / {state.year ?? 'año no especificado'}. No se generan observaciones de reemplazo.</p>
-      : <FireMapTest key={`${state.region}-${state.year}`} data={state.data} selection={effective} availableYears={years} onSelectionChange={onSelectionChange} runtimeLoader={runtimeLoader} />}
+      : <FireMapTest demo={dataRoot.includes('/demo')} key={`${state.region}-${state.year}`} data={state.data} selection={effective} availableYears={years} onSelectionChange={onSelectionChange} runtimeLoader={runtimeLoader} />}
   </>
 }
 
@@ -65,8 +65,8 @@ export default function MapPage(props: Props) {
   // Changing the requested file remounts loading state; month/sensor only filter locally.
   return <main className="map-page">
     <h1>Mapa de observaciones</h1>
-    <p><strong>DATOS DEMO — NO SON OBSERVACIONES REALES</strong></p>
-    <p>GeoJSON WGS84 · n_detections: conteos observados por celda según el contrato, ilustrados con fixtures sintéticos. No es indicator regional ni superficie quemada. No se aplica B1.</p>
+    {props.dataRoot.includes('/demo') && <p><strong>DATOS DEMO — NO SON OBSERVACIONES REALES</strong></p>}
+    <p>GeoJSON WGS84 · cell_days: días observados con detecciones por celda. No es una estimación regional ni superficie quemada. No se aplica B1.</p>
     <MapData key={`${props.dataRoot}-${props.selection.region}-${props.selection.year}`} {...props} />
   </main>
 }

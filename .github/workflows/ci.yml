@@ -22,25 +22,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check frontend setup
-        id: detect
-        shell: bash
-        run: |
-          if [[ -f frontend/package.json ]]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Frontend not initialized yet; skipping checks."
-          fi
-
       - name: Set up Node.js
-        if: steps.detect.outputs.exists == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '24'
 
       - name: Install dependencies
-        if: steps.detect.outputs.exists == 'true'
         working-directory: frontend
         shell: bash
         run: |
@@ -52,57 +39,28 @@ jobs:
           fi
 
       - name: Lint frontend
-        if: steps.detect.outputs.exists == 'true'
         working-directory: frontend
-        run: npm run lint --if-present
+        run: npm run lint
+
+      - name: Test frontend and scientific delivery contract
+        working-directory: frontend
+        run: npm test
 
       - name: Build frontend
-        if: steps.detect.outputs.exists == 'true'
         working-directory: frontend
         run: npm run build
 
-  backend:
-    name: Backend checks
+  scientific:
+    name: Scientific Python tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Check backend setup
-        id: detect
-        shell: bash
-        run: |
-          if [[ -f backend/requirements.txt ]]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Backend not initialized yet; skipping checks."
-          fi
-
-      - name: Set up Python
-        if: steps.detect.outputs.exists == 'true'
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - name: Install dependencies
-        if: steps.detect.outputs.exists == 'true'
-        shell: bash
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
-          pip install pytest
-
-      - name: Check Python syntax
-        if: steps.detect.outputs.exists == 'true'
+      - name: Install scientific dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run real scientific tests (missing tests fail)
+        run: python -m pytest tests/ -q
+      - name: Check backend syntax
         run: python -m compileall -q backend/app
-
-      - name: Run backend tests
-        if: steps.detect.outputs.exists == 'true'
-        shell: bash
-        run: |
-          if [[ -d backend/tests ]] && find backend/tests -type f -name 'test_*.py' | grep -q .; then
-            python -m pytest backend/tests -q
-          else
-            echo "No backend tests found yet; skipping pytest."
-          fi

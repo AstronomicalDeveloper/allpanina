@@ -51,26 +51,24 @@ function base(row: Record<string, string>, path: string) {
   return { region_id: string(row.region_id, `${path}.region_id`), ...period({ year: numeric(row.year, `${path}.year`), month: numeric(row.month, `${path}.month`) }, path) }
 }
 export function parseMonthlySeries(text: string): MonthlyRecord[] {
-  const records = csv(text, ['region_id', 'year', 'month', 'sensor', 'n_detections', 'indicator', 'qc_status', 'source_version', 'updated_at']).map((row, i) => {
+  const records = csv(text, ['region_id', 'year', 'month', 'sensor_group', 'cell_days', 'status', 'source_version', 'updated_at']).map((row, i) => {
     const path = `monthly_series fila ${i + 2}`
-    const n_detections = numeric(row.n_detections, `${path}.n_detections`)
-    const indicator = numeric(row.indicator, `${path}.indicator`)
-    if (n_detections !== null) number(n_detections, `${path}.n_detections`, 0, true)
-    if (indicator !== null && indicator > 31) fail(`${path}.indicator`, 'rango contractual 0–31')
-    const qc_status = choice(row.qc_status, ['ok', 'insufficient_data', 'no_pass'] as const, `${path}.qc_status`)
-    if (qc_status === 'ok' && (n_detections === null || indicator === null)) fail(path, 'ok requiere n_detections e indicator')
+    const cell_days = numeric(row.cell_days, `${path}.cell_days`)
+    if (cell_days !== null) number(cell_days, `${path}.cell_days`, 0, true)
+    const status = choice(row.status, ['ok', 'missing'] as const, `${path}.status`)
+    if ((status === 'ok') !== (cell_days !== null)) fail(path, 'ok requiere cell_days; missing requiere vacío')
     dateOnly(row.updated_at, `${path}.updated_at`)
-    return { ...base(row, path), sensor: choice(row.sensor, sensors, `${path}.sensor`), n_detections, indicator,
-      qc_status, source_version: string(row.source_version, `${path}.source_version`), updated_at: row.updated_at }
+    return { ...base(row, path), sensor_group: choice(row.sensor_group, sensors, `${path}.sensor_group`), cell_days,
+      status, source_version: string(row.source_version, `${path}.source_version`), updated_at: row.updated_at }
   })
-  unique(records.map(r => JSON.stringify([r.region_id, r.year, r.month, r.sensor])), 'monthly_series')
+  unique(records.map(r => JSON.stringify([r.region_id, r.year, r.month, r.sensor_group])), 'monthly_series')
   return records
 }
 export function parseCalibratedSeries(text: string): CalibratedRecord[] {
   const records = csv(text, ['region_id', 'year', 'month', 'method', 'value', 'split', 'status', 'residual']).map((row, i) => {
     const path = `calibrated_series fila ${i + 2}`, value = numeric(row.value, `${path}.value`)
-    const status = choice(row.status, ['ok', 'insufficient_data'] as const, `${path}.status`)
-    if (status === 'ok' && value === null) fail(path, 'ok requiere value')
+    const status = choice(row.status, ['ok', 'missing'] as const, `${path}.status`)
+    if ((status === 'ok') !== (value !== null)) fail(path, 'ok requiere value; missing requiere vacío')
     return { ...base(row, path), method: choice(row.method, methods, path), value,
       split: choice(row.split, ['train', 'valid', 'test'] as const, path), status,
       residual: numeric(row.residual, `${path}.residual`, -Infinity) }
@@ -90,16 +88,18 @@ function yearMonth(value: unknown, path: string): string {
 function strings(value: unknown, path: string) { return array(value, path).map((item, i) => string(item, `${path}[${i}]`)) }
 export function validateManifest(value: unknown): Manifest {
   const row = object(value, 'manifest')
-  string(row.region, 'region')
+  string(row.region_id, 'region_id'); string(row.producto, 'producto')
   const date = string(row.generated_at, 'generated_at')
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(date) || !Number.isFinite(Date.parse(date))) fail('generated_at', 'timestamp con zona horaria requerido')
-  const files = array(row.files, 'files').map((item, i) => {
-    const file = object(item, `files[${i}]`)
-    string(file.version, `files[${i}].version`)
-    if (file.rows !== undefined) number(file.rows, `files[${i}].rows`, 0, true)
-    return string(file.name, `files[${i}].name`)
-  }); unique(files, 'files')
+  if (!/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(date) || !Number.isFinite(Date.parse(date))) fail('generated_at', 'timestamp con zona requerido')
+  const range = object(row.periodo, 'periodo')
+  if (yearMonth(range.desde, 'periodo.desde') > yearMonth(range.hasta, 'periodo.hasta')) fail('periodo', 'período invertido')
+  const files = strings(row.files, 'files'); unique(files, 'files')
   if (!files.length) fail('files', 'lista vacía')
+  const hashes = object(row.hash, 'hash')
+  for (const file of files) {
+    if (!/^[\w.-]+$/.test(file)) fail('files', 'nombre inseguro')
+    if (!/^sha256:[a-f0-9]{64}$/.test(string(hashes[file], `hash.${file}`))) fail('hash', 'SHA-256 inválido')
+  }
   return value as Manifest
 }
 export function validateMethod(value: unknown): MethodInfo {
@@ -111,6 +111,20 @@ export function validateMethod(value: unknown): MethodInfo {
     if (range.length !== 2) fail(key, 'período YYYY-MM:YYYY-MM requerido')
     const start = yearMonth(range[0], key), end = yearMonth(range[1], key)
     if (start > end) fail(key, 'período invertido')
+  }
+  if (row.region_id !== undefined) string(row.region_id, 'region_id')
+  if (row.estado !== undefined) string(row.estado, 'estado')
+  if (row.kappa !== undefined) number(row.kappa, 'kappa', 0)
+  if (row.resultados !== undefined) {
+    const results = object(row.resultados, 'resultados')
+    if (results.valid !== undefined) {
+      const valid = object(results.valid, 'resultados.valid')
+      string(valid.periodo, 'valid.periodo'); number(valid.n_meses, 'valid.n_meses', 0, true)
+      for (const name of methods) {
+        const metrics = object(valid[name], `valid.${name}`)
+        for (const key of ['mae', 'wape', 'bias']) if (metrics[key] !== null) number(metrics[key], `valid.${name}.${key}`, key === 'bias' ? -Infinity : 0)
+      }
+    }
   }
   return value as MethodInfo
 }
@@ -160,18 +174,15 @@ function polygon(value: unknown, path: string) {
 }
 export function validateCells(value: unknown): CellsData {
   const row = object(value, 'GeoJSON'); choice(row.type, ['FeatureCollection'], 'type')
-  if (row.crs !== undefined) {
-    const crs = object(row.crs, 'crs'); choice(crs.type, ['name'], 'crs.type')
-    choice(object(crs.properties, 'crs.properties').name, ['EPSG:4326'], 'crs.properties.name')
-  }
+  if (row.crs !== undefined) fail('crs', 'RFC 7946 requiere WGS84 sin miembro crs')
   const keys: string[] = []
   array(row.features, 'features').forEach((item, i) => {
     const path = `features[${i}]`, feature = object(item, path)
     choice(feature.type, ['Feature'], path)
     const props = object(feature.properties, `${path}.properties`)
     period(props, path); string(props.cell_id, `${path}.cell_id`)
-    choice(props.sensor, sensors, `${path}.sensor`); number(props.n_detections, `${path}.n_detections`, 0, true)
-    keys.push(JSON.stringify([props.cell_id, props.year, props.month, props.sensor]))
+    choice(props.sensor_group, sensors, `${path}.sensor`); number(props.cell_days, `${path}.cell_days`, 0, true)
+    keys.push(JSON.stringify([props.cell_id, props.year, props.month, props.sensor_group]))
     const geometry = object(feature.geometry, `${path}.geometry`)
     const type = choice(geometry.type, ['Polygon', 'MultiPolygon'], path)
     if (type === 'Polygon') polygon(geometry.coordinates, path)

@@ -86,7 +86,7 @@ async function choose(host: HTMLElement, label: string, value: string) {
   await act(async () => { select.value = value; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
 }
 async function mockFiles(t: TestContext) {
-  const files = Object.fromEntries(await Promise.all(['manifest.json', 'monthly_series.csv', 'method.json', 'validation.json', 'cells_PE-DEMO_2024.geojson'].map(async name => [name, await fixture(name)])))
+  const files = Object.fromEntries(await Promise.all(['manifest.json', 'monthly_series.csv', 'calibrated_series.csv', 'method.json', 'validation.json', 'cells_PE-DEMO_2024.geojson'].map(async name => [name, await fixture(name)])))
   return t.mock.method(globalThis, 'fetch', async (url: string) => new Response(files[decodeURIComponent(url.split('/').at(-1)!)] ?? 'missing', { status: files[decodeURIComponent(url.split('/').at(-1)!)] ? 200 : 404 }))
 }
 test('mapa carga datos oficiales, mantiene capas de Juan y selecciona propiedades con clic o teclado', async t => {
@@ -95,10 +95,10 @@ test('mapa carga datos oficiales, mantiene capas de Juan y selecciona propiedade
   const { host } = await mount(t, createElement(MapPage, { dataRoot: '/data/demo', selection: initial, onSelectionChange: () => {}, runtimeLoader: runtime.loader }))
   assert.equal(runtime.maps.length, 1)
   const map = runtime.maps[0]
-  assert.equal((map.sources['celdas-observadas'].data as CellsData).features[0].properties.n_detections, 12)
+  assert.equal((map.sources['celdas-observadas'].data as CellsData).features[0].properties.cell_days, 3)
   for (const id of ['celdas-fill', 'celdas-line', 'basemap-blue-marble-layer', 'basemap-firefly-layer', 'basemap-streets-layer', 'basemap-topographic-layer', 'overlay-protected-layer']) assert.ok(map.getLayer(id))
   await act(async () => map.emit('click:celdas-fill', { features: [{ properties: { cell_id: 'DEMO-cell-001' } }] }))
-  assert.match(host.textContent!, /12 detecciones/)
+  assert.match(host.textContent!, /3 días-celda/)
   await choose(host, 'Seleccionar celda del mapa', '')
   await choose(host, 'Seleccionar celda del mapa', 'DEMO-cell-001')
   assert.match(host.textContent!, /DEMO-cell-001/)
@@ -108,13 +108,13 @@ test('filtros interactivos actualizan fuente, conservan cero y muestran período
   const runtime = fakeRuntime()
   function Harness() {
     const [selection, setSelection] = useState(initial)
-    return createElement(FireMapTest, { data, selection, onSelectionChange: setSelection, availableYears: [2024], runtimeLoader: runtime.loader })
+    return createElement(FireMapTest, { demo: true, data, selection, onSelectionChange: setSelection, availableYears: [2024], runtimeLoader: runtime.loader })
   }
   const { host } = await mount(t, createElement(Harness))
   await act(async () => button(host, 'VIIRS').click())
-  assert.equal((runtime.maps[0].sources['celdas-observadas'].data as CellsData).features[0].properties.n_detections, 20)
+  assert.equal((runtime.maps[0].sources['celdas-observadas'].data as CellsData).features[0].properties.cell_days, 5)
   await choose(host, 'Mes del mapa', '9')
-  assert.equal((runtime.maps[0].sources['celdas-observadas'].data as CellsData).features[0].properties.n_detections, 0)
+  assert.equal((runtime.maps[0].sources['celdas-observadas'].data as CellsData).features[0].properties.cell_days, 0)
   await choose(host, 'Mes del mapa', '10')
   assert.equal((runtime.maps[0].sources['celdas-observadas'].data as CellsData).features.length, 0)
   assert.match(host.textContent!, /Ausencia de filas no equivale a cero/)
@@ -145,10 +145,10 @@ test('región o año sin archivo produce ausencia de datos y no hace petición d
 })
 test('errores de WebGL, worker y teselas son visibles', async t => {
   const runtime = fakeRuntime()
-  const { host } = await mount(t, createElement(FireMapTest, { data, selection: initial, availableYears: [2024], onSelectionChange: () => {}, runtimeLoader: runtime.loader }))
+  const { host } = await mount(t, createElement(FireMapTest, { demo: true, data, selection: initial, availableYears: [2024], onSelectionChange: () => {}, runtimeLoader: runtime.loader }))
   await act(async () => runtime.maps[0].emit('error', { error: new Error('Teselas sin conexión') }))
   assert.match(host.querySelector('[role="alert"]')!.textContent!, /Teselas sin conexión/)
-  const failing = await mount(t, createElement(FireMapTest, { data, selection: initial, availableYears: [2024], onSelectionChange: () => {}, runtimeLoader: async () => { throw new Error('WebGL no soportado') } }))
+  const failing = await mount(t, createElement(FireMapTest, { demo: true, data, selection: initial, availableYears: [2024], onSelectionChange: () => {}, runtimeLoader: async () => { throw new Error('WebGL no soportado') } }))
   assert.match(failing.host.querySelector('[role="alert"]')!.textContent!, /WebGL no soportado/)
   await act(async () => runtime.maps[0].canvas.dispatchEvent(new dom.window.Event('webglcontextlost', { cancelable: true })))
   assert.match(host.querySelector('[role="alert"]')!.textContent!, /contexto WebGL/)
@@ -156,7 +156,7 @@ test('errores de WebGL, worker y teselas son visibles', async t => {
 test('DEMO permanece visible en pantalla completa; el mapa no cambia scroll global', async t => {
   const runtime = fakeRuntime()
   const overflow = document.body.style.overflow
-  const { host } = await mount(t, createElement(FireMapTest, { data, selection: initial, availableYears: [2024], onSelectionChange: () => {}, runtimeLoader: runtime.loader }))
+  const { host } = await mount(t, createElement(FireMapTest, { demo: true, data, selection: initial, availableYears: [2024], onSelectionChange: () => {}, runtimeLoader: runtime.loader }))
   const surface = host.querySelector('.fire-map')!
   Object.defineProperty(document, 'fullscreenElement', { value: surface, configurable: true })
   t.after(() => { delete (document as unknown as Record<string, unknown>).fullscreenElement })
@@ -182,18 +182,18 @@ test('enlace directo recupera los filtros compartidos del mapa', async t => {
   const runtime = fakeRuntime()
   const { host } = await mount(t, createElement(App, { dataRoot: '/data/demo', mapRuntimeLoader: runtime.loader }))
   assert.equal(host.querySelector<HTMLSelectElement>('[aria-label="Mes del mapa"]')!.value, '9')
-  assert.equal((runtime.maps[0].sources['celdas-observadas'].data as CellsData).features[0].properties.n_detections, 0)
+  assert.equal((runtime.maps[0].sources['celdas-observadas'].data as CellsData).features[0].properties.cell_days, 0)
   window.history.replaceState(null, '', '/')
 })
 test('desmontar en StrictMode libera mapa y popup; resolver runtime tarde no crea mapa', async t => {
   const runtime = fakeRuntime()
-  const mounted = await mount(t, createElement(StrictMode, null, createElement(FireMapTest, { data, selection: initial, availableYears: [2024], onSelectionChange: () => {}, runtimeLoader: runtime.loader })))
+  const mounted = await mount(t, createElement(StrictMode, null, createElement(FireMapTest, { demo: true, data, selection: initial, availableYears: [2024], onSelectionChange: () => {}, runtimeLoader: runtime.loader })))
   await act(async () => mounted.root.unmount())
   assert.ok(runtime.maps.every(map => map.removed === 1))
   assert.ok(runtime.popups.every(popup => popup.removed))
   let resolve!: (runtime: MapRuntime) => void
   const late = fakeRuntime()
-  const pending = await mount(t, createElement(FireMapTest, { data, selection: initial, availableYears: [2024], onSelectionChange: () => {}, runtimeLoader: () => new Promise<MapRuntime>(done => { resolve = done }) }))
+  const pending = await mount(t, createElement(FireMapTest, { demo: true, data, selection: initial, availableYears: [2024], onSelectionChange: () => {}, runtimeLoader: () => new Promise<MapRuntime>(done => { resolve = done }) }))
   await act(async () => pending.root.unmount())
   await act(async () => resolve(await late.loader()))
   assert.equal(late.maps.length, 0)
@@ -223,4 +223,22 @@ test('Calendario/Mapa comparten región, año, mes y sensor; regreso mantiene co
   assert.ok(blob)
   assert.equal(parseMonthlySeries(await (blob as Blob).text()).length, 3)
   t.mock.timers.tick(1000)
+})
+
+
+test('GeoJSON científico anual llega al mapa de Juan sin estimaciones ni avisos DEMO', async t => {
+  const real = (name: string) => readFile(new URL(`../public/data/${name}`, import.meta.url), 'utf8')
+  const names = ['manifest.json', 'cells_PE-UCA_2024.geojson']
+  const files = Object.fromEntries(await Promise.all(names.map(async n => [n, await real(n)])))
+  t.mock.method(globalThis, 'fetch', async (url: string) => new Response(files[url.split('/').at(-1)!]))
+  const runtime = fakeRuntime()
+  const { host } = await mount(t, createElement(MapPage, { dataRoot: '/data', selection: { region: 'PE-UCA', year: 2024, month: 9, sensor: 'MODIS' }, onSelectionChange: () => {}, runtimeLoader: runtime.loader }))
+  const source = runtime.maps[0].sources['celdas-observadas'].data as CellsData
+  assert.ok(source.features.length > 1)
+  assert.equal(source.features.reduce((sum, f) => sum + f.properties.cell_days, 0), 2323)
+  assert.doesNotMatch(host.textContent!, /DEMO/)
+  await choose(host, 'Seleccionar celda del mapa', source.features[0].properties.cell_id)
+  assert.match(host.textContent!, /días-celda/)
+  assert.match(host.textContent!, /No aplica el factor regional B1/)
+  for (const id of ['basemap-blue-marble-layer', 'basemap-firefly-layer', 'basemap-streets-layer', 'basemap-topographic-layer', 'celdas-fill']) assert.ok(runtime.maps[0].getLayer(id))
 })

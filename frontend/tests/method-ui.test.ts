@@ -36,6 +36,7 @@ function mockFiles(t: TestContext) {
   return t.mock.method(globalThis, 'fetch', async (url: string) => {
     if (url.endsWith('method.json')) return new Response(methodJson)
     if (url.endsWith('validation.json')) return new Response(validationJson)
+    if (url.endsWith('calibrated_series.csv')) return new Response(await fixture('calibrated_series.csv'))
     if (url.endsWith('monthly_series.csv')) return new Response(monthlyCsv)
     throw new Error(`Archivo inesperado: ${url}`)
   })
@@ -63,7 +64,7 @@ test('métricas disponibles conservan cero, signo, WAPE y split; un método ause
   const host = await mount(t, createElement(MethodMetrics, { validation: data }))
   const b1 = host.querySelector('[aria-label="Métricas B1"]')!
   assert.match(b1.textContent!, /valid · validación/)
-  assert.deepEqual([...b1.querySelectorAll('dd')].map(dd => dd.textContent), ['0', '0.18', '-1.5', '2'])
+  assert.deepEqual([...b1.querySelectorAll('dd')].map(dd => dd.textContent), ['0', '18.0%', '-1.5', '2'])
   assert.doesNotMatch(b1.textContent!, /18%/)
   assert.match(host.querySelector('[aria-label="Métricas B0"]')!.textContent!, /No disponible/)
 })

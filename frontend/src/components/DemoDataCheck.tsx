@@ -29,7 +29,7 @@ export default function DemoDataCheck() {
       <h1>Comprobación temporal de datos L3</h1>
       <p><strong>DATOS DEMO — NO SON OBSERVACIONES REALES</strong></p>
       <p>PE-DEMO · agosto–octubre 2024 · Contrato oficial de Aldo. Sin calibración ni evaluación científica.</p>
-      <p>indicator: días-celda (rango contractual 0–31). n_detections: detecciones; son magnitudes distintas.</p>
+      <p>cell_days: días-celda regionales. Datos sintéticos bajo el esquema vigente.</p>
       <p role="status">{results ? 'Carga finalizada. Revisa el estado de cada archivo.' : 'Cargando archivos DEMO…'}</p>
       {filenames.map((name, index) => {
         const result = results?.[index]

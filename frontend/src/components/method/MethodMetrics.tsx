@@ -1,11 +1,11 @@
 import type { ValidationResult } from '../../types/data.ts'
 import { METHODS, SPLIT_LABELS, metricText } from '../../services/data/method.ts'
 
-export default function MethodMetrics({ validation }: { validation: ValidationResult }) {
+export default function MethodMetrics({ validation, label = 'Test' }: { validation: ValidationResult; label?: string }) {
   return (
-    <section aria-labelledby="method-metrics-title">
-      <h2 id="method-metrics-title">Métricas recibidas · {validation.region_id}</h2>
-      <p>WAPE se muestra en la escala recibida. No se ha confirmado si es proporción o porcentaje; no se convierte ni se añade %.</p>
+    <section aria-label={`Métricas ${label}`}>
+      <h2 id={label === 'Test' ? 'method-metrics-title' : 'method-valid-metrics-title'}>Métricas recibidas · {label} · {validation.region_id}</h2>
+      <p>WAPE: proporción recibida × 100, expresada en porcentaje. MAE y sesgo: días-celda.</p>
       <div className="method-metrics">
         {METHODS.map(name => {
           const result = validation.methods[name]
@@ -15,7 +15,7 @@ export default function MethodMetrics({ validation }: { validation: ValidationRe
               <p>Split: <strong>{SPLIT_LABELS[result.split]}</strong></p>
               <dl>
                 <div><dt>MAE</dt><dd>{metricText(result.metrics.mae)}</dd></div>
-                <div><dt>WAPE (escala recibida)</dt><dd>{metricText(result.metrics.wape)}</dd></div>
+                <div><dt>WAPE (%)</dt><dd>{result.metrics.wape === null ? 'No disponible' : `${(result.metrics.wape * 100).toFixed(1)}%`}</dd></div>
                 <div><dt>Sesgo (bias)</dt><dd>{metricText(result.metrics.bias)}</dd></div>
                 <div><dt>Meses emparejados</dt><dd>{result.n_months_matched}</dd></div>
               </dl>

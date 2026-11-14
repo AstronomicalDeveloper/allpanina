@@ -1,4 +1,45 @@
-# React + TypeScript + Vite
+# AllpaNina frontend
+
+## L5/T32: datos científicos reales (vigente)
+
+La aplicación usa `/data/` por defecto: Ucayali (PE-UCA), enero de 2013 a julio
+de 2026. Fuente científica: `feature/calibracion@d27e6eb`. Contrato:
+[contrato_datos.md](../docs/contrato_datos.md). Informe y procedencia:
+[INTEGRACION_T32.md](../docs/t32/INTEGRACION_T32.md).
+
+Con Node.js 24, ejecutar desde esta carpeta:
+
+```sh
+npm ci
+npm run dev
+npm test
+npm run lint
+npm run build
+```
+
+En PowerShell se puede usar `npm.cmd`. Calendario: `/`; Mapa: `/?view=map`;
+Método: `/?view=method`. Para septiembre de 2024:
+`/?periodYear=2024&periodMonth=9`. DEMO solo por selección explícita
+`?data=demo` (combinar con `view=map|method`) o inspector `?demo=1`.
+No se reemplaza un archivo inaccesible por datos sintéticos.
+
+- El intercambio usa `sensor_group`, `cell_days`, `status=ok|missing`.
+- Calendario: escala automática regional común a ambos sensores, máximo editable,
+  leyenda numérica. El color puede saturarse; los datos conservan su valor.
+  El detalle presenta también las estimaciones B0/B1 recibidas, su split y residual.
+- Mapa: archivos anuales por manifiesto; días-celda observados por celda, sin B1.
+- Método: validación desde `method.resultados.valid`; test preciso desde
+  `validation.json`. WAPE es proporción y se presenta multiplicado por 100 con %.
+- CSV: ocho columnas oficiales; todos los registros cargados de región/sensor.
+  Nombre real `allpanina_<region>_<sensor>.csv`; sufijo `_demo` solo en modo DEMO.
+- Los fixtures sintéticos se migraron al mismo esquema; no se alteraron los
+  archivos científicos importados. Sus hashes se verifican en `npm test`.
+- Vercel mantiene raíz `frontend/`, build `npm run build`, salida `dist`.
+  Los datos estáticos y el worker se incluyen automáticamente.
+
+Las notas de L9/L6/L4/L3 que siguen conservan la documentación histórica del
+desarrollo con DEMO. Sus nombres de campo, límites y restricciones anteriores
+quedan sustituidos por esta sección y por el contrato científico vigente.
 
 ## Integración del Mapa de Juan Matías
 
@@ -47,8 +88,8 @@ archivos pasan por `loadCells`/`validateCells`: un archivo oficial de cuatro
 features conserva las cuatro al validar, antes de filtrar. Los errores rechazan
 el archivo, sin descartar features silenciosamente. No hay fallback sintético.
 
-Se usa `cell_id`, `sensor=MODIS|VIIRS` y `n_detections`. Las leyendas, popups y
-resúmenes representan **detecciones**, nunca `indicator` regional/días-celda ni
+Se usa `cell_id`, `sensor_group=MODIS|VIIRS` y `cell_days`. Las leyendas, popups y
+resúmenes representan **días-celda observados por celda**, nunca calibración regional ni
 superficie quemada. Ceros válidos se conservan; ausencia de filas no equivale a
 cero. No se aplica B1. Los percentiles son relativos al conjunto visible y no
 sirven como escala absoluta comparable entre meses ni como riesgo de incendio.
@@ -56,7 +97,7 @@ sirven como escala absoluta comparable entre meses ni como riesgo de incendio.
 ### Seguridad, recursos y límites
 
 - Popups con nodos de texto, sin HTML interpolado.
-- DEMO visible dentro del contenedor incluso en fullscreen; no se exportan imágenes.
+- DEMO visible solo en modo explícito, incluso en fullscreen; no se exportan imágenes.
 - Carga/error de GeoJSON, worker, WebGL y recursos cartográficos visibles, con
   reintento. Tras 20 segundos sin cargar se avisa de demora, sin crear datos.
 - Mapas, popups, observadores, listeners y temporizadores se limpian al desmontar;

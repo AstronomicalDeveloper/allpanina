@@ -27,6 +27,13 @@ function MethodContent({ dataRoot }: { dataRoot: string }) {
   const fileErrors = (method !== null && !method.ok) || (validation !== null && !validation.ok)
   const results = validation?.ok ? validation.data : null
   const partial = (fileErrors && (method?.ok || validation?.ok)) || (results !== null && hasPartialResults(results))
+  const valid = method?.ok ? method.data.resultados?.valid : undefined
+  const validResults: ValidationResult | null = valid && method?.ok ? {
+    region_id: method.data.region_id ?? results?.region_id ?? '',
+    methods: Object.fromEntries((['B0', 'B1'] as const).map(name => [name, {
+      split: 'valid', metrics: valid[name], n_months_matched: valid.n_meses, detalle_mensual: 'no disponible',
+    }])),
+  } : null
   return <>
     {loading && <p role="status">Cargando archivos de método y evaluación…</p>}
     {!loading && partial && <p role="status">Resultados parciales: faltan archivos, métodos o métricas. Se muestra únicamente la información disponible.</p>}
@@ -35,9 +42,10 @@ function MethodContent({ dataRoot }: { dataRoot: string }) {
     {method && !method.ok && <p role="alert">No se pudo leer method.json; archivo inaccesible o inválido: {method.error}</p>}
     {validation && !validation.ok && <p role="alert">No se pudo leer validation.json; archivo inaccesible o inválido: {validation.error}</p>}
     {method?.ok && <MethodExplanation method={method.data} />}
+    {validResults && <><p>Validación · method.json · {valid?.periodo}</p><MethodMetrics validation={validResults} label="Validación" /></>}
     {results && <>
       <MethodMetrics validation={results} />
-      <MethodComparison validation={results} />
+      <MethodComparison validation={results} validResults={validResults} />
       <MethodErrors validation={results} />
     </>}
   </>
@@ -47,7 +55,7 @@ export default function MethodPage({ dataRoot }: { dataRoot: string }) {
   const root = dataRoot.replace(/\/$/, '')
   return <main className="method-page">
     <h1>Método y evaluación</h1>
-    <p className="method-demo"><strong>DATOS DEMO — NO SON OBSERVACIONES REALES</strong></p>
+    {dataRoot.includes('/demo') && <p className="method-demo"><strong>DATOS DEMO — NO SON OBSERVACIONES REALES</strong></p>}
     <p>Contenido y cifras leídos de archivos de intercambio. Esta pantalla no ejecuta calibración ni evaluación científica.</p>
     <p className="method-source">Fuentes: {root}/method.json y {root}/validation.json.</p>
     <MethodContent key={root} dataRoot={root} />

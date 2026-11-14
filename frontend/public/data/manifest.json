@@ -1,0 +1,76 @@
+{
+  "generated_at": "2026-11-14T21:13:06Z",
+  "region_id": "PE-UCA",
+  "producto": "MCD14ML v6.1 / VNP14IMGML v2",
+  "files": [
+    "monthly_series.csv",
+    "calibrated_series.csv",
+    "validation.json",
+    "method.json",
+    "cells_PE-UCA_2013.geojson",
+    "cells_PE-UCA_2014.geojson",
+    "cells_PE-UCA_2015.geojson",
+    "cells_PE-UCA_2016.geojson",
+    "cells_PE-UCA_2017.geojson",
+    "cells_PE-UCA_2018.geojson",
+    "cells_PE-UCA_2019.geojson",
+    "cells_PE-UCA_2020.geojson",
+    "cells_PE-UCA_2021.geojson",
+    "cells_PE-UCA_2022.geojson",
+    "cells_PE-UCA_2023.geojson",
+    "cells_PE-UCA_2024.geojson",
+    "cells_PE-UCA_2025.geojson",
+    "cells_PE-UCA_2026.geojson"
+  ],
+  "hash": {
+    "monthly_series.csv": "sha256:5a388b39273d1ef8ba779e65922db1b30908ed64ad5c6686b9b0cb49d8c2d68c",
+    "calibrated_series.csv": "sha256:b1ddeab98b973f0063e65b24a72d52ba9e14f0cc55df504875022d51db191d5c",
+    "validation.json": "sha256:ea9ab3a6d297dde39af34806e4ede2a342dbe10ed93b9efb3a67eed23d877eb0",
+    "method.json": "sha256:3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "cells_PE-UCA_2013.geojson": "sha256:4e418c71e5f87a6656b43c5380c35941131146c77cc0350ac495932b086229af",
+    "cells_PE-UCA_2014.geojson": "sha256:9c5ca384aadadde2fcac6b4eda7a89f5eba0b8e3634427aff64ae3114588c0fc",
+    "cells_PE-UCA_2015.geojson": "sha256:f675586d5a632e9f1e05667e94beff4bf152d9f24350b1eade81ae7a3b29556a",
+    "cells_PE-UCA_2016.geojson": "sha256:e8b80d82e97928cc47553ec9149ceef5040b8ba0d65fb7945c7227326a9611db",
+    "cells_PE-UCA_2017.geojson": "sha256:7ac8e8c0f1c8ddf10e077c700990b2e203993c7c58d22cadf52d07233ce154e4",
+    "cells_PE-UCA_2018.geojson": "sha256:ea7ecad4c0103e2e298998e72a858961303ad8731fad1de3688bf2f3aec68805",
+    "cells_PE-UCA_2019.geojson": "sha256:85f076135208928424388e7905d8345b30213f36b29758809c074eaa70dd4ef8",
+    "cells_PE-UCA_2020.geojson": "sha256:556bfc8f03a677ba22723e8d340534883f2b386928c495302f22b1e1ef802371",
+    "cells_PE-UCA_2021.geojson": "sha256:76a319e3c0f802dc49aeaac41e4ce8af1fc752e2deda3f9dcfbd978faa6744b6",
+    "cells_PE-UCA_2022.geojson": "sha256:fb3a4b28842ebddeceaa61fbe84d736407be325ea1bdf5678bd513b62f2aee71",
+    "cells_PE-UCA_2023.geojson": "sha256:39ff565d5328c6768d7fa4c9ccf76cc9772daf44778d905df1b5330eb8da9d35",
+    "cells_PE-UCA_2024.geojson": "sha256:0a58aa3e087d6e093703ea6e82a3d94af7b295ee3a4244767af75dad70495233",
+    "cells_PE-UCA_2025.geojson": "sha256:c6d32ef547ac0d9c5a1eaaae158010a7dad6f4e8491a1890d675edb8f6dc264e",
+    "cells_PE-UCA_2026.geojson": "sha256:20ac9cea17599f293765815006b722f15f2a725644b044ea707a57e9e613b0e7"
+  },
+  "sources": {
+    "MODIS": {
+      "product": "MODIS Terra+Aqua, Coleccion 6.1, archivo estandar FIRMS",
+      "zip": "DL_FIRE_M-C61_848370.zip",
+      "zip_sha256": "26cf9ee849ee4736c9c321ad79445275d908cb9f3b50c959d26eecfda4d972a6",
+      "csv": "firms_raw_modis.csv",
+      "rows_raw": 352572,
+      "first_date": "2003-01-02",
+      "last_date": "2026-08-31",
+      "versions": [
+        "6.03",
+        "61.03"
+      ]
+    },
+    "VIIRS": {
+      "product": "VIIRS S-NPP 375 m, Coleccion 2, archivo estandar FIRMS",
+      "zip": "DL_FIRE_SV-C2_848371.zip",
+      "zip_sha256": "f6b49a31341a195d5321caf061866ed5a7b1d285714a3e48b530596700f6a2f9",
+      "csv": "firms_raw_viirs_snpp.csv",
+      "rows_raw": 1058423,
+      "first_date": "2012-01-20",
+      "last_date": "2026-07-31",
+      "versions": [
+        "2"
+      ]
+    }
+  },
+  "periodo": {
+    "desde": "2013-01",
+    "hasta": "2026-07"
+  }
+}

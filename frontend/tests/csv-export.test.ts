@@ -7,11 +7,11 @@ import { MONTHLY_COLUMNS, calendarCsvFilename, serializeCsv, serializeMonthlySer
 import { parseMonthlySeries } from '../src/services/data/validators.ts'
 
 const records = parseMonthlySeries(await readFile(new URL('../public/data/demo/monthly_series.csv', import.meta.url), 'utf8'))
-const header = 'region_id,year,month,sensor,n_detections,indicator,qc_status,source_version,updated_at'
+const header = 'region_id,year,month,sensor_group,cell_days,status,source_version,updated_at'
 
-test('CSV mensual conserva exactamente las nueve columnas y los valores oficiales', () => {
+test('CSV mensual conserva exactamente las ocho columnas y los valores oficiales', () => {
   assert.equal(MONTHLY_COLUMNS.join(','), header)
-  assert.equal(serializeMonthlySeries([records[0]]), `${header}\r\nPE-DEMO,2024,8,MODIS,12,3,ok,DEMO-MODIS-v0,2026-11-14\r\n`)
+  assert.equal(serializeMonthlySeries([records[0]]), `${header}\r\nPE-DEMO,2024,8,MODIS,3,ok,DEMO-MODIS-v0,2026-11-14\r\n`)
   assert.deepEqual(parseMonthlySeries(serializeMonthlySeries([records[0]])), [records[0]])
 })
 test('exportación filtra región y sensor, ordena años/meses y no altera el arreglo original', () => {
@@ -20,10 +20,10 @@ test('exportación filtra región y sensor, ordena años/meses y no altera el ar
   const selected = filterCalendarRecords(input, 'PE-DEMO', 'MODIS')
   const rows = parseMonthlySeries(serializeMonthlySeries(selected))
   assert.deepEqual(rows.map(row => [row.year, row.month]), [[2023, 8], [2024, 8], [2024, 9], [2024, 10]])
-  assert.ok(rows.every(row => row.region_id === 'PE-DEMO' && row.sensor === 'MODIS'))
+  assert.ok(rows.every(row => row.region_id === 'PE-DEMO' && row.sensor_group === 'MODIS'))
   assert.deepEqual(input, before)
 })
-test('CSV conserva ceros, nulos y qc_status, sin exportar meses que solo existen en la cuadrícula', () => {
+test('CSV conserva ceros, nulos y status, sin exportar meses que solo existen en la cuadrícula', () => {
   for (const sensor of ['MODIS', 'VIIRS'] as const) {
     const selected = filterCalendarRecords(records, 'PE-DEMO', sensor)
     const csv = serializeMonthlySeries(selected)
@@ -31,11 +31,11 @@ test('CSV conserva ceros, nulos y qc_status, sin exportar meses que solo existen
     assert.equal(buildCalendar(records, 'PE-DEMO', sensor)[0].cells.length, 12)
     assert.equal(rows.length, 3)
     assert.deepEqual(rows.map(row => row.month), [8, 9, 10])
-    assert.equal(rows[1].indicator, 0); assert.equal(rows[1].n_detections, 0)
-    assert.equal(rows[1].qc_status, 'ok')
-    assert.equal(rows[2].indicator, null); assert.equal(rows[2].n_detections, null)
-    assert.equal(rows[2].qc_status, sensor === 'MODIS' ? 'insufficient_data' : 'no_pass')
-    assert.match(csv, new RegExp(`${sensor},,,${rows[2].qc_status}`))
+    assert.equal(rows[1].cell_days, 0)
+    assert.equal(rows[1].status, 'ok')
+    assert.equal(rows[2].cell_days, null)
+    assert.equal(rows[2].status, 'missing')
+    assert.match(csv, new RegExp(`${sensor},,${rows[2].status}`))
   }
 })
 test('serializador escapa comas, comillas y saltos de línea conservando Unicode', () => {
@@ -52,7 +52,7 @@ test('textos con fórmulas y prefijos de espacios/control se neutralizan antes d
   assert.equal(serializeCsv([[-1, 0, 1.5]]), '-1,0,1.5\r\n')
 })
 test('textos ordinarios se conservan y datos no finitos producen error', () => {
-  assert.deepEqual(readCsv(serializeCsv([['PE-DEMO', 'VIIRS', 'insufficient_data', 'no_pass']])), [['PE-DEMO', 'VIIRS', 'insufficient_data', 'no_pass']])
+  assert.deepEqual(readCsv(serializeCsv([['PE-DEMO', 'VIIRS', 'missing', 'missing']])), [['PE-DEMO', 'VIIRS', 'missing', 'missing']])
   for (const value of [NaN, Infinity, -Infinity]) assert.throws(() => serializeCsv([[value]]), /no finito/)
 })
 test('CSV sin registros tiene solo cabecera, sin ceros ni filas inventadas', () => {
@@ -60,10 +60,10 @@ test('CSV sin registros tiene solo cabecera, sin ceros ni filas inventadas', () 
   assert.deepEqual(parseMonthlySeries(serializeMonthlySeries([])), [])
 })
 test('nombre incluye región, sensor y demo y sanitiza rutas/caracteres no válidos', () => {
-  assert.equal(calendarCsvFilename('PE-DEMO', 'MODIS'), 'allpanina_PE-DEMO_MODIS_demo.csv')
-  assert.equal(calendarCsvFilename('Perú', 'VIIRS'), 'allpanina_Perú_VIIRS_demo.csv')
-  const filename = calendarCsvFilename('../../DEMO:01\\*?\n', 'VIIRS')
+  assert.equal(calendarCsvFilename('PE-DEMO', 'MODIS', true), 'allpanina_PE-DEMO_MODIS_demo.csv')
+  assert.equal(calendarCsvFilename('Perú', 'VIIRS', true), 'allpanina_Perú_VIIRS_demo.csv')
+  const filename = calendarCsvFilename('../../DEMO:01\\*?\n', 'VIIRS', true)
   assert.match(filename, /^allpanina_[\p{L}\p{N}_-]+_VIIRS_demo\.csv$/u)
   assert.doesNotMatch(filename, /[\\/:*?\r\n]/)
-  assert.equal(calendarCsvFilename('', 'MODIS'), 'allpanina_region_MODIS_demo.csv')
+  assert.equal(calendarCsvFilename('', 'MODIS', true), 'allpanina_region_MODIS_demo.csv')
 })

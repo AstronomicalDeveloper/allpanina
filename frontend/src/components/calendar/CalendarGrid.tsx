@@ -3,6 +3,7 @@ import type { CalendarCell, CalendarYear } from '../../services/data/calendar.ts
 import type { Sensor } from '../../types/data.ts'
 
 interface Props {
+  scaleMax: number
   years: CalendarYear[]
   sensor: Sensor
   region: string
@@ -10,18 +11,18 @@ interface Props {
   onSelect: (cell: CalendarCell) => void
 }
 
-export default function CalendarGrid({ years, sensor, region, selected, onSelect }: Props) {
+export default function CalendarGrid({ years, scaleMax, sensor, region, selected, onSelect }: Props) {
   return (
     <div className="calendar-table-scroll" role="region" aria-label="Tabla del calendario, desplazamiento horizontal" tabIndex={0}>
       <table className="calendar-table">
-        <caption>{region} · {sensor} · indicator en días-celda</caption>
+        <caption>{region} · {sensor} · cell_days en días-celda</caption>
         <thead><tr><th scope="col">Año</th>{MONTHS.map(month => <th scope="col" key={month}>{month}</th>)}</tr></thead>
         <tbody>{years.map(({ year, cells }) => (
           <tr key={year}>
             <th scope="row">{year}</th>
             {cells.map(cell => {
               const positive = cell.status === 'value'
-              const lightness = 96 - 31 * ((cell.record?.indicator ?? 0) / 31)
+              const lightness = 96 - 31 * Math.min(1, (cell.record?.cell_days ?? 0) / scaleMax)
               return (
                 <td key={cell.month}>
                   <button

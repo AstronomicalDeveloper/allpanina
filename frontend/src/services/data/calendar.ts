@@ -1,7 +1,7 @@
 import type { MonthlyRecord, Sensor } from '../../types/data.ts'
 
 export const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'] as const
-export type CalendarStatus = 'value' | 'zero' | 'insufficient_data' | 'no_pass' | 'absent'
+export type CalendarStatus = 'value' | 'zero' | 'missing' | 'absent'
 export interface CalendarCell {
   year: number
   month: number
@@ -12,12 +12,12 @@ export interface CalendarYear { year: number; cells: CalendarCell[] }
 
 export function calendarStatus(record: MonthlyRecord | null): CalendarStatus {
   if (!record) return 'absent'
-  if (record.qc_status !== 'ok') return record.qc_status
-  return record.indicator === 0 ? 'zero' : 'value'
+  if (record.status !== 'ok') return record.status
+  return record?.cell_days === 0 ? 'zero' : 'value'
 }
 
 export function filterCalendarRecords(records: MonthlyRecord[], region: string, sensor: Sensor): MonthlyRecord[] {
-  return records.filter(record => record.region_id === region && record.sensor === sensor)
+  return records.filter(record => record.region_id === region && record.sensor_group === sensor)
 }
 
 /** Already validated L3 records; never aggregate regions or infer missing zeros. */
@@ -37,10 +37,9 @@ export function buildCalendar(records: MonthlyRecord[], region: string, sensor: 
 
 export function cellLabel(cell: CalendarCell): string {
   switch (cell.status) {
-    case 'value': return String(cell.record?.indicator)
+    case 'value': return String(cell.record?.cell_days)
     case 'zero': return '0 · válido'
-    case 'insufficient_data': return 'Insuficiente'
-    case 'no_pass': return 'Sin paso'
+    case 'missing': return 'Sin datos'
     case 'absent': return 'Ausente'
   }
 }

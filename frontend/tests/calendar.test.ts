@@ -20,20 +20,20 @@ test('calendario ordena años y genera los doce meses sin inventar registros', (
 test('calendario distingue valor, cero, insuficiente, sin paso y ausente', () => {
   const modis = buildCalendar(records, 'PE-DEMO', 'MODIS')[0].cells
   const viirs = buildCalendar(records, 'PE-DEMO', 'VIIRS')[0].cells
-  assert.equal(modis[7].status, 'value'); assert.equal(modis[7].record?.indicator, 3)
-  assert.equal(viirs[7].record?.indicator, 5)
-  assert.equal(modis[8].status, 'zero'); assert.equal(modis[8].record?.indicator, 0)
-  assert.equal(modis[9].status, 'insufficient_data'); assert.equal(modis[9].record?.indicator, null)
-  assert.equal(viirs[9].status, 'no_pass')
+  assert.equal(modis[7].status, 'value'); assert.equal(modis[7].record.cell_days, 3)
+  assert.equal(viirs[7].record.cell_days, 5)
+  assert.equal(modis[8].status, 'zero'); assert.equal(modis[8].record.cell_days, 0)
+  assert.equal(modis[9].status, 'missing'); assert.equal(modis[9].record.cell_days, null)
+  assert.equal(viirs[9].status, 'missing')
   assert.equal(modis[0].status, 'absent'); assert.equal(modis[0].record, null)
   assert.equal(cellLabel(modis[8]), '0 · válido')
-  assert.equal(cellLabel(modis[9]), 'Insuficiente')
+  assert.equal(cellLabel(modis[9]), 'Sin datos')
 })
 test('un estado insuficiente prevalece sobre un conteo parcial o cero', () => {
-  const partial = { ...records[0], qc_status: 'insufficient_data' as const, indicator: 0 }
+  const partial = { ...records[0], status: 'missing' as const, cell_days: null }
   const cell = buildCalendar([partial], 'PE-DEMO', 'MODIS')[0].cells[7]
-  assert.equal(cell.status, 'insufficient_data')
-  assert.equal(cell.record?.indicator, 0)
+  assert.equal(cell.status, 'missing')
+  assert.equal(cell.record.cell_days, null)
 })
 test('serie vacía y sensor ausente conservan estados comprensibles', () => {
   assert.deepEqual(buildCalendar([], 'PE-DEMO', 'MODIS'), [])

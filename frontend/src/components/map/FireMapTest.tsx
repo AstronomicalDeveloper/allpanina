@@ -14,6 +14,7 @@ import type { BaseMapId, OverlayState } from './juanLayers.ts'
 import { createJuanMap } from './mapConstruction.ts'
 
 interface Props {
+  demo?: boolean
   data: CellsData
   selection: MapSelection
   availableYears: number[]
@@ -23,7 +24,7 @@ interface Props {
 type Properties = CellsData['features'][number]['properties']
 const checkLabelStyle: CSSProperties = { display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }
 
-export function FireMapTest({ data, selection, availableYears, onSelectionChange, runtimeLoader = loadMapRuntime }: Props) {
+export function FireMapTest({ data, demo = false, selection, availableYears, onSelectionChange, runtimeLoader = loadMapRuntime }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
   const mapContainer = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibre.Map | null>(null)
@@ -44,12 +45,12 @@ export function FireMapTest({ data, selection, availableYears, onSelectionChange
   const filteredGeoJson = useMemo(() => filterCells(data, selection), [data, selection])
   const selectedCell = selected?.key === selectionKey && filteredGeoJson.features.some(f => f.properties === selected.properties) ? selected.properties : null
   const percentileBreaks = useMemo(() => {
-    const values = filteredGeoJson.features.map(f => f.properties.n_detections)
+    const values = filteredGeoJson.features.map(f => f.properties.cell_days)
     return { q25: calculatePercentile(values, .25), q50: calculatePercentile(values, .5), q75: calculatePercentile(values, .75) }
   }, [filteredGeoJson])
   const stats = useMemo(() => ({ count: filteredGeoJson.features.length,
-    totalDetections: filteredGeoJson.features.reduce((sum, f) => sum + f.properties.n_detections, 0),
-    maxCell: filteredGeoJson.features.reduce((max, f) => Math.max(max, f.properties.n_detections), 0),
+    totalDetections: filteredGeoJson.features.reduce((sum, f) => sum + f.properties.cell_days, 0),
+    maxCell: filteredGeoJson.features.reduce((max, f) => Math.max(max, f.properties.cell_days), 0),
   }), [filteredGeoJson])
   const latest = useRef({ data, filteredGeoJson, percentileBreaks, opacity, baseMap, overlays, selectionKey })
   useEffect(() => { latest.current = { data, filteredGeoJson, percentileBreaks, opacity, baseMap, overlays, selectionKey } }, [data, filteredGeoJson, percentileBreaks, opacity, baseMap, overlays, selectionKey])
@@ -215,7 +216,7 @@ export function FireMapTest({ data, selection, availableYears, onSelectionChange
                   opacity: 0.9,
                 }}
               >
-                Conteos de detecciones, no incendios confirmados
+                Conteos de días-celda, no incendios confirmados
               </div>
             </div>
           </div>
@@ -231,7 +232,7 @@ export function FireMapTest({ data, selection, availableYears, onSelectionChange
               letterSpacing: '0.4px',
             }}
           >
-            DATOS DEMO — NO SON OBSERVACIONES REALES
+            {demo ? 'DATOS DEMO — NO SON OBSERVACIONES REALES' : 'Observaciones NASA FIRMS · días-celda'}
           </div>
         </header>
       )}
@@ -853,7 +854,7 @@ export function FireMapTest({ data, selection, availableYears, onSelectionChange
                         color: '#94a3b8',
                       }}
                     >
-                      Suma de detecciones
+                      Suma de días-celda
                     </div>
                   </div>
 
@@ -1012,7 +1013,7 @@ export function FireMapTest({ data, selection, availableYears, onSelectionChange
                   <div>
                     ID Malla: <code>{selectedCell.cell_id}</code>
                   </div>
-                  <div>Período: {selectedCell.year}-{String(selectedCell.month).padStart(2, '0')} · Sensor: {selectedCell.sensor}</div>
+                  <div>Período: {selectedCell.year}-{String(selectedCell.month).padStart(2, '0')} · Sensor: {selectedCell.sensor_group}</div>
 
                   <div>
                     Región: <b>{selection.region}</b>
@@ -1023,7 +1024,7 @@ export function FireMapTest({ data, selection, availableYears, onSelectionChange
                   <div>
                     Valor observado:{' '}
                     <b style={{ color: '#FFC247' }}>
-                      {selectedCell.n_detections} detecciones
+                      {selectedCell.cell_days} días-celda
                     </b>
                   </div>
                 </div>
@@ -1064,7 +1065,7 @@ export function FireMapTest({ data, selection, availableYears, onSelectionChange
           <select aria-label="Seleccionar celda del mapa" value={selectedCell?.cell_id ?? ''} onChange={event => {
             const feature = filteredGeoJson.features.find(f => f.properties.cell_id === event.target.value)
             setSelected(feature ? { key: selectionKey, properties: feature.properties } : null)
-          }}><option value="">Elegir celda</option>{filteredGeoJson.features.map(f => <option key={f.properties.cell_id} value={f.properties.cell_id}>{f.properties.cell_id}: {f.properties.n_detections} detecciones</option>)}</select>
+          }}><option value="">Elegir celda</option>{filteredGeoJson.features.map(f => <option key={f.properties.cell_id} value={f.properties.cell_id}>{f.properties.cell_id}: {f.properties.cell_days} días-celda</option>)}</select>
         </label>
       </div>
       {shareMessage && <p className="map-share-message" role="status">{shareMessage}</p>}

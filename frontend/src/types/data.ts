@@ -1,15 +1,14 @@
 // Official exchange format: docs/contrato_datos.md (Aldo).
 export type Sensor = 'MODIS' | 'VIIRS'
-export type QcStatus = 'ok' | 'insufficient_data' | 'no_pass'
-export type DataStatus = 'ok' | 'insufficient_data'
+export type QcStatus = 'ok' | 'missing'
+export type DataStatus = 'ok' | 'missing'
 export type Method = 'B0' | 'B1'
 export type Split = 'train' | 'valid' | 'test'
 export interface Period { region_id: string; year: number; month: number }
 export interface MonthlyRecord extends Period {
-  sensor: Sensor
-  n_detections: number | null
-  indicator: number | null
-  qc_status: QcStatus
+  sensor_group: Sensor
+  cell_days: number | null
+  status: QcStatus
   source_version: string
   updated_at: string
 }
@@ -33,7 +32,12 @@ export interface ValidationResult {
     detalle_mensual?: 'no disponible'
   }>>
 }
+export interface Metrics { mae: number | null; wape: number | null; bias: number | null }
 export interface MethodInfo {
+  region_id?: string
+  estado?: string
+  kappa?: number
+  resultados?: { valid?: { periodo: string; n_meses: number; B0: Metrics; B1: Metrics } }
   indicator: string
   sensors: string[]
   period_train: string
@@ -43,18 +47,20 @@ export interface MethodInfo {
   limitations: string[]
 }
 export interface Manifest {
-  region: string
+  region_id: string
   generated_at: string
-  files: { name: string; version: string; rows?: number }[]
+  producto: string
+  periodo: { desde: string; hasta: string }
+  files: string[]
+  hash: Record<string, string>
 }
-// L3 boundary only; no map component or replacement of Juan's types.
+// RFC 7946, WGS84; observed cell-days only, no regional calibration.
 type Position = [number, number]
 export interface CellsData {
   type: 'FeatureCollection'
-  crs?: { type: 'name'; properties: { name: 'EPSG:4326' } }
   features: {
     type: 'Feature'
-    properties: { cell_id: string; year: number; month: number; sensor: Sensor; n_detections: number }
+    properties: { cell_id: string; year: number; month: number; sensor_group: Sensor; cell_days: number }
     geometry: { type: 'Polygon'; coordinates: Position[][] } | { type: 'MultiPolygon'; coordinates: Position[][][] }
   }[]
 }

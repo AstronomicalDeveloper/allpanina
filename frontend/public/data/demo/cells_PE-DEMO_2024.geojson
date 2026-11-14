@@ -7,8 +7,8 @@
         "cell_id": "DEMO-cell-001",
         "year": 2024,
         "month": 8,
-        "sensor": "MODIS",
-        "n_detections": 12
+        "sensor_group": "MODIS",
+        "cell_days": 3
       },
       "geometry": {
         "type": "Polygon",
@@ -44,8 +44,8 @@
         "cell_id": "DEMO-cell-001",
         "year": 2024,
         "month": 8,
-        "sensor": "VIIRS",
-        "n_detections": 20
+        "sensor_group": "VIIRS",
+        "cell_days": 5
       },
       "geometry": {
         "type": "Polygon",
@@ -81,8 +81,8 @@
         "cell_id": "DEMO-cell-001",
         "year": 2024,
         "month": 9,
-        "sensor": "MODIS",
-        "n_detections": 0
+        "sensor_group": "MODIS",
+        "cell_days": 0
       },
       "geometry": {
         "type": "Polygon",
@@ -118,8 +118,8 @@
         "cell_id": "DEMO-cell-001",
         "year": 2024,
         "month": 9,
-        "sensor": "VIIRS",
-        "n_detections": 0
+        "sensor_group": "VIIRS",
+        "cell_days": 0
       },
       "geometry": {
         "type": "Polygon",
@@ -149,11 +149,5 @@
         ]
       }
     }
-  ],
-  "crs": {
-    "type": "name",
-    "properties": {
-      "name": "EPSG:4326"
-    }
-  }
+  ]
 }
