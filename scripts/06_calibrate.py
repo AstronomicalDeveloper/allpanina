@@ -40,13 +40,23 @@ def apply_b1(viirs, factor):
     return [v * factor if _valid(v) else v for v in viirs]
 
 
-# Cortes congelados en DECISIONS.md (T04): train 2013-01:2022-12, valid 2023-01:2024-12, test 2025-01:2026-07
+# Cortes congelados en DECISIONS.md (T04, secciones 3 y 4):
+# periodo 2013-01:2026-07; train 2013-01:2022-12, valid 2023-01:2024-12, test 2025-01:2026-07
+PERIOD_START = "2013-01"
 TRAIN_END = "2022-12"
 VALID_END = "2024-12"
+PERIOD_END = "2026-07"
 
 
-def assign_split(month: str, train_end: str = TRAIN_END, valid_end: str = VALID_END) -> str:
-    """T14: split por fecha ('YYYY-MM'). Sin fuga: train <= train_end < valid <= valid_end < test."""
+def assign_split(month: str, train_end: str = TRAIN_END, valid_end: str = VALID_END,
+                 period_start: str = PERIOD_START, period_end: str = PERIOD_END):
+    """T14: split por fecha ('YYYY-MM'). Sin fuga: train <= train_end < valid <= valid_end < test.
+
+    Meses fuera del periodo de referencia (antes de 2013-01 o despues de 2026-07) devuelven
+    None: no pertenecen a ningun split y no entran al ajuste ni a la serie calibrada.
+    """
+    if month < period_start or month > period_end:
+        return None
     if month <= train_end:
         return "train"
     if month <= valid_end:
@@ -103,8 +113,11 @@ def load_monthly_series(path):
             cells.setdefault(key, {"modis": None, "viirs": None})[sensor] = val
     rows = []
     for (y, m), v in sorted(cells.items()):
+        split = assign_split(f"{y:04d}-{m:02d}")
+        if split is None:  # fuera de 2013-01:2026-07 (ej. 2012): no entra al metodo
+            continue
         rows.append({"year": y, "month": m, "modis": v["modis"], "viirs": v["viirs"],
-                     "split": assign_split(f"{y:04d}-{m:02d}")})
+                     "split": split})
     return region_id, rows
 
 
@@ -117,6 +130,10 @@ def run(monthly_csv, out_dir, split="valid"):
 
     met = importlib.import_module("scripts.07_metrics_export")
     region_id, rows = load_monthly_series(monthly_csv)
+    if split != "test":
+        # Test reservado (DECISIONS.md): sin autorizacion T29 no se escriben valores ni
+        # residuos de test en ninguna salida, aunque la serie de entrada los traiga.
+        rows = [r for r in rows if r["split"] != "test"]
     factor = fit_factor_on_train(rows)
     calibrated = build_calibrated_series(rows, factor, region_id)
     modis = {f"{r['year']:04d}-{r['month']:02d}": r["modis"] for r in rows}
