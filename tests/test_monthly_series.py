@@ -7,6 +7,7 @@ import pytest
 ms = importlib.import_module("scripts.04_monthly_series")
 
 INSIDE = (-8.4, -74.5)    # lat, lon dentro de la caja
+OUTSIDE_LON = (-8.4, -75.4)  # misma latitud, fuera por longitud (la caja va de -75.10 a -73.90)
 OUTSIDE = (-3.0, -73.0)   # fuera de la caja
 
 
@@ -48,11 +49,12 @@ def test_zero_detections_in_region_is_zero_and_ok_not_missing():
 def test_month_without_national_data_is_missing_not_zero():
     series = _build(_cell_days([{"month": 8}]))
     row = _row(series, "MODIS", 2024, 9)
-    assert pd.isna(row["cell_days"]) and row["status"] == "insufficient_data"
+    assert pd.isna(row["cell_days"]) and row["status"] == "missing"
 
 
 def test_counts_distinct_cell_days_inside_region_only():
-    rows = [{"cell": "a"}, {"cell": "b"}, {"cell": "c", "where": OUTSIDE}, {"cell": "d", "sensor": "VIIRS", "version": "2"}]
+    rows = [{"cell": "a"}, {"cell": "b"}, {"cell": "c", "where": OUTSIDE}, {"cell": "e", "where": OUTSIDE_LON},
+            {"cell": "d", "sensor": "VIIRS", "version": "2"}]
     series = _build(_cell_days(rows))
     assert _row(series, "MODIS", 2024, 8)["cell_days"] == 2
     assert _row(series, "VIIRS", 2024, 8)["cell_days"] == 1
@@ -61,7 +63,7 @@ def test_counts_distinct_cell_days_inside_region_only():
 def test_viirs_before_its_first_complete_month_is_missing():
     cd = _cell_days([{"sensor": "VIIRS", "year": 2012, "month": 1, "version": "2"}, {"sensor": "VIIRS", "year": 2012, "month": 2, "version": "2"}])
     series = ms.build_monthly_series(cd, first_month=(2012, 1), last_month=(2012, 2), updated_at="2026-11-14")
-    assert _row(series, "VIIRS", 2012, 1)["status"] == "insufficient_data"
+    assert _row(series, "VIIRS", 2012, 1)["status"] == "missing"
     assert _row(series, "VIIRS", 2012, 2)["status"] == "ok"
 
 
@@ -84,7 +86,7 @@ def test_csv_leaves_missing_cell_days_empty(tmp_path):
     _cell_days([{}]).to_parquet(cd_path, index=False)
     ms.run(cd_path, out, "PE-UCA-CPO", ms.REGION_BBOX, (2024, 8), (2024, 9), "2026-11-14")
     text = out.read_text(encoding="utf-8").splitlines()
-    assert any(line.startswith("PE-UCA-CPO,2024,9,MODIS,,insufficient_data") for line in text)
+    assert any(line.startswith("PE-UCA-CPO,2024,9,MODIS,,missing") for line in text)
 
 
 def test_test_period_is_reserved_by_default():

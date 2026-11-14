@@ -55,10 +55,11 @@ def test_manifest_lists_names_hashes_and_sources(tmp_path):
     assert manifest["region_id"] == "PE-UCA-CPO" and manifest["generated_at"] == "2026-11-14T18:00:00Z"
     assert manifest["files"] == ["monthly_series.csv", "cells_PE-UCA-CPO_2024.geojson"]  # lista simple de nombres
     expected = hashlib.sha256((tmp_path / "monthly_series.csv").read_bytes()).hexdigest()
-    assert manifest["sha256"]["monthly_series.csv"] == expected
+    assert manifest["hash"]["monthly_series.csv"] == "sha256:" + expected
+    assert manifest["producto"] == "MCD14ML v6.1 / VNP14IMGML v2"
     assert manifest["sources"]["MODIS"]["zip_sha256"] == dl.EXPECTED["modis"]["sha256"]
     assert manifest["sources"]["MODIS"]["first_date"] == "2003-01-02"
-    assert manifest["period"] == {"first_month": "2024-08", "last_month": "2024-09"}
+    assert manifest["periodo"] == {"desde": "2024-08", "hasta": "2024-09"}
 
 
 def test_missing_deliverables_are_reported_not_listed(tmp_path):
