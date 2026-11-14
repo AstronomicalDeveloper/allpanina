@@ -1,5 +1,58 @@
 # React + TypeScript + Vite
 
+## L6: Método y evaluación
+
+Ejecutar `npm ci` y `npm run dev` desde `frontend/` (Node.js 24). Abrir
+`http://127.0.0.1:5173/?view=method` o usar el enlace «Método» de la navegación.
+«Calendario» vuelve a L4; `?demo=1` conserva el inspector L3. La navegación usa
+enlaces y el historial del navegador, sin librería de rutas. En PowerShell con
+scripts deshabilitados usar `npm.cmd`.
+
+La pantalla carga `method.json` y `validation.json` de `public/data/demo/` mediante
+los loaders/validadores existentes. Las cargas son independientes: un archivo
+inválido o inaccesible no oculta el otro. Hay carga, errores por archivo, reintento,
+resultados parciales y ausencia de métricas/residuos. Las peticiones se cancelan
+al abandonar la pantalla. No se carga `calibrated_series.csv` porque esta versión
+presenta métricas y disponibilidad por split, sin dibujar series.
+
+- `components/method/MethodPage.tsx`: carga, estados y composición.
+- `MethodExplanation.tsx`: indicador, sensores, períodos y texto de calibración
+  B0/B1 conservado desde el archivo, junto con sus limitaciones.
+- `MethodMetrics.tsx`: MAE, WAPE, sesgo y meses emparejados por método/split.
+- `MethodComparison.tsx`: disponibilidad B0/B1 separada en train, valid y test.
+- `MethodErrors.tsx`: hasta cinco residuos de test ordenados por error absoluto.
+- `services/data/method.ts`: presentación y ordenamiento, sin cálculos científicos.
+- `method.css`: estilos provisionales y acotados; `main.tsx` importa los estilos.
+
+Se muestra siempre **DATOS DEMO — NO SON OBSERVACIONES REALES**. Los fixtures
+originales no se modifican: sus métricas nulas aparecen como «No disponible», sus
+cero meses emparejados como 0 y sus residuos ausentes como «Detalle mensual no
+disponible». No se afirma una mejora de B1 ni se inventan resultados.
+
+Límites científicos pendientes:
+
+- WAPE se muestra literalmente, sin convertirlo a porcentaje ni añadir %. Falta
+  confirmar escala, unidades de métricas, convenciones de sesgo y residuos.
+- El contrato contiene un split por entrada de método; la UI lo respeta. No se
+  combinan train/valid/test ni se supone que ambos métodos usaron los mismos meses.
+- method.json tiene un texto de calibración, sin definiciones separadas de B0/B1.
+  Se presenta ese texto sin deducir fórmulas o completar metodología ausente.
+- El top-5 cuenta registros método-mes entre todos los métodos con split test;
+  un mes puede aparecer en ambos métodos. No se recalculan errores, se conservan
+  los signos recibidos y se desempata por mes/método para mantener orden estable.
+- Un método ausente o métrica null se muestra sin cifra. Un archivo que omite
+  campos obligatorios sigue siendo inválido según L3 y genera error visible.
+
+Pruebas: `npm test`, `npm run lint`, `npm run build`. L6 añade pruebas de lectura
+con los fixtures existentes, presentación, ceros/null, splits, top-5, errores,
+recuperación y navegación, usando las dependencias ya instaladas. Los números
+adicionales solo existen en entradas de prueba en memoria; no son datos publicados.
+
+L6 está preparado funcionalmente para recibir archivos reales aprobados; el
+componente de errores prepara L7, pero no constituye una evaluación científica
+completada. Se necesitan residuos verificables de test y revisión de Antonella y
+Aldo. La integración visual final y la conexión del mapa siguen pendientes.
+
 ## L4: Calendario histórico básico
 
 Desde `frontend/`, con Node.js 24:
@@ -39,7 +92,8 @@ React sin navegador; ambas son dependencias solo de desarrollo. L3 sigue cubiert
 
 Limitaciones: el fixture actual contiene solo 2024; las pruebas incluyen varios
 años y regiones. Solo se dibujan años presentes en la región; no se inventan años
-enteros sin filas. No hay B0/B1, mapa ni pantalla Método. `n_detections` e
+enteros sin filas. El Calendario no incorpora B0/B1 ni mapa; la pantalla Método
+se describe en L6. `n_detections` e
 `indicator` se mantienen separados; `updated_at` es actualización del archivo.
 El límite regional 0–31 conserva la definición oficial pendiente de aclaración
 científica; la intensidad no expresa riesgo ni incendios confirmados.

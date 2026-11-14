@@ -1,0 +1,24 @@
+.app-nav { display: flex; flex-wrap: wrap; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid #c9ced6; font: 1rem/1.5 system-ui, sans-serif; }
+.app-nav a { color: #154f9e; text-decoration: underline; padding: .25rem; }
+.app-nav a[aria-current="page"] { color: #172033; font-weight: 700; }
+.app-nav a:focus-visible, .method-page :focus-visible { outline: 3px solid #125ac5; outline-offset: 3px; }
+.method-page { max-width: 75rem; margin: auto; padding: 1.5rem; font: 1rem/1.5 system-ui, sans-serif; color: #172033; }
+.method-page h1 { font-size: 1.8rem; font-weight: 700; }
+.method-page h2 { font-size: 1.2rem; font-weight: 650; margin-bottom: .75rem; }
+.method-page h3 { font-weight: 650; margin-block: .75rem .25rem; }
+.method-page p { margin-block: .75rem; }
+.method-demo { padding: .75rem; background: #fff3ce; border: 1px solid #947125; }
+.method-source { font-size: .9rem; overflow-wrap: anywhere; }
+.method-page section { border: 1px solid #c9ced6; border-radius: .25rem; padding: 1rem; margin-block: 1.5rem; }
+.method-page dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .75rem; }
+.method-page dt { font-weight: 600; }
+.method-page dd { margin: 0; overflow-wrap: anywhere; }
+.method-page ul { list-style: disc; padding-left: 1.5rem; }
+.method-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 1rem; }
+.method-metrics article { padding: 1rem; background: #f5f6f8; border: 1px solid #c9ced6; border-radius: .25rem; }
+.method-table-scroll { overflow-x: auto; padding: .25rem; }
+.method-page table { width: 100%; border-collapse: collapse; }
+.method-page caption { text-align: left; margin-block: .5rem; }
+.method-page th, .method-page td { text-align: left; padding: .6rem; border: 1px solid #c9ced6; min-width: 7rem; }
+.method-page button { font: inherit; background: white; border: 1px solid #687386; border-radius: .25rem; padding: .5rem .75rem; cursor: pointer; }
+@media (max-width: 40rem) { .method-page { padding: 1rem; } }
