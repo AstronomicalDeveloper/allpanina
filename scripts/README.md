@@ -35,8 +35,8 @@ python scripts/08_manifest.py
 - Un mes con sensor operativo y cero detecciones vale `0` con `status = ok`. Un mes sin datos queda
   **vacio** con `status = missing`. Nunca se confunden.
 - Region: departamento de Ucayali (`region_id = PE-UCA`, `DECISIONS.md` secciones 1 y 9). Se filtra por el
-  centro de la celda con la caja lat -11.55 a -7.15, lon -76.10 a -70.40: contiene todo el departamento pero
-  tambien territorio vecino. Falta el poligono oficial para recortar.
+  centro de la celda dentro del poligono oficial del INEI (`docs/region/ucayali_inei_2023.geojson`). La caja
+  lat -11.55 a -7.15, lon -76.10 a -70.40 solo es un prefiltro. Requiere `shapely` (en `requirements.txt`).
 
 ## Test reservado
 
@@ -45,7 +45,6 @@ autorizacion conjunta de Aldo y Antonella (`DECISIONS.md`, "Test reservado").
 
 ## Puntos pendientes (no bloquean la ejecucion)
 
-- Region: reemplazar la caja por el poligono oficial del departamento (GeoPackage del INEI).
 - Un mes dentro de la ventana de un sensor, sin ninguna deteccion en todo Peru, sale como `missing`
   (hueco de datos). Es una regla de `04_monthly_series.py` que no esta escrita en `DECISIONS.md`.
 - `VIIRS_TYPE_FILTER` (`02_normalize.py`): en la version 2 de VIIRS algunos puntos de tipo 2 quedaron
