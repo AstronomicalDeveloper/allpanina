@@ -7,7 +7,7 @@ import pytest
 ms = importlib.import_module("scripts.04_monthly_series")
 
 INSIDE = (-8.4, -74.5)    # lat, lon dentro de la caja
-OUTSIDE_LON = (-8.4, -75.4)  # misma latitud, fuera por longitud (la caja va de -75.10 a -73.90)
+OUTSIDE_LON = (-8.4, -77.0)  # misma latitud, fuera por longitud (la caja va de -76.10 a -70.40)
 OUTSIDE = (-3.0, -73.0)   # fuera de la caja
 
 
@@ -36,7 +36,7 @@ def _build(cell_days, first=(2024, 8), last=(2024, 10)):
 def test_columns_follow_the_contract():
     series = _build(_cell_days([{}]))
     assert list(series.columns) == ["region_id", "year", "month", "sensor_group", "cell_days", "status", "source_version", "updated_at"]
-    assert set(series["sensor_group"]) == {"MODIS", "VIIRS"} and (series["region_id"] == "PE-UCA-CPO").all()
+    assert set(series["sensor_group"]) == {"MODIS", "VIIRS"} and (series["region_id"] == "PE-UCA").all()
 
 
 def test_zero_detections_in_region_is_zero_and_ok_not_missing():
@@ -84,9 +84,9 @@ def test_no_nan_outside_cell_days_and_cell_days_is_nullable_int():
 def test_csv_leaves_missing_cell_days_empty(tmp_path):
     cd_path, out = tmp_path / "cd.parquet", tmp_path / "ms.csv"
     _cell_days([{}]).to_parquet(cd_path, index=False)
-    ms.run(cd_path, out, "PE-UCA-CPO", ms.REGION_BBOX, (2024, 8), (2024, 9), "2026-11-14")
+    ms.run(cd_path, out, "PE-UCA", ms.REGION_BBOX, (2024, 8), (2024, 9), "2026-11-14")
     text = out.read_text(encoding="utf-8").splitlines()
-    assert any(line.startswith("PE-UCA-CPO,2024,9,MODIS,,missing") for line in text)
+    assert any(line.startswith("PE-UCA,2024,9,MODIS,,missing") for line in text)
 
 
 def test_test_period_is_reserved_by_default():
