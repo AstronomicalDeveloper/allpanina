@@ -91,6 +91,14 @@ dentro de nuestro periodo train. Se retira esta limitación de `method.json`.
 (near real-time), no como producto estándar validado. No se usa NRT para el método
 congelado — solo para el mapa observacional, si acaso, y marcado como tal.
 
+**Inicio en 2013-01 también para los entregables (revisión T12, Aldo, 14-nov-2026):**
+la muestra de `monthly_series.csv` de Marco arrancaba en 2012-01. Se mantiene
+2013-01 como primer mes de **todos** los entregables (`monthly_series.csv`,
+GeoJSON, `manifest.json` → `periodo.desde = "2013-01"`). 2012 queda fuera: no
+entra en el train (§4) y VIIRS 2012-01 es un mes incompleto (desde el 20 de
+enero). Los datos de 2012 pueden seguir en `data/processed/`, pero no en lo que
+se entrega a Antonella ni a Landry.
+
 ## 4. Split train / validation / test
 
 - **Train:** 2013-01 a 2022-12 (10 años) — ajusta el factor de calibración B1.

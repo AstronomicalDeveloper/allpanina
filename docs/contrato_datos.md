@@ -79,6 +79,7 @@ Propiedades por feature: `cell_id`, `year`, `month`, `sensor_group`, `cell_days`
 - **`producto`**: nombre y versión del producto fuente (ej. `"MCD14ML v6.1"`, `"VNP14IMGML v2"`) — para que quede trazable de qué collection salió cada entrega.
 - **`periodo`**: `{ "desde": "YYYY-MM", "hasta": "YYYY-MM" }` — rango real de fechas que cubren los archivos de esta entrega.
 - **`hash`**: sha256 de cada archivo listado, para que Landry pueda verificar que lo que descargó es exactamente lo que Marco generó (no un archivo corrupto o a medio escribir).
+- **`sources`** (opcional, aceptado en la revisión T12 de Aldo, 14-nov-2026): por sensor (`MODIS`, `VIIRS`), el zip de FIRMS de origen y su sha256, el nombre del CSV, filas crudas, primera y última fecha, y las versiones que aparecen en la columna `version`. No reemplaza a `producto` ni a `hash`; sirve para rastrear cada entrega hasta la descarga original de `docs/datos.md`. Landry puede ignorarlo.
 
 ## Ejemplos DEMO (datos inventados, nunca reales)
 
