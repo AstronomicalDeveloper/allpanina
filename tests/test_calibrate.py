@@ -82,7 +82,7 @@ def test_calibrated_series_contrato_y_residual_solo_en_test():
     b1 = [r for r in out if r["method"] == "B1"]
     assert b1[0]["residual"] is None            # train: sin residual
     assert b1[1]["value"] == 10 and b1[1]["residual"] == 0
-    assert b1[2]["value"] is None and b1[2]["status"] == "sin_dato_viirs"
+    assert b1[2]["value"] is None and b1[2]["status"] == "missing"
     assert all(r["value"] == r["value"] for r in out)  # ningun NaN
 
 
@@ -90,7 +90,7 @@ def test_calibrated_series_b1_no_estimable():
     out = cal.build_calibrated_series(
         [{"year": 2025, "month": 1, "modis": 10, "viirs": 5, "split": "test"}], None, "X")
     b1 = [r for r in out if r["method"] == "B1"][0]
-    assert b1["value"] is None and b1["status"] == "b1_no_estimable"
+    assert b1["value"] is None and b1["status"] == "missing"
 
 
 def _write_monthly(path):
@@ -150,3 +150,32 @@ def test_run_valid_no_escribe_filas_de_test(tmp_path):
     rows = list(csv.DictReader(open(tmp_path / "out" / "calibrated_series.csv")))
     assert rows and all(r["split"] != "test" for r in rows)
     assert all(r["residual"] == "" for r in rows)
+
+
+def test_status_solo_ok_o_missing():
+    # DECISIONS.md seccion 8: no existe un tercer estado
+    rows = [
+        {"year": 2020, "month": 1, "modis": 10, "viirs": 5, "split": "train"},
+        {"year": 2020, "month": 2, "modis": 10, "viirs": None, "split": "train"},
+    ]
+    for factor in (2.0, None):
+        out = cal.build_calibrated_series(rows, factor, "X")
+        assert {r["status"] for r in out} <= {"ok", "missing"}
+        assert all((r["value"] is None) == (r["status"] == "missing") for r in out)
+
+
+def test_cli_funciona_sin_pythonpath(tmp_path):
+    # Error 3: `python scripts/06_calibrate.py` no debe necesitar PYTHONPATH=.
+    import os
+    import subprocess
+    import sys
+
+    src = tmp_path / "m.csv"
+    _write_monthly(src)
+    script = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                          "scripts", "06_calibrate.py")
+    env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+    res = subprocess.run([sys.executable, script, str(src), "--out", str(tmp_path / "out")],
+                         cwd=str(tmp_path), env=env, capture_output=True, text=True)
+    assert res.returncode == 0, res.stderr
+    assert (tmp_path / "out" / "validation.json").exists()
