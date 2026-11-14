@@ -18,10 +18,10 @@ Cuando un mes queda como `missing` (por sensor):
      trata como hueco de datos, no como ausencia de fuego (regla de este script; no esta
      escrita en DECISIONS.md, confirmar con Aldo).
 
-Region: departamento de Ucayali (DECISIONS.md, seccion 1). Se filtra por el centro de la celda
-con la CAJA de coordenadas de esa seccion, que contiene todo el departamento pero es mas grande
-que el (sobra territorio de Loreto, Huanuco, Pasco, Junin, Cusco y Brasil). Falta el poligono
-oficial (GeoPackage del INEI) para recortar al departamento.
+Region: departamento de Ucayali (DECISIONS.md, seccion 1). Una celda cuenta si su CENTRO cae
+dentro del poligono oficial del INEI (docs/region/ucayali_inei_2023.geojson, capa departamental
+actualizada al 2023). La caja de coordenadas solo se usa como prefiltro rapido; el poligono es
+el que decide.
 
 Test reservado (DECISIONS.md, regla de oro): por defecto la serie termina en 2024-12
 (train + validacion). La serie completa hasta 2026-07 requiere --include-test y solo se
@@ -44,6 +44,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parent.parent
 REGION_ID = "PE-UCA"
 REGION_BBOX = (-76.10, -11.55, -70.40, -7.15)  # lon_min, lat_min, lon_max, lat_max (DECISIONS.md, seccion 1)
+REGION_POLYGON = ROOT / "docs" / "region" / "ucayali_inei_2023.geojson"  # poligono oficial INEI 2023
 FIRST_MONTH = (2013, 1)
 DEFAULT_LAST_MONTH = (2024, 12)
 TEST_LAST_MONTH = (2026, 7)
@@ -57,13 +58,38 @@ def _month_index(year_month: tuple[int, int]) -> int:
     return year_month[0] * 12 + (year_month[1] - 1)
 
 
-def filter_region(cell_days: pd.DataFrame, bbox: tuple[float, float, float, float] | None) -> pd.DataFrame:
-    """Filtra celda-dias por caja (lon_min, lat_min, lon_max, lat_max) usando el centro de celda."""
-    if bbox is None:
-        return cell_days
-    lon_min, lat_min, lon_max, lat_max = bbox
-    inside = cell_days["center_lon"].between(lon_min, lon_max) & cell_days["center_lat"].between(lat_min, lat_max)
-    return cell_days[inside]
+def load_polygon(path: Path):
+    """Lee un GeoJSON (WGS84) y devuelve la union de sus geometrias como objeto shapely."""
+    import json
+
+    import shapely
+    from shapely.geometry import shape
+
+    if not Path(path).exists():
+        raise FileNotFoundError(f"Falta el poligono de la region: {path}")
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    features = data["features"] if data.get("type") == "FeatureCollection" else [data]
+    geometry = shapely.union_all([shape(f["geometry"] if "geometry" in f else f) for f in features])
+    shapely.prepare(geometry)
+    return geometry
+
+
+def filter_region(
+    cell_days: pd.DataFrame,
+    bbox: tuple[float, float, float, float] | None,
+    polygon=None,
+) -> pd.DataFrame:
+    """Filtra celda-dias por el centro de celda: caja (lon_min, lat_min, lon_max, lat_max) y, si se da, poligono."""
+    region = cell_days
+    if bbox is not None:
+        lon_min, lat_min, lon_max, lat_max = bbox
+        inside = region["center_lon"].between(lon_min, lon_max) & region["center_lat"].between(lat_min, lat_max)
+        region = region[inside]
+    if polygon is not None and len(region):
+        import shapely
+
+        region = region[shapely.contains_xy(polygon, region["center_lon"].to_numpy(), region["center_lat"].to_numpy())]
+    return region
 
 
 def _versions(frame: pd.DataFrame) -> dict[tuple[str, int, int], str]:
@@ -83,6 +109,7 @@ def build_monthly_series(
     first_month: tuple[int, int] = FIRST_MONTH,
     last_month: tuple[int, int] = DEFAULT_LAST_MONTH,
     updated_at: str | None = None,
+    polygon=None,
 ) -> pd.DataFrame:
     """Construye la serie mensual por region y grupo-sensor.
 
@@ -93,7 +120,7 @@ def build_monthly_series(
     national = cell_days.groupby(["sensor_group", "year", "month"]).size()
     covered = set(national.index)
     versions = _versions(cell_days)
-    counts = filter_region(cell_days, bbox).groupby(["sensor_group", "year", "month"]).size()
+    counts = filter_region(cell_days, bbox, polygon).groupby(["sensor_group", "year", "month"]).size()
 
     rows = []
     for index in range(_month_index(first_month), _month_index(last_month) + 1):
@@ -111,11 +138,12 @@ def build_monthly_series(
     return series
 
 
-def run(cell_days_path: Path, out_path: Path, region_id: str, bbox, first_month, last_month, updated_at) -> None:
+def run(cell_days_path: Path, out_path: Path, region_id: str, bbox, first_month, last_month, updated_at, polygon_path=None) -> None:
     if not cell_days_path.exists():
         raise FileNotFoundError(f"Falta {cell_days_path}. Ejecuta antes scripts/03_grid_dedupe.py.")
+    polygon = load_polygon(polygon_path) if polygon_path else None
     cell_days = pd.read_parquet(cell_days_path)
-    series = build_monthly_series(cell_days, region_id, bbox, first_month, last_month, updated_at)
+    series = build_monthly_series(cell_days, region_id, bbox, first_month, last_month, updated_at, polygon)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     series.to_csv(out_path, index=False)
 
@@ -138,6 +166,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=ROOT / "data" / "processed" / "monthly_series.csv")
     parser.add_argument("--region-id", default=REGION_ID)
     parser.add_argument("--bbox", type=float, nargs=4, metavar=("LON_MIN", "LAT_MIN", "LON_MAX", "LAT_MAX"), default=REGION_BBOX)
+    parser.add_argument("--polygon", type=Path, default=REGION_POLYGON, help="GeoJSON de la region (por defecto, poligono INEI de Ucayali)")
     parser.add_argument("--first-month", type=_parse_month, default=FIRST_MONTH, help="AAAA-MM")
     parser.add_argument("--last-month", type=_parse_month, default=DEFAULT_LAST_MONTH, help="AAAA-MM")
     parser.add_argument("--include-test", action="store_true", help="Llega hasta 2026-07 (periodo de test reservado).")
@@ -151,7 +180,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.include_test:
         print("AVISO: incluye el periodo de test reservado (2025-01 a 2026-07). No interpretes estos valores sin autorizacion.")
     try:
-        run(args.cell_days, args.out, args.region_id, tuple(args.bbox), args.first_month, last_month, args.updated_at)
+        run(args.cell_days, args.out, args.region_id, tuple(args.bbox), args.first_month, last_month, args.updated_at, args.polygon)
     except FileNotFoundError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
