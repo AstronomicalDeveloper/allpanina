@@ -64,6 +64,13 @@ def test_assign_split_con_cortes_de_decisions():
     assert f("2024-12") == "valid" and f("2025-01") == "test"
 
 
+def test_assign_split_fuera_del_periodo_es_none():
+    # DECISIONS.md seccion 3: periodo 2013-01 a 2026-07
+    f = cal.assign_split
+    assert f("2012-12") is None and f("2013-01") == "train"
+    assert f("2026-07") == "test" and f("2026-08") is None
+
+
 def test_calibrated_series_contrato_y_residual_solo_en_test():
     rows = [
         {"year": 2020, "month": 1, "modis": 10, "viirs": 5, "split": "train"},
@@ -118,3 +125,28 @@ def test_cli_rechaza_test_sin_autorizacion(tmp_path):
     _write_monthly(src)
     with pytest.raises(SystemExit):
         cal.main([str(src), "--out", str(tmp_path / "o"), "--split", "test"])
+
+
+def test_2012_no_entra_al_factor(tmp_path):
+    # Error 1: meses anteriores a 2013-01 no deben ajustar kappa
+    src = tmp_path / "m.csv"
+    _write_monthly(src)
+    with open(src, "a", encoding="utf-8") as f:
+        f.write("X,2012,6,MODIS,1000,ok,6.03,2026-11-14\n")
+        f.write("X,2012,6,VIIRS,1,ok,2,2026-11-14\n")
+    _, rows = cal.load_monthly_series(str(src))
+    assert all(r["year"] >= 2013 for r in rows)
+    factor, _ = cal.run(str(src), str(tmp_path / "out"), split="valid")
+    assert factor == pytest.approx(2.0)
+
+
+def test_run_valid_no_escribe_filas_de_test(tmp_path):
+    # Error 2: con split=valid, calibrated_series.csv no puede exponer valores ni residuos de test
+    import csv
+
+    src = tmp_path / "m.csv"
+    _write_monthly(src)  # incluye 2025-01 (test)
+    cal.run(str(src), str(tmp_path / "out"), split="valid")
+    rows = list(csv.DictReader(open(tmp_path / "out" / "calibrated_series.csv")))
+    assert rows and all(r["split"] != "test" for r in rows)
+    assert all(r["residual"] == "" for r in rows)
