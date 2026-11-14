@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-11-14T18:56:57Z",
+  "region_id": "PE-UCA",
+  "producto": "MCD14ML v6.1 / VNP14IMGML v2",
+  "files": [
+    "monthly_series.csv",
+    "cells_PE-UCA_2024.geojson"
+  ],
+  "hash": {
+    "monthly_series.csv": "sha256:823e72ceedfa49f17a7c2c760b3edaa3a46b3f7d5e573cfaeb7c26c20d6c1228",
+    "cells_PE-UCA_2024.geojson": "sha256:9ad660f0ab045c26ec10b34309d181ef41490db3db7aa5651b5e33a584fb2889"
+  },
+  "sources": {
+    "MODIS": {
+      "product": "MODIS Terra+Aqua, Coleccion 6.1, archivo estandar FIRMS",
+      "zip": "DL_FIRE_M-C61_848370.zip",
+      "zip_sha256": "26cf9ee849ee4736c9c321ad79445275d908cb9f3b50c959d26eecfda4d972a6",
+      "csv": "firms_raw_modis.csv",
+      "rows_raw": 352572,
+      "first_date": "2003-01-02",
+      "last_date": "2026-08-31",
+      "versions": [
+        "6.03",
+        "61.03"
+      ]
+    },
+    "VIIRS": {
+      "product": "VIIRS S-NPP 375 m, Coleccion 2, archivo estandar FIRMS",
+      "zip": "DL_FIRE_SV-C2_848371.zip",
+      "zip_sha256": "f6b49a31341a195d5321caf061866ed5a7b1d285714a3e48b530596700f6a2f9",
+      "csv": "firms_raw_viirs_snpp.csv",
+      "rows_raw": 1058423,
+      "first_date": "2012-01-20",
+      "last_date": "2026-07-31",
+      "versions": [
+        "2"
+      ]
+    }
+  },
+  "periodo": {
+    "desde": "2012-01",
+    "hasta": "2024-12"
+  }
+}
