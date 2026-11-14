@@ -1,0 +1,35 @@
+{
+  "estado": "borrador — pendiente de revisión y aprobación de Aldo (T27)",
+  "region_id": "PE-UCA",
+  "region": "Departamento de Ucayali, Perú. Celda incluida si su centro cae dentro del polígono oficial INEI 2023 (docs/region/ucayali_inei_2023.geojson).",
+  "indicator": "cell_days: número de pares celda-día con al menos una detección de fuego activo en la región, por mes y sensor. Celda de 1 km x 1 km en EPSG:6933; día calendario en hora de Lima (UTC-5). Terra y Aqua cuentan una sola vez por celda-día.",
+  "sensors": [
+    "MODIS Terra",
+    "MODIS Aqua",
+    "VIIRS S-NPP"
+  ],
+  "products": "MCD14ML v6.1 / VNP14IMGML v2 (archivo estándar NASA FIRMS)",
+  "filters": "Se descartan detecciones con type != 0. MODIS: confidence >= 30. VIIRS: confidence nominal o high (se excluye low).",
+  "period_train": "2013-01:2022-12",
+  "period_valid": "2023-01:2024-12",
+  "period_test": "2025-01:2026-07",
+  "calibration": "B0 = VIIRS sin factor. B1 = B0 * kappa, con kappa = suma(cell_days MODIS en train) / suma(cell_days VIIRS en train): un solo factor global para la región, ajustado una vez sobre todo el periodo train.",
+  "kappa": 0.2936037257560573,
+  "kappa_inputs": {
+    "meses_train": 120,
+    "suma_modis_train": 24902,
+    "suma_viirs_train": 84815
+  },
+  "error_convention": "signed_error = estimate - modis_observed (positivo = sobreestima). bias = promedio de signed_error; MAE = promedio de |signed_error|; WAPE = suma|signed_error| / suma(modis_observed), indefinido si el denominador es 0.",
+  "status_rule": "ok = sensor operando ese mes, aunque cell_days sea 0. missing = mes fuera de la ventana de disponibilidad del sensor o valor no estimable; el valor queda vacío, nunca 0.",
+  "limitations": [
+    "VIIRS S-NPP: NOAA anunció el cese de entrega de todos los productos el 1 nov 2026; NASA indica cese de datos científicos nuevos el 2 nov 2026. El archivo histórico no se ve afectado. Se usó el producto estándar, con rezago de 2-3 meses.",
+    "MODIS cambia de versión V6 a V6.1 en febrero de 2023 (Terra 17 feb, Aqua 23 feb), al inicio del periodo de validación. Un salto en esas fechas puede ser cambio de algoritmo y no de incendios.",
+    "VIIRS versión 2: algunos puntos de fuente estática (type 2) quedaron marcados como type 0 (corregido por NASA en la versión 3, mayo 2025). El filtro type = 0 puede conservar algunas fuentes estáticas.",
+    "El área geodésica del polígono INEI (~105,100 km²) difiere ~2.7% del área del Compendio Estadístico INEI (~102,400 km²); se reporta, no se corrige.",
+    "El indicador cuenta detecciones satelitales de anomalías térmicas, no incendios confirmados ni superficie quemada.",
+    "FIRMS no entrega cobertura de nubes: un mes con 0 detecciones puede reflejar ausencia de fuego o falta de observación.",
+    "B1 se valida a escala región-mes. No debe aplicarse a celdas individuales del mapa; el mapa muestra solo valores observados.",
+    "Un error retrospectivo de B1 no es un porcentaje de confianza para meses futuros."
+  ]
+}
