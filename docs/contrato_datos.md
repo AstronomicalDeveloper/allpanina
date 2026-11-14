@@ -119,7 +119,7 @@ DEMO-01,2025,8,B1,9.1,test,ok,-1.5
   "sensors": ["MODIS Terra", "MODIS Aqua", "VIIRS S-NPP"],
   "period_train": "2013-01:2022-12",
   "period_valid": "2023-01:2024-12",
-  "period_test": "2025-01:2026-09",
+  "period_test": "2025-01:2026-07",
   "calibration": "B1 = B0 * kappa (factor global ajustado en train)",
   "limitations": [
     "VIIRS S-NPP: NOAA anuncio cese de entrega de todos los productos el 1 nov 2026; NASA indica cese de datos cientificos nuevos el 2 nov 2026. Se uso el producto estandar con rezago de 2-3 meses."
