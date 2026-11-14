@@ -1,5 +1,5 @@
 {
-  "estado": "aprobado por Aldo (T27); actualizado con el resultado del test (T29/T30), pendiente de revisión de Aldo",
+  "estado": "aprobado por Aldo (T27 y T29)",
   "region_id": "PE-UCA",
   "region": "Departamento de Ucayali, Perú. Celda incluida si su centro cae dentro del polígono oficial INEI 2023 (docs/region/ucayali_inei_2023.geojson).",
   "indicator": "cell_days: número de pares celda-día con al menos una detección de fuego activo en la región, por mes y sensor. Celda de 1 km x 1 km en EPSG:6933; día calendario en hora de Lima (UTC-5). Terra y Aqua cuentan una sola vez por celda-día.",
