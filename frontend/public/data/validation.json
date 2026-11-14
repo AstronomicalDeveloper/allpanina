@@ -1,0 +1,23 @@
+{
+  "region_id": "PE-UCA",
+  "methods": {
+    "B0": {
+      "split": "valid",
+      "metrics": {
+        "mae": 645.9166666666666,
+        "wape": 2.0567865198354784,
+        "bias": 645.9166666666666
+      },
+      "n_months_matched": 24
+    },
+    "B1": {
+      "split": "valid",
+      "metrics": {
+        "mae": 55.77998536029397,
+        "wape": 0.17761969598607605,
+        "bias": -32.19432342942482
+      },
+      "n_months_matched": 24
+    }
+  }
+}
