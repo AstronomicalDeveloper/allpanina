@@ -21,9 +21,16 @@ Razón original (sigue aplicando, ahora a nivel departamento): es la región con
 más hectáreas quemadas acumuladas en el ranking nacional satelital (MapBiomas
 Fuego Perú, 2013-2024: Ucayali lidera con ~350,600 ha).
 
-**Caja de coordenadas (cubre el departamento completo):**
-- lat: -11.45 a -8.37 (8°22'S a 11°27'S — límites del departamento)
-- lon: -76.08 a -70.50 (70°30'W a 76°05'W)
+**Caja de coordenadas (cubre el departamento completo) — CORREGIDA:**
+- lat: -11.55 a -7.15
+- lon: -76.10 a -70.40
+- Corrección: la versión anterior de esta caja decía lat -11.45 a -8.37
+  ("8°22'S a 11°27'S"). El límite norte del departamento está cerca de 7°20'S
+  (polígono INEI-2007: lat máxima -7.27), no en 8°22'S; con ese límite la caja
+  dejaba fuera la franja norte y solo contenía el 86.7% del área del
+  departamento. Con la caja corregida contiene el 100%. Se dejó un margen de
+  0.1° (≈ 11 km) sobre el polígono INEI-2007, que es simplificado y solo
+  provisional; el margen se puede reducir cuando exista el GeoPackage oficial.
 - Área real del departamento: ~102,400 km² (fuente: INEI, Compendio
   Estadístico Ucayali). La caja rectangular mide más que eso (no es un
   rectángulo), igual que antes — la caja solo acota la descarga de FIRMS, el
@@ -37,12 +44,14 @@ GeoPackage oficial. Hasta que ese polígono oficial exista, el indicador final
 sigue acotado por la caja de coordenadas de arriba, no por un polígono real —
 esto es una limitación conocida, documentarla en `method.json`.
 
-**Acción pendiente para Marco (bloqueante, con fecha límite):** la descarga de
-FIRMS que ya existe fue hecha con la caja de la provincia (demasiado chica).
-Hay que repetir la descarga con la caja nueva de arriba **antes del 29 de
-diciembre de 2026** (FIRMS borra los archivos de descarga a los 45 días) y
-actualizar los hashes en `docs/datos.md`. El GeoJSON de 2024 y `monthly_series.csv`
-generados con la caja vieja quedan invalidados y hay que regenerarlos.
+**Descarga de FIRMS — no se repite (verificado):** los archivos que ya están en
+`docs/` cubren todo el Perú (MODIS: lat -18.16 a -0.03, lon -81.28 a -68.72;
+VIIRS: lat -18.34 a -0.03, lon -81.29 a -68.69), así que la caja de Ucayali de
+arriba cae completamente dentro. La caja solo se aplica al agregar
+(`scripts/04_monthly_series.py`), no en la descarga. Los zips, sus hashes y
+`docs/datos.md` siguen válidos. Lo que sí hay que regenerar con la caja nueva es
+`monthly_series.csv`, el GeoJSON y `manifest.json` (los anteriores eran de la
+caja de la provincia).
 
 
 ## 2. Sensores
@@ -106,10 +115,15 @@ que MODIS: 0=fuego de vegetación presumido, 1=volcán, 2=fuente estática,
 producto NRT de VIIRS, no en el estándar, que es el que usamos.
 
 - **MODIS y VIIRS (ambos):** se descartan filas con `type != 0`.
-- **Limitación de la versión 2 de VIIRS:** el campo `type` de VIIRS Collection 2
-  viene del algoritmo rediseñado (ver sección 2) — para los años 2013-2017
-  (Collection 1) revisar si el campo existe igual en esos archivos antes de
-  asumir que el filtro se comporta igual en todo el periodo train.
+- **Verificado en los datos reales de Marco:** el campo `type` existe, sin nulos,
+  en todos los años de ambos sensores (MODIS 2003–2026; VIIRS 2012–2026), y
+  todos los registros VIIRS son `version = 2`. El filtro se comporta igual en
+  todo el periodo train.
+- **Limitación conocida de VIIRS `version = 2`:** NASA documenta que en las
+  versiones 1 y 2 algunos puntos de tipo 2 (fuente estática) quedaron marcados
+  como tipo 0, y que se corrigió en la versión 3 (mayo 2025). El filtro
+  `type = 0` puede dejar algunas fuentes estáticas en VIIRS. Documentarlo en
+  `method.json`.
 - **Confianza mínima:** MODIS `confidence >= 30`; VIIRS `confidence` en
   {nominal, high} (se excluye `low`). Umbral ajustable — si Antonella ve que esto
   descarta demasiados datos reales en la región piloto, se revisa con Aldo antes
