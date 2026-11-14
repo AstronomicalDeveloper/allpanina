@@ -66,8 +66,8 @@ Al calibrar, el error baja unas 11 veces. **Se elige B1.**
 2. ✅ **Antonella** (hecho, `ed715f5`) actualiza `method.json` → `status_rule` con el segundo caso de `missing` de `DECISIONS.md` §8: ninguna detección en todo Perú ese mes.
 3. ✅ **Antonella** (hecho, `ed715f5`) cambia `method.json` → `estado` a "aprobado por Aldo (T27)" (Aldo ya confirmó el dictamen).
 4. ✅ **Marco** (hecho, 14-nov-2026: `manifest.json` lista los 16 archivos y todos los hashes coinciden) vuelve a correr `08_manifest.py`, para que `manifest.json` liste también `calibrated_series.csv`, `validation.json` y `method.json` con sus hashes.
-6. ⏳ **Marco** vuelve a correr `08_manifest.py`: el cambio de `method.json` dejó desactualizado su hash en `manifest.json`.
 5. **Opcional:** agregar a `validation.json` los residuos mes a mes, si Landry los necesita en la pantalla de errores.
+6. ⏳ **Marco** vuelve a correr `08_manifest.py`: el cambio de `method.json` dejó desactualizado su hash en `manifest.json`.
 
 No se cambia κ ni el método después de ver estos resultados. Ajustar κ para corregir 2024 sería ajustarlo a la validación, y la validación dejaría de ser independiente.
 
