@@ -62,4 +62,4 @@ Revisión hecha sobre los archivos: coordenadas dentro de Perú (lat −18.3 a 0
 
 ## 7. Ubicación local de los crudos
 
-Los archivos crudos **no se suben al repo** (el CSV de VIIRS pesa ~86 MB; `AGENTS.md` pide aprobación del equipo para datos voluminosos). Van en `data/raw/` (incluido en `.gitignore`). Copia de respaldo de los zips originales: `docs/DL_FIRE_M-C61_848370.zip` y `docs/DL_FIRE_SV-C2_848371.zip` en la rama `feature/calibracion` (SHA-256 verificados contra la sección 2). `AGENTS.md` exige aprobación del equipo para datos voluminosos: aprobación de Aldo pendiente, y los zips **no se llevan a `main`** (se retiran de `docs/` antes del PR). Quien los use debe verificar el SHA-256 de la sección 2.
+Los CSV extraídos van en `data/raw/` (incluido en `.gitignore`). Los zips originales se versionan en `docs/`: `docs/DL_FIRE_M-C61_848370.zip` y `docs/DL_FIRE_SV-C2_848371.zip`, con SHA-256 verificados contra la sección 2 (el CSV de VIIRS pesa ~86 MB descomprimido). `AGENTS.md` exige aprobación del equipo para datos voluminosos: Aldo la dio en persona el 2026-11-14. Quien los use debe verificar el SHA-256 de la sección 2.
