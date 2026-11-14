@@ -104,3 +104,35 @@ podemos medir.
 Nadie corre el test (2025-01 a 2026-07) ni mira sus resultados hasta que Aldo +
 Antonella lo autoricen juntos (T29 de la matriz). Se corre **una sola vez**. Modificar
 cualquier parte del método después de ver el resultado del test invalida la validación.
+
+## 10. Fórmula del factor de calibración (B1) y convención de signo del error
+
+**Factor κ (kappa):**
+
+```
+κ = Σ cell_days_MODIS(train, región completa) / Σ cell_days_VIIRS(train, región completa)
+B1 = B0 × κ
+```
+
+Un solo número κ para toda la región, ajustado una sola vez sobre **todo** el periodo
+train (2013-2022) sumado — no mes a mes, no promedio de factores mensuales. Si la
+suma de VIIRS en train es 0, κ no se puede calcular: se documenta como caso borde
+en `method.json`, no se usa un valor por defecto inventado (ej. κ=1).
+
+**Convención de signo del error (obligatoria para Antonella y para cómo lo muestra Landry):**
+
+```
+signed_error = estimate - modis_observed
+```
+
+- Positivo → el método **sobreestima** (dice más de lo que MODIS observó).
+- Negativo → el método **subestima**.
+- `absolute_error = |signed_error|`
+- `bias` (sesgo) = promedio de `signed_error` sobre el periodo evaluado (no de
+  `absolute_error` — el sesgo debe poder ser negativo).
+- `MAE` = promedio de `absolute_error`.
+- `WAPE` = Σ|signed_error| / Σ modis_observed, sobre el periodo evaluado (indefinido
+  si el denominador es 0 — ver sección 8).
+
+Esta convención es la misma en `validation.json`, en `method.json` y en cualquier
+gráfico que Landry construya con el signo del error — nadie la invierte por su cuenta.
