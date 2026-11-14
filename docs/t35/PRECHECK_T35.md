@@ -40,7 +40,7 @@ El frontend implementa el **contrato v0**, el de antes de las correcciones. Los 
 3. **Mapa** (`MapPage.tsx`, `FireMapTest.tsx`, `map.ts`):
    - Usar `manifest.region_id`. Hoy arma `cells_${manifest.region}_`, que con datos reales da `cells_undefined_`.
    - Usar `properties.cell_days` y `properties.sensor_group`.
-   - Hay GeoJSON de **2013 a 2024**. Del test, 2025-2026, no hay mapa: el filtro de año tiene que mostrar el fallback para esos años, no un error.
+   - Hay GeoJSON de **2013 a 2026** (Marco agregó 2025 y 2026-01 a 2026-07 después de T29; cuadran con la serie). Para meses sin archivo (después de 2026-07), el mapa tiene que mostrar un fallback, no un error.
 4. **Pantalla de Método:** `validation.json` final trae **solo el test** (T30). Las métricas de validación (2023-2024) están en `method.json` → `resultados.valid`. Si la pantalla compara validación y test, tiene que leer la validación de `method.json`.
 5. **Quitar los avisos de "DATOS DEMO"** cuando se carguen los datos reales (criterio de T32: "no DEMO en producción").
 6. **Integrar `main`.** La rama del frontend todavía no incluye `main`, así que no tiene los datos reales.

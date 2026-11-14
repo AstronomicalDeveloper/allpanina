@@ -102,5 +102,5 @@ Para comparar en T38, usar estos hashes (LF).
 
 ### Pendientes para publicar (no cambian el resultado)
 
-- ⏳ **Marco:** volver a correr `08_manifest.py`. Ahora hay 3 hashes desactualizados (`calibrated_series.csv`, `validation.json`, `method.json`), y `periodo.hasta` tiene que pasar de 2024-12 a 2026-07, porque `frontend/public/data/` ya incluye el test.
+- ✅ **Marco** (hecho, `0834eff`: hashes correctos y `periodo` hasta 2026-07; además agregó los GeoJSON de 2025 y 2026, que cuadran con la serie): volver a correr `08_manifest.py`. Ahora hay 3 hashes desactualizados (`calibrated_series.csv`, `validation.json`, `method.json`), y `periodo.hasta` tiene que pasar de 2024-12 a 2026-07, porque `frontend/public/data/` ya incluye el test.
 - ⏳ **Antonella:** cambiar `method.json` → `estado` a "aprobado por Aldo (T27 y T29)".
