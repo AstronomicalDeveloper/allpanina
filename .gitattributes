@@ -1,0 +1,10 @@
+# Normaliza saltos de linea a LF para todo archivo de texto, sin importar el
+# OS de quien lo edite (Windows/Mac/Linux) -- evita diffs falsos de "todo el
+# archivo cambio" cuando en realidad el contenido es identico.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.pack binary
