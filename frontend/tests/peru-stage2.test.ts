@@ -58,22 +58,22 @@ test('Mapa nacional carga solo el año activo; cuadrados/inspector explican valo
  assert.equal(total(observed),monthly.find(r=>r.region_id==='PE'&&r.year===2024&&r.month===9&&r.sensor_group==='MODIS')!.cell_days)
  const cell=observed.features.find(f=>f.properties.cell_days>31)!.properties
  await act(async()=>runtime.maps[0].emit(`click:${POINT_LAYER}`,{features:[{properties:{cell_id:cell.cell_id}}],lngLat:{lng:-74,lat:-8}}))
- assert.match(runtime.popups[0].content!.textContent!,/10 km.*días-celda de 1 km.*No son días distintos/)
- assert.match(host.querySelector('.map-cell-detail')!.textContent!,/10 km.*No son días distintos/)
+ assert.match(runtime.popups[0].content!.textContent!,/10 km.*1 km cell-days.*not distinct days/)
+ assert.match(host.querySelector('.map-cell-detail')!.textContent!,/10 km.*not distinct days/)
  assert.equal((runtime.maps[0].sources[SUMMARY_SOURCE].data as SummaryPoints).features.length,observed.features.length)
  assert.ok((runtime.maps[0].sources[SUMMARY_SOURCE].data as SummaryPoints).features.every(f=>f.properties.region_id==='PE'))
  const inspector=host.querySelector('.map-inspector')!
- assert.equal(inspector.querySelector('h3')!.textContent,'Inspector de cuadrícula')
- assert.match(inspector.textContent!,/cuadrícula de 10 km.*celdas de 1 km/)
- assert.ok(inspector.querySelector('[aria-label="Seleccionar cuadrícula del mapa"]'))
- assert.doesNotMatch(inspector.textContent!,/Inspector de celda|Elegir celda/)
+ assert.equal(inspector.querySelector('h3')!.textContent,'Grid square inspector')
+ assert.match(inspector.textContent!,/10 km grid square.*1 km cells/)
+ assert.ok(inspector.querySelector('[aria-label="Select map grid square"]'))
+ assert.doesNotMatch(inspector.textContent!,/Cell inspector|Choose a cell/)
 })
 test('departamento mantiene capa PE sin reparto por centroide; resumen toma el CSV y no suma geometrías',async t=>{
  mockFiles(t);const {host,runtime}=await setup(t,'/map?mapRegion=PE-25&periodYear=2024&periodMonth=9&scope=month&calendarSeries=VIIRS')
  const map=runtime.maps[0],observed=map.sources['celdas-observadas'].data as CellsData
  assert.ok(observed.features.length>0)
  assert.equal(host.querySelector('.map-observed-value')!.textContent,'2,323')
- assert.match(host.querySelector('.map-geographic-context')!.textContent!,/capa de Perú.*no es una desagregación exacta/)
+ assert.match(host.querySelector('.map-geographic-context')!.textContent!,/Peru layer.*not an exact split/)
  await choose(host,'[aria-label="Area"]','PE-01')
  assert.equal(runtime.maps.length,1)
  assert.notDeepEqual((map.sources['celdas-observadas'].data as CellsData),observed)
@@ -83,17 +83,17 @@ test('departamento mantiene capa PE sin reparto por centroide; resumen toma el C
 })
 test('año nacional parcial, navegación de año/mes/sensor, no publicado y ceros regionales',async t=>{
  const fetch=mockFiles(t);const {host,runtime}=await setup(t,'/map?mapRegion=PE&periodYear=2026&scope=year')
- assert.match(host.querySelector('.map-observed')!.textContent!,/Año parcial.*7\/12/)
- assert.equal(host.querySelector('.map-observed-value')!.textContent,regionalSummary(monthly,{region:'PE',year:2026,month:7,sensor:'MODIS',scope:'year'}).value!.toLocaleString('es-PE'))
- await click(host,'Mensual');await choose(host,'[aria-label="Mes del mapa"]','8')
- assert.match(host.querySelector('.map-observed')!.textContent!,/Período no publicado/)
+ assert.match(host.querySelector('.map-observed')!.textContent!,/Partial year.*7\/12/)
+ assert.equal(host.querySelector('.map-observed-value')!.textContent,regionalSummary(monthly,{region:'PE',year:2026,month:7,sensor:'MODIS',scope:'year'}).value!.toLocaleString('en-US'))
+ await click(host,'Monthly');await choose(host,'[aria-label="Map month"]','8')
+ assert.match(host.querySelector('.map-observed')!.textContent!,/Period not published/)
  assert.equal((runtime.maps[0].sources[SUMMARY_SOURCE].data as SummaryPoints).features.length,0)
- await choose(host,'[aria-label="Año del mapa"]','2024')
+ await choose(host,'[aria-label="Map year"]','2024')
  assert.equal(fetch.mock.calls.filter(call=>String(call.arguments[0]).includes('/data/peru/cells_')).length,2)
  assert.equal(runtime.maps[0].removed,1)
- await choose(host,'[aria-label="Area"]','PE-07');await choose(host,'[aria-label="Mes del mapa"]','9')
+ await choose(host,'[aria-label="Area"]','PE-07');await choose(host,'[aria-label="Map month"]','9')
  assert.equal(host.querySelector('.map-observed-value')!.textContent,'0')
- assert.match(host.querySelector('.map-observed')!.textContent!,/Cero válido/)
+ assert.match(host.querySelector('.map-observed')!.textContent!,/Valid zero/)
 })
 test('proyección de Método usa resultados precisos por región y no κ nacional para B1 PE',()=>{
  const pe=regionalMethod(method,validation,'PE')
@@ -130,8 +130,8 @@ test('Método regional reportable, no reportable, cambio de etapa y observacione
 })
 test('popup nacional nunca traduce cell_days a días distintos de una celda de 10 km',()=>{
  const popup=cellPopup({cell_id:'TEST',year:2024,month:9,sensor_group:'MODIS',cell_days:84},{national:true})
- assert.equal(popup.querySelector('strong')!.textContent,'84 días-celda de 1 km')
- assert.match(popup.textContent!,/No son días distintos de la celda de 10 km ni un total departamental/)
+ assert.equal(popup.querySelector('strong')!.textContent,'84 1 km cell-days')
+ assert.match(popup.textContent!,/not distinct days of the 10 km square nor a department total/)
 })
 
 
@@ -167,7 +167,7 @@ test('GeoJSON nacional tardío no reemplaza el año actual tras cambiar de perí
  assert.equal((runtime.maps[0].sources['celdas-observadas'].data as CellsData).features[0].properties.year,2026)
  await act(async()=>release!(new Response(files['/data/peru/cells_PE_2024.geojson'])))
  assert.equal((runtime.maps[0].sources['celdas-observadas'].data as CellsData).features[0].properties.year,2026)
- assert.equal(host.querySelector('.map-observed-value')!.textContent,regionalSummary(monthly,{region:'PE-25',year:2026,month:7,sensor:'MODIS',scope:'month'}).value!.toLocaleString('es-PE'))
+ assert.equal(host.querySelector('.map-observed-value')!.textContent,regionalSummary(monthly,{region:'PE-25',year:2026,month:7,sensor:'MODIS',scope:'month'}).value!.toLocaleString('en-US'))
 })
 test('métricas regionales null y serie calibrada no disponible conservan el resto de Método',async t=>{
  const changed=JSON.parse(files['/data/peru/validation.json'])
@@ -180,11 +180,13 @@ test('métricas regionales null y serie calibrada no disponible conservan el res
  await click(host,'Validación')
  assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,`${(method.resultados.valid['PE-01'].B1.wape!*100).toFixed(1)}%`)
 })
-test('mapa nacional no ofrece la capa de áreas protegidas filtrada a Ucayali y distingue el ámbito PE',async t=>{
- mockFiles(t);const {host}=await setup(t)
+test('mapa nacional ofrece las áreas protegidas de todo el Perú (sin filtro Ucayali) y distingue el ámbito PE',async t=>{
+ mockFiles(t);const {host,runtime}=await setup(t)
  const overlays=host.querySelector('.map-overlays')!.textContent!
- assert.doesNotMatch(overlays,/Áreas protegidas/);assert.match(overlays,/Referencias y límites de Perú/)
- assert.match(host.querySelector('.map-fine-print')!.textContent!,/solo está disponible en el piloto Ucayali/)
+ assert.match(overlays,/Protected natural areas · Peru/);assert.match(overlays,/References and boundaries of Peru/)
+ const tiles=(runtime.maps[0].style as {sources:Record<string,{tiles?:string[]}>}).sources['overlay-protected'].tiles![0]
+ assert.doesNotMatch(tiles,/UCAYALI|layerDefs/)
+ assert.match(host.querySelector('.map-panel--left .map-fine-print')!.textContent!,/cover Peru only/)
  const context=host.querySelector('.map-geographic-context')!.textContent!
- assert.match(context,/Ámbito: Perú/);assert.doesNotMatch(context,/recortadas/)
+ assert.match(context,/Scope: Peru/);assert.doesNotMatch(context,/clipped/)
 })

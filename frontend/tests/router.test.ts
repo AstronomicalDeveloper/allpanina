@@ -15,8 +15,8 @@ async function open(t:import('node:test').TestContext,url:string){
  await act(async()=>root.render(createElement(BrowserRouter,null,createElement(AppRoutes))))
  return host
 }
-// Los títulos h1 del Calendario, el Mapa y el Método siguen en español hasta F2–F4 (páginas de otros integrantes).
-for(const [path,title,active] of [['/calendar','Calendario histórico','Calendar'],['/map','Mapa de observaciones','Map'],['/method','Método y evaluación','Method'],['/no-such-page','Page not found',null]]) {
+// Calendario y Método conservan sus títulos; F5a traduce el título del Mapa.
+for(const [path,title,active] of [['/calendar','Calendario histórico','Calendar'],['/map','Map of observations','Map'],['/method','Método y evaluación','Method'],['/no-such-page','Page not found',null]]) {
  test(`acceso directo ${path}, navegación e historial`,async t=>{
  const host=await open(t,path+'?scope=month&periodYear=2024#detalle')
  assert.equal(host.querySelector('h1')!.textContent,title)

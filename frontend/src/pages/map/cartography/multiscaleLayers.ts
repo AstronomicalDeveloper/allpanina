@@ -29,6 +29,6 @@ export function summaryLayers(opacity: number, breaks: {q25:number;q50:number;q7
     layout:{'icon-image':SQUARE_IMAGE,'icon-size':['interpolate',['linear'],['zoom'],3,.25,8,.375,LOCAL_ZOOM,.4],
       'icon-allow-overlap':true,'icon-ignore-placement':true,'icon-pitch-alignment':'viewport','icon-rotation-alignment':'viewport'},
     paint:{'icon-color':percentileColorExpression(breaks.q25,breaks.q50,breaks.q75),'icon-opacity':symbolOpacity(opacity),
-      'icon-opacity-transition':{duration:0},'icon-halo-width':.35,'icon-halo-color':'rgba(22,59,53,0.45)'}
+      'icon-opacity-transition':{duration:0},'icon-halo-width':.35,'icon-halo-color':'rgba(11,23,54,0.55)'}
   }]
 }

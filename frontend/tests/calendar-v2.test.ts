@@ -80,7 +80,7 @@ test('v2 URL: series independientes, período explícito, hash y parámetros con
  assert.equal(url.pathname,'/map');assert.equal(url.searchParams.get('scope'),'month');assert.equal(url.searchParams.get('mapScope'),'month')
  assert.equal(url.searchParams.get('mapSensor'),'MODIS');assert.equal(url.searchParams.get('calendarSeries'),'VIIRS');assert.equal(url.searchParams.get('periodMonth'),'9');assert.equal(url.searchParams.get('extra'),'keep')
  await act(async()=>href.click())
- assert.equal(host.querySelector('h1')!.textContent,'Mapa de observaciones')
+ assert.equal(host.querySelector('h1')!.textContent,'Map of observations')
  await act(async()=>new Promise<void>((resolve,reject)=>{const timeout=setTimeout(()=>reject(new Error('historial sin evento')),1500);window.addEventListener('popstate',()=>{clearTimeout(timeout);resolve()},{once:true});window.history.back()}))
  assert.equal(host.querySelector('.calendar-observed-value')!.textContent,'5581')
  assert.equal(new URLSearchParams(window.location.search).get('scope'),'year')

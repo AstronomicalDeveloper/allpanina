@@ -4,8 +4,8 @@ import { percentileLegend } from '../src/pages/map/sections/percentileLegend'
 import { calendarScaleTicks } from '../src/pages/calendar/sections/calendarPresentation'
 
 test('leyenda del mapa usa enteros y marca tramos vacíos en lugar de repetir cortes', () => {
-  assert.deepEqual(percentileLegend(1, 1, 1.5).map(r => r.range), ['≤ 1', 'Sin valores en este tramo', 'Sin valores en este tramo', '≥ 2'])
-  assert.deepEqual(percentileLegend(2.5, 7, 40.25).map(r => r.range), ['≤ 2', '3 a 7', '8 a 40', '≥ 41'])
+  assert.deepEqual(percentileLegend(1, 1, 1.5).map(r => r.range), ['≤ 1', 'No values in this range', 'No values in this range', '≥ 2'])
+  assert.deepEqual(percentileLegend(2.5, 7, 40.25).map(r => r.range), ['≤ 2', '3 to 7', '8 to 40', '≥ 41'])
   assert.deepEqual(percentileLegend(1, 2, 3).map(r => r.range), ['≤ 1', '2', '3', '≥ 4'])
 })
 
@@ -15,8 +15,8 @@ test('cada valor entero cae en el tramo de la leyenda que corresponde a su color
   const inRange = (v: number, range: string) => {
     if (range.startsWith('≤ ')) return v <= Number(range.slice(2))
     if (range.startsWith('≥ ')) return v >= Number(range.slice(2))
-    if (range === 'Sin valores en este tramo') return false
-    const [low, high = low] = range.split(' a ').map(Number)
+    if (range === 'No values in this range') return false
+    const [low, high = low] = range.split(' to ').map(Number)
     return v >= low && v <= high
   }
   for (const q of [[1, 1, 1], [1, 1.5, 4], [2.25, 2.75, 9.5], [3, 6, 6], [0.5, 12.8, 31.2]]) {
