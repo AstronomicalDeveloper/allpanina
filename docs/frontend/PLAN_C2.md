@@ -13,7 +13,7 @@ Verificado en un clon de trabajo limpio: `npm ci` correcto; `npm test` 185 de 18
 | 1.1–1.6 | ✅ Hecho | `index.html` con `lang="es"` y título propio; `public/favicon.svg`; `useDocumentTitle.ts`; landing en `/`; `/?…` redirige a `/calendario`; `router.test.ts` y `landing.test.ts` |
 | 1b.1, 1b.3 | ✅ Hecho | `CellDaysHelp` con `purpose`; contexto de la celda en `ExplorationPanel.tsx`; `clarity.test.ts` y `map-ui.test.ts` |
 | 2.1 Nombres de región | ✅ Hecho (Landry, A3) | `GeographicSelection.tsx` y `CalendarPage.tsx` toman el `nombre` de `peru/method.json` |
-| 2.2 Textos del mapa nacional | 🟡 Parcial | Los textos de 10 km ya existen (`CartographyPanel`, `ExplorationPanel`, `AnnualCellDetail`, `MapWorkspace`). Falta: el título «Inspector de celda» no cambia en el modo nacional |
+| 2.2 Textos del mapa nacional | ✅ Hecho | Los textos de 10 km ya existían (`CartographyPanel`, `ExplorationPanel`, `AnnualCellDetail`, `MapWorkspace`). En el modo nacional el inspector ahora se llama «Inspector de cuadrícula» y explica que su valor suma días-celda de 1 km; el piloto conserva «Inspector de celda». Prueba en `peru-stage2.test.ts` |
 | 2.3 Capa «Áreas protegidas · Ucayali» | ⬜ Pendiente | Se sigue ofreciendo en el modo nacional (`CartographyPanel.tsx`). Decide Landry |
 | 2.4 Mensajes de error | ⬜ Pendiente | Se muestran textos técnicos (`String(error)`) en `GeographicSelection.tsx`, `MapPage.tsx` y `useJuanMap.ts`. Coordinar con Landry |
 | 2.5 Párrafo nacional en Método | ✅ Hecho (Landry, A5) | `NationalMethodNotes.tsx` |

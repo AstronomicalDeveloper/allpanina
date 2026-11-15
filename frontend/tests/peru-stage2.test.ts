@@ -63,6 +63,11 @@ test('Mapa nacional carga solo el año activo; cuadrados/inspector explican valo
  assert.match(host.querySelector('.map-cell-detail')!.textContent!,/10 km.*No son días distintos/)
  assert.equal((runtime.maps[0].sources[SUMMARY_SOURCE].data as SummaryPoints).features.length,observed.features.length)
  assert.ok((runtime.maps[0].sources[SUMMARY_SOURCE].data as SummaryPoints).features.every(f=>f.properties.region_id==='PE'))
+ const inspector=host.querySelector('.map-inspector')!
+ assert.equal(inspector.querySelector('h3')!.textContent,'Inspector de cuadrícula')
+ assert.match(inspector.textContent!,/cuadrícula de 10 km.*celdas de 1 km/)
+ assert.ok(inspector.querySelector('[aria-label="Seleccionar cuadrícula del mapa"]'))
+ assert.doesNotMatch(inspector.textContent!,/Inspector de celda|Elegir celda/)
 })
 test('departamento mantiene capa PE sin reparto por centroide; resumen toma el CSV y no suma geometrías',async t=>{
  mockFiles(t);const {host,runtime}=await setup(t,'/mapa?mapRegion=PE-25&periodYear=2024&periodMonth=9&scope=month&calendarSeries=VIIRS')

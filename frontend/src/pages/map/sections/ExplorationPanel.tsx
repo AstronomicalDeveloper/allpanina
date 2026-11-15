@@ -13,6 +13,8 @@ export default function ExplorationPanel({ map, selection, years, onChange, unav
   const usableMonths=regional?.usableMonths ?? map.usableMonths
   const observedValue=regional ? regional.value : map.stats.totalDetections
   const cellContext = map.selectedCell ? valueContext(map.filteredGeoJson.features.map(f => f.properties.cell_days), map.selectedCell.cell_days) : null
+  /** El mapa nacional dibuja cuadrículas de 10 km que suman celdas de 1 km; el piloto dibuja celdas de 1 km. */
+  const unit = national ? 'cuadrícula' : 'celda'
   const valid = regional ? regional.value!==null : map.scope === 'year' ? map.usableMonths > 0 : map.monthStatus === 'ok'
   return <div className="map-panel-content">
     <fieldset><legend>Período de observación</legend><div className="map-segment" aria-label="Modalidad del mapa">{([['year', 'Anual'], ['month', 'Mensual']] as const).map(([scope, label]) => <button key={scope} aria-pressed={map.scope === scope} onClick={() => onChange({ ...selection, scope })}>{label}</button>)}</div>
@@ -27,8 +29,8 @@ export default function ExplorationPanel({ map, selection, years, onChange, unav
         : <p>{(regional?.status ?? map.monthStatus) === 'missing' && map.scope === 'month' ? 'Sin dato utilizable' : map.scope === 'month' ? 'Período no publicado' : 'Sin meses utilizables'}. No se interpreta como cero.</p>}
       {map.scope === 'year' && !unavailable && <><p className="map-coverage-badge">{usableMonths === 12 ? 'Año completo' : 'Año parcial'} · {usableMonths}/12 meses utilizables</p><details><summary>Disponibilidad mensual</summary><ul>{coverage.map(month => <li key={month.month}>{MONTHS[month.month - 1]}: {month.status === 'ok' ? 'publicado utilizable' : month.status === 'missing' ? 'sin dato utilizable' : 'no publicado'}</li>)}</ul></details></>}
     </section>
-    <section className="map-inspector" aria-label="Inspector de celda"><h3>Inspector de celda</h3><p>Selecciona una celda en el mapa o elige su identificador.</p>
-      <label>Celda (teclado)<select aria-label="Seleccionar celda del mapa" value={map.selectedCell?.cell_id ?? ''} onChange={event => map.selectCell(event.target.value)}><option value="">Elegir celda</option>{cellOptions}</select></label>
+    <section className="map-inspector" aria-label={`Inspector de ${unit}`}><h3>Inspector de {unit}</h3><p>{national ? 'Selecciona una cuadrícula de 10 km en el mapa o elige su identificador. Su valor suma los días-celda de las celdas de 1 km que contiene.' : 'Selecciona una celda en el mapa o elige su identificador.'}</p>
+      <label>{national ? 'Cuadrícula' : 'Celda'} (teclado)<select aria-label={`Seleccionar ${unit} del mapa`} value={map.selectedCell?.cell_id ?? ''} onChange={event => map.selectCell(event.target.value)}><option value="">Elegir {unit}</option>{cellOptions}</select></label>
       {map.selectedCell && <div className="map-cell-detail"><h4>Observación satelital</h4><p>{national?'Capa nacional PE · cuadrícula de 10 km':selection.region} · {map.sensor}</p>
         {map.scope === 'year' ? <AnnualCellDetail cell={map.selectedCell} model={map.yearModel} national={national} /> : <><p>{MONTHS[map.month - 1]} de {map.year}</p><p><strong>{map.selectedCell.cell_days} {national?'días-celda de 1 km':map.selectedCell.cell_days === 1 ? 'día' : 'días'}</strong> {national?'acumulados en esta cuadrícula de 10 km durante el mes. No son días distintos de la cuadrícula ni un total departamental.':'con detecciones térmicas registradas en esta celda durante el mes.'}</p><p>No equivale a ese número de incendios.</p></>}
         <p className="map-fine-print">Identificador de celda: {map.selectedCell.cell_id}</p>
