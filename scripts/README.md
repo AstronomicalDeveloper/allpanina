@@ -24,6 +24,7 @@ python scripts/03_grid_dedupe.py
 python scripts/04_monthly_series.py          # 2013-01 a 2024-12
 python scripts/04_monthly_series.py --peru   # extension Peru (P06): 26 regiones -> data/processed/peru/
 python scripts/05_geojson_export.py          # por defecto, solo 2024
+python scripts/05_geojson_export.py --peru --years 2013 2014 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024   # P08, mapa nacional a 10 km
 python scripts/08_manifest.py
 ```
 
