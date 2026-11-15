@@ -144,10 +144,57 @@ If you are unsure how to resolve a conflict, ask another team member before proc
 
 **Our priority:** Deliver a functional, integrated, and reproducible solution within the hackathon timeframe. Collaboration practices should support development, not slow it down.
 
+## 🇵🇪 Peru national extension (v2)
+
+AllpaNina started with a validated pilot for the Ucayali department (`frontend/public/data/`, unchanged). Version 2 extends the same method to **Peru as a whole (`PE`) and its 25 departments (`PE-01` … `PE-25`, INEI codes)**. All Peru files are in [`frontend/public/data/peru/`](frontend/public/data/peru/) and follow data contract v1.1 ([`docs/contrato_datos.md`](docs/contrato_datos.md)).
+
+**Indicator.** `cell_days`: number of (1 km cell, day) pairs with at least one active-fire detection, per region, month and sensor. The grid is EPSG:6933 and days are in Lima local time. A cell belongs to the department whose official INEI 2023 polygon contains its centre.
+
+**Method.**
+- `B0` = VIIRS without correction.
+- `B1` = VIIRS × κ, where κ = Σ MODIS / Σ VIIRS over the training period (2013-01 to 2022-12 only).
+- **κ is stratified.** The 17 departments with enough data have their own κ (0.164–0.337); the 8 low-activity departments share one pooled κ (0.207). A single national κ would overestimate some departments by up to ~50% and underestimate others by ~26%.
+- National `B1` is the **sum** of the 25 departmental estimates, so the national value always equals the sum of its departments.
+- Every rule was frozen before looking at validation or test data ([`DECISIONS.md`](DECISIONS.md) §11–12).
+
+**Results (WAPE, lower is better).**
+
+| Period | Region | B0 (uncalibrated) | B1 (calibrated) |
+|---|---|---:|---:|
+| Validation 2023-01 to 2024-12 | Peru | 2.86 | **0.12** |
+| Reserved test 2025-01 to 2026-07, run once | Peru without Ucayali (clean result) | 4.58 | **0.33** |
+| Reserved test 2025-01 to 2026-07, run once | Peru | 4.30 | **0.31** |
+
+Calibration reduces the error by roughly 14 times in the test and improves on B0 in all 21 reportable departments. In the test, however, `B1` overestimated MODIS in all 19 months. The national MODIS/VIIRS ratio dropped to 0.191 in 2025 and 0.176 in 2026, below its 2013–2024 range of 0.222–0.286. A κ fixed on 2013–2022 cannot follow that change. Terra/Aqua orbital drift is a possible cause, but this has not been tested. In high-activity years the opposite happens and `B1` underestimates the peak (September 2024: −31% in San Martín, −29% in Ucayali). Full results and all limitations: [`docs/peru/RESULTADO_TEST.md`](docs/peru/RESULTADO_TEST.md) and `frontend/public/data/peru/method.json`.
+
+**Main limitations.**
+- The error grows when there is little fire activity.
+- Four departments (Callao, Moquegua, Tacna, Tumbes) have too little activity for test metrics of their own (Σ MODIS < 50).
+- The Ucayali test had already been seen in the pilot, so the clean national reading is "Peru without Ucayali".
+- `B1` is validated at region-month scale only. The national map (10 km cells) shows observed values only.
+- Suomi NPP VIIRS stopped producing new data in FIRMS on 2 November 2026, so extending the series requires another VIIRS sensor.
+
+**Reproduce.** The full sequence is in [`docs/peru/REPRODUCCION.md`](docs/peru/REPRODUCCION.md). A fresh clone rebuilds every published file byte for byte from the FIRMS archives in `docs/`:
+
+```bash
+pip install -r requirements.txt && python -m pytest
+python scripts/01_download.py && python scripts/02_normalize.py && python scripts/03_grid_dedupe.py
+python scripts/04_monthly_series.py --peru --out <dir>/serie_2024.csv
+python scripts/04_monthly_series.py --peru --include-test --out <dir>/serie_full.csv
+python scripts/05_geojson_export.py --peru --include-test --years 2013 ... 2026 --out-dir <dir>/maps
+python scripts/06_calibrate_peru.py <dir>/serie_2024.csv --out <dir>/valid
+python scripts/09_test_peru.py <dir>/serie_full.csv --out <dir>/test
+python scripts/10_final_peru.py && python scripts/08_manifest.py --peru
+```
+
+Review trail: [`REVISION_P07`](docs/peru/REVISION_P07.md) (series), [`REVISION_P11`](docs/peru/REVISION_P11.md) (calibration), [`AUTORIZACION_TEST`](docs/peru/AUTORIZACION_TEST.md) (test authorisation), [`RESULTADO_TEST`](docs/peru/RESULTADO_TEST.md) (signed test result), [`REVISION_P17`](docs/peru/REVISION_P17.md) (final files) and [`REPRODUCCION`](docs/peru/REPRODUCCION.md) (reproduction).
+
 ## 🛰️ Data sources and acknowledgements
 
 AllpaNina uses active-fire detections from NASA's Fire Information for Resource Management System (FIRMS), which is part of NASA's Land, Atmosphere Near real-time Capability for EO (LANCE) and is operated by NASA's Earth Science Data and Information System (ESDIS) project. Sensors used: MODIS (Terra and Aqua, Collection 6.1) and VIIRS (Suomi NPP, 375 m, Collection 2).
 
 FIRMS data are provided "as is". NASA advises against using them for tactical decisions or for conditions at a local scale; AllpaNina is a scientific prototype and must not be used for that purpose. Our acknowledgement follows NASA's request for anyone who shares FIRMS data: see the official acknowledgements and full disclaimer at https://www.earthdata.nasa.gov/data/tools/firms.
+
+Department boundaries come from the National Institute of Statistics and Informatics of Peru (INEI), spatial data infrastructure, layer *Departamental (actualizado al 2023)*, https://ide.inei.gob.pe/ ([`docs/region/`](docs/region/)).
 
 Provenance of the files we downloaded (request IDs, hashes, columns and limitations) is documented in [`docs/datos.md`](docs/datos.md). Raw FIRMS files are not part of the final content of `main`.
