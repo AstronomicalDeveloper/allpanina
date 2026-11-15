@@ -343,6 +343,39 @@ Son **preliminares**: los κ oficiales los calcula Antonella en P09 con el pipel
 y deben coincidir. Callao tiene Σ MODIS = 0 en train; solo entra en el estrato
 agrupado, nunca con κ propio.
 
-### 11.3 Reglas de métricas — P04
+### 11.3 Reglas de métricas — P04 (Aldo, 14-nov-2026; confirmación de Antonella pendiente)
 
-Pendiente.
+Fijadas **antes** de calcular cualquier métrica de validación o test fuera de Ucayali.
+
+**1. Mínimo para reportar una región.**
+- Una región se reporta en un split si en ese split tiene **Σ MODIS ≥ 50 celdas-día**.
+- Se evalúa por separado en validación y en test: una región puede ser reportable en
+  una y no en la otra.
+- Si no llega al mínimo, en `validation.json` va como `reportable: false`, con
+  `motivo` y sin métricas (contrato v1.1, sección E). Sus meses sí cuentan dentro de
+  `PE` y de `PE-SIN-25`.
+
+**2. WAPE.**
+- Si Σ MODIS = 0 en el split, el WAPE no se reporta (`null`, nunca 0).
+- MAE y sesgo se reportan igual si la región es reportable.
+- Las métricas se calculan con los meses emparejados (`status = ok` en los dos
+  sensores), como en el piloto.
+
+**3. Test con y sin Ucayali.**
+- El test se reporta para `PE`, para `PE-SIN-25` (Perú sin Ucayali) y para cada
+  región reportable.
+- `PE-25` (Ucayali) se marca como "test ya visto en T29". El resultado limpio, el que
+  nadie había visto, es `PE-SIN-25`.
+
+**4. Cómo se decide en P10 si estratificar mejora** (una regla que el plan nombra pero
+no deja fija):
+- Se comparan tres alternativas, ya definidas aquí, todas con κ calculado solo en train:
+  - **(a) Estratificada**, la de §11.2.
+  - **(b) κ nacional único** (el de `PE`) para todos los departamentos.
+  - **(c) κ de Ucayali** (0.29360) para todos los departamentos.
+- **Criterio:** el WAPE agregado de los 25 departamentos en validación:
+  Σ |error| / Σ MODIS, sumando todos los departamentos y los 24 meses.
+- **Se elige la estratificada si su WAPE agregado es menor que el de (b) y el de (c).**
+  Si no lo es, en P11 se elige entre (a), (b) y (c) la de menor WAPE agregado, se
+  documenta y se congela. No se crean alternativas nuevas después de ver validación.
+- El test no interviene en esta elección.
