@@ -1,0 +1,35 @@
+autorizacion P12: AUTORIZADO
+serie P13 SHA-256 = a633da77d258c832b929d9cc672b11a08a6d3651f620469dcb3d7233acf73ede (coincide con P13.md)
+serie P07 SHA-256 = b3ceeae6df820b19f7f132558cea08e51d27f6528f04b460c4c6c8b517893109 (coincide con REVISION_P07.md)
+2013-01..2024-12: 7488 filas identicas a P07 en todas las columnas menos updated_at
+meses de test: 2025-01 a 2026-07 (19)
+kappa recalculados con train 2013-01..2022-12 frente a los congelados (AUTORIZACION_TEST.md §3):
+  PE     Perú           calculado 0.24891429001146811    congelado 0.24891429001146811    OK
+  PE-01  Amazonas       calculado 0.1636604774535809     congelado 0.1636604774535809     OK
+  PE-02  Áncash         calculado 0.2263453048562224     congelado 0.2263453048562224     OK
+  PE-03  Apurímac       calculado 0.2993135838150289     congelado 0.2993135838150289     OK
+  PE-04  Arequipa       calculado 0.2074200735789419     congelado 0.2074200735789419     OK
+  PE-05  Ayacucho       calculado 0.25009491268033407    congelado 0.25009491268033407    OK
+  PE-06  Cajamarca      calculado 0.19206349206349208    congelado 0.19206349206349208    OK
+  PE-07  Callao         calculado 0.2074200735789419     congelado 0.2074200735789419     OK
+  PE-08  Cusco          calculado 0.2707177676920491     congelado 0.2707177676920491     OK
+  PE-09  Huancavelica   calculado 0.2074200735789419     congelado 0.2074200735789419     OK
+  PE-10  Huánuco        calculado 0.2698616135887993     congelado 0.2698616135887993     OK
+  PE-11  Ica            calculado 0.2074200735789419     congelado 0.2074200735789419     OK
+  PE-12  Junín          calculado 0.23387767610875182    congelado 0.23387767610875182    OK
+  PE-13  La Libertad    calculado 0.2500541086501695     congelado 0.2500541086501695     OK
+  PE-14  Lambayeque     calculado 0.27195926397407705    congelado 0.27195926397407705    OK
+  PE-15  Lima           calculado 0.2074200735789419     congelado 0.2074200735789419     OK
+  PE-16  Loreto         calculado 0.19987465101703605    congelado 0.19987465101703605    OK
+  PE-17  Madre de Dios  calculado 0.3372677046710196     congelado 0.3372677046710196     OK
+  PE-18  Moquegua       calculado 0.2074200735789419     congelado 0.2074200735789419     OK
+  PE-19  Pasco          calculado 0.2660450068985204     congelado 0.2660450068985204     OK
+  PE-20  Piura          calculado 0.19136015457870403    congelado 0.19136015457870403    OK
+  PE-21  Puno           calculado 0.28991750687442713    congelado 0.28991750687442713    OK
+  PE-22  San Martín     calculado 0.21326906202636947    congelado 0.21326906202636947    OK
+  PE-23  Tacna          calculado 0.2074200735789419     congelado 0.2074200735789419     OK
+  PE-24  Tumbes         calculado 0.2074200735789419     congelado 0.2074200735789419     OK
+  PE-25  Ucayali        calculado 0.2936037257560573     congelado 0.2936037257560573     OK
+  26 de 26 kappa iguales a los congelados
+calculando metricas de test...
+salidas: validation.json, calibrated_series.csv, resumen_test.json, corrida.log
