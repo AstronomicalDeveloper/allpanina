@@ -84,3 +84,15 @@ test('C5 el mapa explica día-celda y contextualiza la celda seleccionada',async
  await choose(host,'[aria-label="Seleccionar celda del mapa"]','DEMO-cell-001')
  assert.match(host.querySelector('.map-cell-context')!.textContent!,/\d+ de \d+ celdas con registro tienen más días-celda que esta\. El máximo es \d+/)
 })
+test('piloto conserva la capa de áreas protegidas de Ucayali',async t=>{
+ mockFiles(t);const {host}=await setup(t,'?periodYear=2024&periodMonth=9&scope=month')
+ assert.match(host.querySelector('.map-overlays')!.textContent!,/Áreas protegidas · Ucayali/)
+})
+test('errores del mapa muestran un mensaje comprensible y dejan el detalle técnico plegado',async t=>{
+ const data=JSON.parse(files['/data/demo/cells_PE-DEMO_2024.geojson']);data.features[0].properties.month=13
+ mockFiles(t,{'/data/demo/cells_PE-DEMO_2024.geojson':JSON.stringify(data)})
+ const {host}=await setup(t);const alert=host.querySelector('[role="alert"]')!
+ const detail=alert.querySelector<HTMLDetailsElement>('details.technical-detail')!
+ assert.equal(detail.open,false);assert.match(detail.textContent!,/month/)
+ assert.doesNotMatch([...alert.querySelectorAll('h2, p')].map(node=>node.textContent).join(' '),/month/)
+})

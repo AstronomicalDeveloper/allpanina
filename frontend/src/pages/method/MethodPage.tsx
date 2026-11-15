@@ -9,6 +9,7 @@ import type { Manifest, MethodInfo, ValidationResult, NationalMethod, NationalVa
 import ProcessingSection from './sections/ProcessingSection'
 import EvaluationSection from './sections/EvaluationSection'
 import SourcesSection from './sections/SourcesSection'
+import TechnicalDetail from '../../components/ui/TechnicalDetail'
 
 function MethodContent({ dataRoot, demo, national, region }: { dataRoot: string; demo: boolean; national: boolean; region: string }) {
   const [method, setMethod] = useState<LoadResult<MethodInfo | NationalMethod> | null>(null)
@@ -47,7 +48,7 @@ function MethodContent({ dataRoot, demo, national, region }: { dataRoot: string;
     </header>
     {demo && <p className="method-notice"><strong>DATOS DEMO — NO SON OBSERVACIONES REALES.</strong> Este modo solo comprueba la interfaz; no acredita resultados científicos.</p>}
     {(method === null || validation === null || manifest === null || (national&&calibrated===null)) && <p role="status">Cargando metodología, evaluación y procedencia…</p>}
-    {errors.map((result, index) => result && !result.ok && <p role="alert" className="method-notice" key={index}>No se pudo leer un archivo científico: {result.error}</p>)}
+    {errors.map((result, index) => result && !result.ok && <div role="alert" className="method-notice" key={index}><p>No se pudo leer uno de los archivos de la metodología. Las secciones que dependen de él no se muestran ni se rellenan con otros valores.</p><TechnicalDetail detail={result.error} /></div>)}
     {errors.length > 0 && <button className="method-retry" onClick={() => { setMethod(null); setValidation(null); setManifest(null); setCalibrated(null); setAttempt(attempt + 1) }}>Reintentar carga</button>}
     {conflict && <p role="alert" className="method-notice">Los archivos declaran regiones diferentes. No se combinan los resultados ni se atribuye una evaluación a otra región. Revisa la entrega científica.</p>}
     <nav className="method-index" aria-label="Contenido de Método"><a href="#observaciones">De la señal al indicador</a><a href="#evaluacion">Cómo se evalúa</a><a href="#limites">Límites y fuentes</a></nav>

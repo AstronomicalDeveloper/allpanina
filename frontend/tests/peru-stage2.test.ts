@@ -181,3 +181,11 @@ test('métricas regionales null y serie calibrada no disponible conservan el res
  await click(host,'Validación')
  assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,`${(method.resultados.valid['PE-01'].B1.wape!*100).toFixed(1)}%`)
 })
+test('mapa nacional no ofrece la capa de áreas protegidas filtrada a Ucayali y distingue el ámbito PE',async t=>{
+ mockFiles(t);const {host}=await setup(t)
+ const overlays=host.querySelector('.map-overlays')!.textContent!
+ assert.doesNotMatch(overlays,/Áreas protegidas/);assert.match(overlays,/Referencias y límites de Perú/)
+ assert.match(host.querySelector('.map-fine-print')!.textContent!,/solo está disponible en el piloto Ucayali/)
+ const context=host.querySelector('.map-geographic-context')!.textContent!
+ assert.match(context,/Ámbito: Perú/);assert.doesNotMatch(context,/recortadas/)
+})

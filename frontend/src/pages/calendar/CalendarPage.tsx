@@ -7,6 +7,7 @@ import type { MonthlyRecord, CalibratedRecord, Manifest, MethodInfo, NationalMet
 import useExplorationSelection from '../../app/useExplorationSelection'
 import CalendarExplorer from './sections/CalendarExplorer'
 import CalendarDetail from './sections/CalendarDetail'
+import TechnicalDetail from '../../components/ui/TechnicalDetail'
 
 type Publication = {
   monthly: LoadResult<MonthlyRecord[]>; calibrated: LoadResult<CalibratedRecord[]>;
@@ -39,10 +40,10 @@ function CalendarPublication({ root, demo }: { root: string; demo: boolean }) {
     {(!data || !data.monthly.ok) && <header className="calendar-heading"><h1>Calendario histórico</h1><span>{name ?? (region || 'Actividad térmica regional')}</span></header>}
     {demo && <p className="calendar-demo"><strong>DATOS DEMO — NO SON OBSERVACIONES REALES</strong></p>}
     {!data ? <div className="calendar-exploration"><p role="status">Cargando calendario…</p><CalendarDetail cell={null} region={region} sensor={selection.calendarSeries} /></div>
-      : !data.monthly.ok ? <div className="calendar-exploration"><div role="alert"><p>No se pudo cargar el calendario: {data.monthly.error}</p><button type="button" onClick={retry}>Reintentar carga</button></div><CalendarDetail cell={null} region={region} sensor={selection.calendarSeries} /></div>
+      : !data.monthly.ok ? <div className="calendar-exploration"><div role="alert"><p>No se pudo cargar la serie mensual del calendario. Comprueba la conexión y vuelve a intentarlo; no se muestran valores de reemplazo.</p><button type="button" onClick={retry}>Reintentar carga</button><TechnicalDetail detail={data.monthly.error} /></div><CalendarDetail cell={null} region={region} sensor={selection.calendarSeries} /></div>
       : manifest?.contract_version === '1.1' && !manifest.regions?.includes(region) ? <p role="alert">Región no válida para esta publicación: {region}. Selecciona un ámbito del manifiesto.</p>
       : <>
-        {(!data.calibrated.ok || !data.manifest.ok || !data.method.ok) && <div role="alert"><p>{!data.calibrated.ok && `Estimaciones no disponibles: ${data.calibrated.error}. `}{!data.manifest.ok && `Manifiesto no disponible: ${data.manifest.error}. `}{!data.method.ok && `Descripción de región no disponible: ${data.method.error}. `}Las observaciones disponibles se conservan.</p><button type="button" onClick={retry}>Reintentar archivos</button></div>}
+        {(!data.calibrated.ok || !data.manifest.ok || !data.method.ok) && <div role="alert"><p>{!data.calibrated.ok && 'Estimaciones no disponibles. '}{!data.manifest.ok && 'Manifiesto no disponible. '}{!data.method.ok && 'Descripción de región no disponible. '}Las observaciones disponibles se conservan.</p><button type="button" onClick={retry}>Reintentar archivos</button><TechnicalDetail detail={[data.calibrated, data.manifest, data.method].map(result => result.ok ? '' : result.error).filter(Boolean).join('\n')} /></div>}
         <CalendarExplorer regionLabel={name ?? region} records={data.monthly.data} showRegionSelector={!national} calibrated={data.calibrated.ok ? data.calibrated.data : []} demo={demo} sourceUrl={`${root}/monthly_series.csv`} selection={{ region, year: selection.year, month: selection.month, series: selection.calendarSeries, scope: selection.scope }} onSelectionChange={changeCalendar} mapHref={mapHref} onOpenMap={(event, period) => {
           if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return
           event.preventDefault(); navigate(mapHref(period))
