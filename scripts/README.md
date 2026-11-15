@@ -22,6 +22,7 @@ python scripts/01_download.py
 python scripts/02_normalize.py
 python scripts/03_grid_dedupe.py
 python scripts/04_monthly_series.py          # 2013-01 a 2024-12
+python scripts/04_monthly_series.py --peru   # extension Peru (P06): 26 regiones -> data/processed/peru/
 python scripts/05_geojson_export.py          # por defecto, solo 2024
 python scripts/08_manifest.py
 ```
@@ -37,6 +38,10 @@ python scripts/08_manifest.py
 - Region: departamento de Ucayali (`region_id = PE-UCA`, `DECISIONS.md` secciones 1 y 9). Se filtra por el
   centro de la celda dentro del poligono oficial del INEI (`docs/region/ucayali_inei_2023.geojson`). La caja
   lat -11.55 a -7.15, lon -76.10 a -70.40 solo es un prefiltro. Requiere `shapely` (en `requirements.txt`).
+- Extension Peru (`--peru`, `DECISIONS.md` seccion 11, contrato v1.1): 26 regiones, `PE` y `PE-01` a `PE-25`.
+  Cada celda va al departamento que contiene su centro (`docs/region/departamentos_inei_2023.geojson`, 25
+  poligonos INEI 2023). Si un centro cayera en dos departamentos, el script falla. Las celdas fuera de los 25
+  poligonos no cuentan. `PE` = suma de los 25. `PE-25` sale igual a la serie `PE-UCA` del piloto.
 
 ## Test reservado
 
