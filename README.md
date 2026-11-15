@@ -1,3 +1,20 @@
+# AllpaNina 🔥🛰️
+
+**Harmonizing MODIS and VIIRS active-fire detections into one consistent, long-term record.** *Allpa* means "land" and *nina* means "fire" in Quechua.
+
+NASA's MODIS sensors (Terra and Aqua) recorded fires for more than two decades and are reaching the end of their missions. VIIRS sees many more fires because its pixels are smaller. Placing the two sensors one after the other therefore creates a false jump in fire activity. AllpaNina measures both sensors the same way and calibrates VIIRS to the MODIS scale, so that fire seasons can be compared across years.
+
+**What it offers**
+
+- **Calendar and map** of thermal-anomaly activity per month, for Peru and its 25 departments, plus the Ucayali pilot.
+- **Calibrated estimate (B1)** with a frozen factor κ, validated out of sample and tested once on reserved data: national WAPE 0.12 in validation and 0.31 in the test, against 2.86 and 4.30 without calibration ([details](#-peru-national-extension-v2)).
+- **Any region of the world, in the browser.** In "Mi región", choose a country and region (199 countries), load the NASA FIRMS files and get your own calendar and map. Everything runs on the user's computer. These results are labelled exploratory.
+- **Reproducible algorithm** (`python -m allpanina`) whose tests check that it reproduces the published files byte for byte.
+
+**Honest limits.** A detection is a thermal anomaly seen from orbit, not a confirmed fire or a burned area. A fixed κ cannot follow every season: in the test it overestimated MODIS in all 19 months. Suomi NPP stopped producing new data on 2 November 2026. Full list in [`frontend/public/data/peru/method.json`](frontend/public/data/peru/method.json).
+
+Built for the NASA Space Apps Challenge 2026 by the AllpaNina team. Code under the [MIT License](LICENSE); data keep their own terms (see [Data sources](#️-data-sources-and-acknowledgements)). How we used AI: [`AI_USE.md`](AI_USE.md).
+
 ## Ejecutar la integración científica L5/T32
 
 Frontend: Node.js 24, `cd frontend`, `npm ci`, `npm run dev`.
@@ -220,5 +237,7 @@ AllpaNina uses active-fire detections from NASA's Fire Information for Resource 
 FIRMS data are provided "as is". NASA advises against using them for tactical decisions or for conditions at a local scale; AllpaNina is a scientific prototype and must not be used for that purpose. Our acknowledgement follows NASA's request for anyone who shares FIRMS data: see the official acknowledgements and full disclaimer at https://www.earthdata.nasa.gov/data/tools/firms.
 
 Department boundaries come from the National Institute of Statistics and Informatics of Peru (INEI), spatial data infrastructure, layer *Departamental (actualizado al 2023)*, https://ide.inei.gob.pe/ ([`docs/region/`](docs/region/)).
+
+Country and first-level region boundaries outside Peru (page "Mi región") come from geoBoundaries (William & Mary geoLab, www.geoboundaries.org), gbOpen release, mostly under CC BY 4.0; the license of each country is listed in `frontend/public/cartography/world/index.json` once the "Mi región" data are merged.
 
 Provenance of the files we downloaded (request IDs, hashes, columns and limitations) is documented in [`docs/datos.md`](docs/datos.md). Raw FIRMS files are not part of the final content of `main`.
