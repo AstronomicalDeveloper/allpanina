@@ -172,7 +172,7 @@ export function FireMapTest({ data, model, demo = false, selection, availableYea
           CABECERA
       ================================================================ */}
 
-      {(
+      {isFullScreen && (
         <header
           style={{
             height: '54px',
@@ -257,7 +257,7 @@ export function FireMapTest({ data, model, demo = false, selection, availableYea
         <div className="map-coordinate-status"
           style={{
             position: 'absolute',
-            top: '64px',
+            top: 'var(--map-coordinates-top, 64px)',
             left: '50%',
             transform: 'translateX(-50%)',
             background: 'rgba(20, 33, 61, 0.88)',
@@ -300,14 +300,15 @@ export function FireMapTest({ data, model, demo = false, selection, availableYea
 
       <div
         ref={mapContainer}
+        className="map-canvas"
         style={{
           position: 'absolute',
           left: 0,
           right: 0,
-          top: '54px',
+          top: isFullScreen ? '54px' : 0,
           bottom: 0,
           width: '100%',
-          height: 'calc(100% - 54px)',
+          height: isFullScreen ? 'calc(100% - 54px)' : '100%',
         }}
       />
 
@@ -319,7 +320,7 @@ export function FireMapTest({ data, model, demo = false, selection, availableYea
         <aside
           style={{
             position: 'absolute',
-            top: '70px',
+            top: 'var(--map-controls-top, 70px)',
             right: '16px',
             width: 'min(325px, calc(100% - 32px))',
             background: 'rgba(20, 33, 61, 0.94)',

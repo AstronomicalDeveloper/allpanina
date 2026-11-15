@@ -1,5 +1,70 @@
 # AllpaNina frontend
 
+## Wireframes: etapa 1, estructura global y navegación
+
+Implementada sobre `feat/frontend-calendar`, conservando los cambios UX-04 existentes.
+Referencias locales: las cuatro páginas (texto e imágenes) de `docs/Alpanina.pdf`
+y las decisiones definitivas de `docs/AllpaNina_Decisiones_UI_UX_para_Codex.md`.
+Se aplicó la skill local `frontend-design`: composición marca / navegación / menú,
+verde bosque y marfil con acento cálido para la vista activa, sin fuentes remotas
+ni nuevas dependencias de aplicación.
+
+- Cabecera global sólida en Calendario/Método y translúcida, con fondo oscuro de
+  respaldo y desenfoque cuando se soporte, superpuesta a MapLibre en Mapa.
+- Navegación directa Calendario / Mapa / Método también en móvil; enlaces reales,
+  parámetros, historial, modalidades compartidas y sensores independientes intactos.
+- Hamburguesa reservada a Acerca de / Fuentes mediante `details/summary` nativo;
+  Escape cierra y devuelve foco, pulsar fuera o navegar también cierra. No hay
+  páginas ficticias ni roles ARIA de menú o pestañas para los enlaces.
+- Región, período publicado y procedencia siguen viniendo de los metadatos reales.
+  El modo DEMO explícito también se identifica en la cabecera común.
+- En Mapa, la cartografía abre el contenido; los controles de archivo y contexto
+  existentes quedan debajo. La cabecera local del mapa se conserva solo en pantalla
+  completa. `ResizeObserver` mide la cabecera global y deja espacio a los controles;
+  hay valores de respaldo CSS, y el observador se libera al desmontar.
+- Los cambios de `FireMapTest` se limitan al alojamiento de la cabecera y el espacio
+  del lienzo/controles. La reorganización de paneles y del panel inferior se reserva
+  para la etapa 3. Calendario y Método no recibieron nuevos rediseños en esta etapa.
+
+Verificación de esta etapa: **113 pruebas frontend aprobadas, cero fallos y omitidas**,
+lint y build correctos. Se añadieron dos casos de menú/medición y se ampliaron las
+pruebas existentes de navegación, contraste y transición al Mapa. Se conserva la
+advertencia de tamaño de MapLibre. Comandos desde la raíz:
+`npm.cmd test --prefix frontend`, `npm.cmd run lint --prefix frontend` y
+`npm.cmd run build --prefix frontend`.
+
+No se utilizó Computer Use, navegador, capturas ni revisión visual manual de la
+aplicación. La revisión de distribución, responsive y acabado queda para Landry.
+No se avanzó a las etapas 2–4 ni se hicieron commits, pushes o PR.
+
+## UX-04: rediseño visual del Calendario
+
+Implementado en `feat/frontend-calendar`. Esta sección actualiza la presentación
+del Calendario; la modalidad compartida y la navegación descritas abajo se conservan.
+
+- Controles compactos de serie/CSV, modalidad y período. La región solo requiere
+  selector cuando existen varias; su contexto permanece en la cabecera global.
+- Cuadrícula anual: seis columnas desde 75 rem, cuatro en tamaños intermedios y
+  tres hasta 40 rem. Detalle lateral por encima de 68 rem y debajo en tamaños menores.
+- Escala secuencial marfil/naranja, compartida con la leyenda numérica y configurable
+  sin alterar valores. Cero, faltante y no publicado tienen texto y apariencia propia;
+  la selección usa contorno e indicador. Contraste calculado mínimo de texto sobre
+  la escala: 5,47:1, muestreando 1001 intensidades.
+- Mensual destaca el valor observado; B0/B1, split y residual se presentan como
+  estimaciones independientes. Todos los metadatos originales siguen disponibles
+  en «Estado y procedencia», junto al archivo de observaciones.
+- Comparación histórica conserva la matriz y su desplazamiento interno, con
+  encabezados de meses y años fijos. CSV y selección compartida permanecen intactos.
+
+Verificación: **111 pruebas frontend aprobadas**, lint y build correctos mediante
+`npm.cmd test --prefix frontend`, `npm.cmd run lint --prefix frontend` y
+`npm.cmd run build --prefix frontend`. Persiste la advertencia de tamaño del chunk
+MapLibre. No se usaron navegadores, capturas ni pruebas manuales responsive;
+la revisión visual corresponde a la responsable del frontend.
+
+Ejecución desde la raíz: `npm.cmd run dev --prefix frontend` y abrir
+`http://localhost:5173/?view=calendar` para los datos reales predeterminados.
+
 ## Corrección responsive y modalidad compartida (vigente)
 
 Esta sección sustituye la modalidad exclusiva del Mapa documentada en fases anteriores.

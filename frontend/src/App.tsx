@@ -93,8 +93,8 @@ function App({ dataRoot, mapRuntimeLoader }: { dataRoot?: string; mapRuntimeLoad
 	if (view === 'demo') {
 		return <DemoDataCheck />
 	}
-	return <div className="app-shell">
-		<AppHeader key={root} dataRoot={root}>
+	return <div className={`app-shell app-shell--${view}`}>
+		<AppHeader key={root} dataRoot={root} view={view}>
 			<nav className="app-nav" aria-label="Navegación principal">
 				<a href={hrefFor('calendar')} aria-current={view === 'calendar' ? 'page' : undefined} onClick={event => navigate(event, 'calendar')}>Calendario</a>
 				<a href={hrefFor('map')} aria-current={view === 'map' ? 'page' : undefined} onClick={event => navigate(event, 'map')}>Mapa</a>

@@ -26,16 +26,17 @@ function CalendarLoader({ dataUrl, selection, onSelectionChange, mapHref, onOpen
     <p>No se pudo cargar el calendario: {state.message}</p>
     <button type="button" onClick={() => { setState({ status: 'loading' }); setAttempt(attempt + 1) }}>Reintentar carga</button>
   </div>
-  return <>{!calibrated && <p role="status">Cargando estimaciones regionales…</p>}{calibrated && !calibrated.ok && <div role="alert">No se pudo cargar calibrated_series.csv: {calibrated.error}<button type="button" onClick={() => { setCalibrated(null); setAttempt(attempt + 1) }}>Reintentar estimaciones</button></div>}<HistoricalCalendar calibrated={calibrated?.ok ? calibrated.data : []} demo={dataUrl.includes('/demo/')} records={state.records} selection={selection} onSelectionChange={onSelectionChange} mapHref={mapHref} onOpenMap={onOpenMap} /></>
+  return <>{!calibrated && <p role="status">Cargando estimaciones regionales…</p>}{calibrated && !calibrated.ok && <div role="alert">No se pudo cargar calibrated_series.csv: {calibrated.error}<button type="button" onClick={() => { setCalibrated(null); setAttempt(attempt + 1) }}>Reintentar estimaciones</button></div>}<HistoricalCalendar sourceUrl={dataUrl} calibrated={calibrated?.ok ? calibrated.data : []} demo={dataUrl.includes('/demo/')} records={state.records} selection={selection} onSelectionChange={onSelectionChange} mapHref={mapHref} onOpenMap={onOpenMap} /></>
 }
 
 export default function CalendarPage({ dataUrl, selection, onSelectionChange, mapHref, onOpenMap }: { dataUrl: string } & CalendarSelectionProps) {
   return (
     <main className="historical-calendar">
-      <h1>Calendario histórico</h1>
+      <header className="calendar-heading">
+        <h1>Calendario histórico</h1>
+        <p>Explora detecciones térmicas por mes, en días-celda; no incendios confirmados.</p>
+      </header>
       {dataUrl.includes('/demo') && <p className="calendar-demo"><strong>DATOS DEMO — NO SON OBSERVACIONES REALES</strong></p>}
-      <p>Actividad térmica observada por mes, en días-celda. No representa incendios confirmados ni superficie quemada.</p>
-      <details className="calendar-source"><summary>Fuente y procedencia</summary><p>Archivo: {dataUrl}. updated_at indica la actualización del archivo, no la fecha de una detección.</p></details>
       <CalendarLoader key={dataUrl} dataUrl={dataUrl} selection={selection} onSelectionChange={onSelectionChange} mapHref={mapHref} onOpenMap={onOpenMap} />
     </main>
   )

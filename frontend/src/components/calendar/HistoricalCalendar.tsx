@@ -6,6 +6,7 @@ import type { CalendarCell } from '../../services/data/calendar.ts'
 import { calendarCsvFilename, downloadCsv, serializeMonthlySeries } from '../../services/data/csvExport.ts'
 import CalendarGrid, { AnnualCalendarGrid, SingleCalendarMonth } from './CalendarGrid.tsx'
 import CalendarDetail from './CalendarDetail.tsx'
+import { calendarHeatColor } from './calendarPresentation.ts'
 
 function defaultPeriod(records: MonthlyRecord[], region: string, requestedYear?: number | null) {
   const regional = records.filter(r => r.region_id === region)
@@ -17,7 +18,7 @@ function defaultPeriod(records: MonthlyRecord[], region: string, requestedYear?:
   return { year, month: months.length ? Math.max(...months) : latest?.month ?? 1 }
 }
 
-export default function HistoricalCalendar({ records, calibrated = [], demo = false, selection, onSelectionChange, mapHref, onOpenMap }: { records: MonthlyRecord[]; calibrated?: CalibratedRecord[]; demo?: boolean } & CalendarSelectionProps) {
+export default function HistoricalCalendar({ records, calibrated = [], demo = false, sourceUrl, selection, onSelectionChange, mapHref, onOpenMap }: { records: MonthlyRecord[]; calibrated?: CalibratedRecord[]; demo?: boolean; sourceUrl?: string } & CalendarSelectionProps) {
   const regions = [...new Set(records.map(record => record.region_id))].sort()
   const [local, setLocal] = useState<CalendarSelection>(() => ({ region: regions[0] ?? '', ...defaultPeriod(records, regions[0] ?? ''), series: 'MODIS', scope: 'year' }))
   const [customScale, setCustomScale] = useState<number | null>(null)
@@ -67,19 +68,22 @@ export default function HistoricalCalendar({ records, calibrated = [], demo = fa
 
   return <>
     <div className="calendar-filters">
-      <label>Modalidad<select aria-label="Modalidad del calendario" value={scope} onChange={event => change({ scope: event.target.value === 'month' ? 'month' : 'year' })}>
-        <option value="year">Anual</option><option value="month">Mensual</option>
-      </select></label>
       <label htmlFor="calendar-sensor">Serie<select id="calendar-sensor" value={sensor} onChange={event => change({ series: event.target.value as Sensor })}>
         <option value="MODIS">MODIS</option><option value="VIIRS">VIIRS</option>
       </select></label>
-      <label htmlFor="calendar-region">Región<select id="calendar-region" value={region} onChange={event => change({ region: event.target.value })}>{regions.map(id => <option key={id}>{id}</option>)}</select></label>
+      {regions.length > 1 && <label htmlFor="calendar-region">Región<select id="calendar-region" value={region} onChange={event => change({ region: event.target.value })}>{regions.map(id => <option key={id}>{id}</option>)}</select></label>}
       {exportButton}
     </div>
-    <div className="calendar-period-toolbar">
-      <button type="button" aria-label="Año anterior" disabled={yearIndex <= 0} onClick={() => change({ year: yearNumbers[yearIndex - 1] })}>←</button>
+    <div className="calendar-scope-row">
+      <label>Modalidad<select aria-label="Modalidad del calendario" value={scope} onChange={event => change({ scope: event.target.value === 'month' ? 'month' : 'year' })}>
+        <option value="year">Anual</option><option value="month">Mensual</option>
+      </select></label>
+      <p>{comparing ? 'Contrasta la actividad entre años.' : scope === 'year' ? 'Doce meses, una perspectiva anual.' : 'Un mes y su contexto observado.'}</p>
+    </div>
+    <div className={scope === 'month' && !comparing ? 'calendar-period-toolbar calendar-period-toolbar--month' : 'calendar-period-toolbar'}>
+      {(scope === 'year' || comparing) && <button type="button" aria-label="Año anterior" disabled={yearIndex <= 0} onClick={() => change({ year: yearNumbers[yearIndex - 1] })}>←</button>}
       <label>Año<select aria-label="Año del calendario" value={year} onChange={event => change({ year: Number(event.target.value) })}>{yearNumbers.map(y => <option key={y}>{y}</option>)}</select></label>
-      <button type="button" aria-label="Año siguiente" disabled={yearIndex >= yearNumbers.length - 1} onClick={() => change({ year: yearNumbers[yearIndex + 1] })}>→</button>
+      {(scope === 'year' || comparing) && <button type="button" aria-label="Año siguiente" disabled={yearIndex >= yearNumbers.length - 1} onClick={() => change({ year: yearNumbers[yearIndex + 1] })}>→</button>}
       <button type="button" className="calendar-compare-toggle" aria-expanded={comparing} aria-controls="calendar-view" onClick={() => setComparing(!comparing)}>{comparing ? scope === 'year' ? 'Volver a la cuadrícula anual' : 'Volver al mes seleccionado' : 'Comparar años'}</button>
     </div>
     {exportError && <p role="alert">{exportError}</p>}
@@ -99,7 +103,10 @@ export default function HistoricalCalendar({ records, calibrated = [], demo = fa
           </>}
         <section className="calendar-legend" aria-label="Leyenda">
           <h2>Leyenda · días-celda</h2>
-          <p className="calendar-numeric-legend"><span className="calendar-swatch calendar-swatch--value" />{[0, .25, .5, .75, 1].map(f => (f * scaleMax).toFixed(1)).join(' · ')}</p>
+          <div className="calendar-numeric-legend">
+            <span className="calendar-scale-gradient" aria-hidden="true" style={{ background: `linear-gradient(to right, ${calendarHeatColor(0, scaleMax)}, ${calendarHeatColor(scaleMax, scaleMax)})` }} />
+            <div className="calendar-scale-ticks">{[0, .25, .5, .75, 1].map(f => <span key={f}>{(f * scaleMax).toFixed(1)}</span>)}</div>
+          </div>
           <ul>
             <li><span className="calendar-swatch calendar-cell--zero" />0 · válido</li>
             <li><span className="calendar-swatch calendar-cell--missing" />Sin dato utilizable</li>
@@ -112,7 +119,7 @@ export default function HistoricalCalendar({ records, calibrated = [], demo = fa
           </details>
         </section>
       </div>
-      <CalendarDetail mapHref={mapHref} onOpenMap={onOpenMap} calibrated={calibrated} cell={selected} region={region} sensor={sensor} />
+      <CalendarDetail sourceUrl={sourceUrl} mapHref={mapHref} onOpenMap={onOpenMap} calibrated={calibrated} cell={selected} region={region} sensor={sensor} />
     </div>
     <p className="calendar-export-note">CSV{demo ? ' DEMO' : ''}: {filteredRecords.length} registros de {region} / {sensor}, todos los años cargados. Los meses ausentes no generan filas.</p>
   </>

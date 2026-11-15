@@ -71,9 +71,9 @@ test('mensual centra un mes, conserva estados y navega entre diciembre y enero',
   assert.equal(host.querySelector('.calendar-annual-grid'), null)
   assert.match(host.querySelector('#calendar-detail')!.textContent!, /0 · válido/)
   await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Mes siguiente"]')!.click())
-  assert.match(host.querySelector('#calendar-detail')!.textContent!, /Sin datos.*missing/)
+  assert.match(host.querySelector('#calendar-detail')!.textContent!, /Sin dato utilizable.*missing/)
   await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Mes siguiente"]')!.click())
-  assert.match(host.querySelector('#calendar-detail')!.textContent!, /Ausente/)
+  assert.match(host.querySelector('#calendar-detail')!.textContent!, /No publicado/)
   const year = host.querySelector<HTMLSelectElement>('[aria-label="Año del calendario"]')!
   const month = host.querySelector<HTMLSelectElement>('[aria-label="Mes del calendario"]')!
   await act(async () => { year.value = '2023'; year.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })

@@ -71,6 +71,7 @@ test('navegación común conserva enlaces, parámetros, hash e historial sin rol
   t.after(() => window.history.replaceState(null, '', '/'))
   const { host } = await mount(t, createElement(App))
   const header = host.querySelector('.app-header')!
+  assert.ok(header.classList.contains('app-header--solid'))
   const links = [...header.querySelectorAll<HTMLAnchorElement>('nav a')]
   assert.deepEqual(links.map(a => a.textContent), ['Calendario', 'Mapa', 'Método'])
   for (const a of links) {
@@ -88,8 +89,12 @@ test('navegación común conserva enlaces, parámetros, hash e historial sin rol
   links[1].dispatchEvent(modified)
   assert.equal(modified.defaultPrevented, false)
   assert.match(window.location.search, /view=calendar/)
+  const sources = header.querySelector<HTMLDetailsElement>('.app-sources')!
+  await act(async () => header.querySelector<HTMLElement>('.app-sources summary')!.click())
+  assert.equal(sources.open, true)
   await act(async () => links[2].click())
   assert.equal(host.querySelector('.app-header'), header)
+  assert.equal(sources.open, false)
   assert.equal(header.querySelector('[aria-current="page"]')!.textContent, 'Método')
   assert.equal(host.querySelector('h1')!.textContent, 'Método y evaluación')
   await act(async () => {
@@ -99,6 +104,56 @@ test('navegación común conserva enlaces, parámetros, hash e historial sin rol
   assert.equal(header.querySelector('[aria-current="page"]')!.textContent, 'Calendario')
   assert.equal(host.querySelector<HTMLSelectElement>('#calendar-sensor')!.value, 'VIIRS')
   assert.equal(host.querySelector('button[aria-label="Septiembre 2024, VIIRS, 5581"]')!.getAttribute('aria-pressed'), 'true')
+})
+
+test('menú secundario abre fuentes reales, cierra con Escape y devuelve foco; admite cierre exterior', async t => {
+  t.mock.method(globalThis, 'fetch', async (url: string) => new Response(JSON.stringify(url.endsWith('method.json') ? method : manifest)))
+  const { host } = await mount(t, createElement(AppHeader, { dataRoot: '/data', children: null }))
+  const menu = host.querySelector<HTMLDetailsElement>('.app-sources')!
+  const summary = menu.querySelector('summary')!
+  const source = menu.querySelector<HTMLAnchorElement>('a[href="/data/manifest.json"]')!
+  assert.equal(menu.open, false)
+  await act(async () => summary.click())
+  assert.equal(menu.open, true)
+  source.focus()
+  source.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+  assert.equal(menu.open, false)
+  assert.equal(document.activeElement, summary)
+  await act(async () => summary.click())
+  source.dispatchEvent(new dom.window.Event('pointerdown', { bubbles: true }))
+  assert.equal(menu.open, true)
+  document.body.dispatchEvent(new dom.window.Event('pointerdown', { bubbles: true }))
+  assert.equal(menu.open, false)
+  assert.equal(host.querySelector('[role="menu"]'), null)
+})
+
+test('la reserva de espacio del mapa sigue la altura real de cabecera y libera su observador', async t => {
+  t.mock.method(globalThis, 'fetch', async (url: string) => new Response(JSON.stringify(url.endsWith('method.json') ? method : manifest)))
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'ResizeObserver')
+  let resize!: () => void
+  let observed: Element | null = null
+  let disconnected = false
+  Object.defineProperty(globalThis, 'ResizeObserver', { configurable: true, value: class {
+    constructor(callback: () => void) { resize = callback }
+    observe(element: Element) { observed = element }
+    disconnect() { disconnected = true }
+  } })
+  t.after(() => {
+    if (previous) Object.defineProperty(globalThis, 'ResizeObserver', previous)
+    else Reflect.deleteProperty(globalThis, 'ResizeObserver')
+  })
+  const { host, root } = await mount(t, createElement(AppHeader, { dataRoot: '/data', view: 'map', children: null }))
+  const header = host.querySelector<HTMLElement>('.app-header')!
+  assert.equal(observed, header)
+  Object.defineProperty(header, 'offsetHeight', { configurable: true, value: 180 })
+  resize()
+  assert.equal(host.style.getPropertyValue('--app-header-height'), '180px')
+  Object.defineProperty(header, 'offsetHeight', { configurable: true, value: 240 })
+  resize()
+  assert.equal(host.style.getPropertyValue('--app-header-height'), '240px')
+  await act(async () => root.unmount())
+  assert.equal(disconnected, true)
+  assert.equal(host.style.getPropertyValue('--app-header-height'), '')
 })
 
 test('los colores de texto, navegación y superficies comunes cumplen contraste AA', async () => {
@@ -113,6 +168,9 @@ test('los colores de texto, navegación y superficies comunes cumplen contraste 
     [token('text-primary'), token('surface-soft')],
     [token('brand-forest'), token('surface-page')],
     ['#FFFFFF', token('brand-forest')],
+    ['#FFC397', '#2C554C'],
+    [token('surface-page'), '#2C554C'],
+    [token('surface-soft'), '#294B45'],
   ]) {
     const [a, b] = [luminance(foreground), luminance(background)].sort((a, b) => b - a)
     assert.ok((a + .05) / (b + .05) >= 4.5, `${foreground} sobre ${background}`)
