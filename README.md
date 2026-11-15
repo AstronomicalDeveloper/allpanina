@@ -153,7 +153,7 @@ AllpaNina started with a validated pilot for the Ucayali department (`frontend/p
 **Method.**
 - `B0` = VIIRS without correction.
 - `B1` = VIIRS × κ, where κ = Σ MODIS / Σ VIIRS over the training period (2013-01 to 2022-12 only).
-- **κ is stratified.** The 17 departments with enough data have their own κ (0.164–0.337); the 8 low-activity departments share one pooled κ (0.207). A single national κ would overestimate some departments by up to ~50% and underestimate others by ~26%.
+- **κ is stratified.** The 17 departments with enough data have their own κ (0.164–0.337); the 8 low-activity departments share one pooled κ (0.207). Using a single national κ (0.249) instead would overestimate Amazonas (own κ 0.164) by ~52% and underestimate Madre de Dios (own κ 0.337) by ~26% (training κ from [`DECISIONS.md`](DECISIONS.md) §11.2: 0.249 / 0.164 ≈ 1.52 and 0.249 / 0.337 ≈ 0.74).
 - National `B1` is the **sum** of the 25 departmental estimates, so the national value always equals the sum of its departments.
 - Every rule was frozen before looking at validation or test data ([`DECISIONS.md`](DECISIONS.md) §11–12).
 
@@ -174,18 +174,16 @@ Calibration reduces the error by roughly 14 times in the test and improves on B0
 - `B1` is validated at region-month scale only. The national map (10 km cells) shows observed values only.
 - Suomi NPP VIIRS stopped producing new data in FIRMS on 2 November 2026, so extending the series requires another VIIRS sensor.
 
-**Reproduce.** The full sequence is in [`docs/peru/REPRODUCCION.md`](docs/peru/REPRODUCCION.md). A fresh clone rebuilds every published file byte for byte from the FIRMS archives in `docs/`:
+**Run or reproduce.** The algorithm is packaged as `allpanina` ([`docs/ALGORITHM` guide, in Spanish](docs/ALGORITMO.md)). It turns raw FIRMS standard CSVs into the files above using the frozen κ, and never recalibrates. Months after 2026-07 are flagged `sin_validar` (not validated).
 
 ```bash
 pip install -r requirements.txt && python -m pytest
-python scripts/01_download.py && python scripts/02_normalize.py && python scripts/03_grid_dedupe.py
-python scripts/04_monthly_series.py --peru --out <dir>/serie_2024.csv
-python scripts/04_monthly_series.py --peru --include-test --out <dir>/serie_full.csv
-python scripts/05_geojson_export.py --peru --include-test --years 2013 ... 2026 --out-dir <dir>/maps
-python scripts/06_calibrate_peru.py <dir>/serie_2024.csv --out <dir>/valid
-python scripts/09_test_peru.py <dir>/serie_full.csv --out <dir>/test
-python scripts/10_final_peru.py && python scripts/08_manifest.py --peru
+python -m allpanina --verificar      # rebuilds series, calibration and the 14 maps from the FIRMS archives in docs/
+                                     # and checks they are byte-for-byte identical to frontend/public/data/peru/
+python -m allpanina --modis <fire_archive_M.csv> --viirs <fire_archive_SV.csv> --salida <dir>   # new data
 ```
+
+The stage-by-stage pipeline (scripts 01–10, including the one-time test run) is documented in [`docs/peru/REPRODUCCION.md`](docs/peru/REPRODUCCION.md).
 
 Review trail: [`REVISION_P07`](docs/peru/REVISION_P07.md) (series), [`REVISION_P11`](docs/peru/REVISION_P11.md) (calibration), [`AUTORIZACION_TEST`](docs/peru/AUTORIZACION_TEST.md) (test authorisation), [`RESULTADO_TEST`](docs/peru/RESULTADO_TEST.md) (signed test result), [`REVISION_P17`](docs/peru/REVISION_P17.md) (final files) and [`REPRODUCCION`](docs/peru/REPRODUCCION.md) (reproduction).
 
