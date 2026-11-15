@@ -2,7 +2,7 @@
 
 - **Paso:** P19 del plan v2.1 (Marco + Antonella). Equivalente a T38 del piloto.
 - **Fecha:** 15-nov-2026.
-- **Hecho por:** Antonella (con Claude). **Confirmado por Marco** el 15-nov-2026 (sección 6). **Falta:** repetir la corrida de `10_final_peru.py` sobre el commit con la corrección 3.1.
+- **Hecho por:** Antonella (con Claude). **Confirmado por Marco** el 15-nov-2026 (sección 6). **Estado:** ✅ **cerrado** el 15-nov-2026: la corrida de `10_final_peru.py` sobre el commit con la corrección 3.1 da el `method.json` publicado (sección 5).
 - **Commit reproducido:** `39d67c40e41da5a6d759537b2d7379490492cb97` (rama `feature/calibracion`), más la corrección 3.1. El manifest se comparó también con el regenerado por Marco en `730ad58` (sección 3.2).
 
 ## 1. Cómo se reprodujo
@@ -70,7 +70,11 @@ Los 14 mapas tienen los hashes que lista `manifest.json`.
 - Se probó en un solo sistema (Linux, Python 3.13). No se probó en Windows ni en Mac.
 - `updated_at` se fijó en 2026-11-14 (serie 2013-2024) y 2026-11-15 (serie completa), como en P07 y P13.
 - La reproducción comprueba que el código da los mismos números. No valida el método: eso es P11 y P15.
-- La corrección 3.1 se aplicó después del commit reproducido. Al subirla, conviene repetir la corrida de `10_final_peru.py` sobre el commit nuevo para cerrar el paso.
+- La corrección 3.1 se aplicó después del commit reproducido. **Repetición hecha (15-nov-2026):** clon nuevo de `feature/calibracion` en el commit `108b4bcfae992f4519fb9675453afe5a23aeeeb8`, que ya incluye la corrección; `python -m pytest` da 125 de 125 y `python scripts/10_final_peru.py` genera:
+  - `method.json`: `52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b` ✅ idéntico al publicado;
+  - `calibrated_series.csv`: `5eb84f16…` ✅ y `validation.json`: `b2b25992…` ✅.
+
+  Después de la corrida, `git status` no muestra ningún cambio: los tres archivos regenerados son idénticos byte a byte a los del commit. Con esto se cumple lo único que la sección 6 dejaba pendiente.
 
 ## 6. Confirmación de Marco (15-nov-2026)
 
