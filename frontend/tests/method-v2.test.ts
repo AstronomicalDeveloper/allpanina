@@ -11,11 +11,13 @@ const dom = new JSDOM('<body></body>', { url: 'http://localhost/metodo' })
 Object.defineProperties(globalThis, { window: { value: dom.window, configurable: true }, document: { value: dom.window.document, configurable: true }, IS_REACT_ACT_ENVIRONMENT: { value: true, configurable: true } })
 const files: Record<string, string> = {}
 for (const prefix of ['', 'demo/']) for (const name of ['method.json', 'validation.json', 'manifest.json']) files[`/data/${prefix}${name}`] = await readFile(new URL(`../public/data/${prefix}${name}`, import.meta.url), 'utf8')
+for (const name of ['manifest.json','method.json']) files[`/data/peru/${name}`] = await readFile(new URL(`../public/data/peru/${name}`, import.meta.url), 'utf8')
 function mockFiles(t: TestContext, overrides: Record<string, string> = {}) {
   return t.mock.method(globalThis, 'fetch', async (url: string) => new Response(overrides[url] ?? files[url] ?? '', { status: overrides[url] === 'FAIL' ? 503 : files[url] === undefined ? 404 : 200 }))
 }
 async function mount(t: TestContext, url = '/metodo') {
-  window.history.replaceState(null, '', url)
+  const pilotUrl=new URL(url,'http://localhost');if(!pilotUrl.searchParams.has('data'))pilotUrl.searchParams.set('data','pilot')
+  window.history.replaceState(null,'',pilotUrl.pathname+pilotUrl.search+pilotUrl.hash)
   const host = document.createElement('div'); document.body.append(host); const root = createRoot(host)
   await act(async () => root.render(createElement(BrowserRouter, null, createElement(MethodPage))))
   t.after(async () => { await act(async () => root.unmount()); host.remove() })

@@ -54,11 +54,49 @@
   .map-panel-scroll { overflow: visible; margin: 0; }
   .map-panel { display: block; position: static; width: auto; max-height: none; border: 0; border-radius: 0; box-shadow: none; background: transparent; overflow: visible; }.map-panel--mobile-hidden { display: none; }.map-panel-content { padding: .75rem .25rem; gap: 1rem; }.map-panel .map-panel-toggle { padding: .4rem .25rem; }
   .map-panel fieldset { max-width: none; }.map-basemaps button { grid-template-columns: auto 1fr; column-gap: .6rem; align-items: center; }.map-basemaps small { grid-column: 2; }.map-overlays { grid-template-columns: 1fr 1fr; }
-  .map-view-tools { left: auto; right: .75rem; bottom: calc(var(--sheet-height) + 2.4rem); transform: none; max-width: calc(100% - 4rem); flex-wrap: wrap; justify-content: flex-end; }.map-view-tools button { font-size: .7rem; padding: .5rem; min-height: 44px; }
+  .map-view-tools { left: auto; right: .75rem; top: var(--map-top); bottom: auto; transform: none; max-width: calc(100% - 4rem); flex-wrap: wrap; justify-content: flex-end; }.map-view-tools button { font-size: .7rem; padding: .5rem; min-height: 44px; }
   .map-workspace .maplibregl-ctrl-top-left { bottom: calc(var(--sheet-height) + 2.3rem); }.map-workspace .maplibregl-ctrl-bottom-left, .map-workspace .maplibregl-ctrl-bottom-right { bottom: var(--sheet-height); }.map-workspace .maplibregl-ctrl-bottom-right { max-width: calc(100% - 9rem); }
-  .map-coordinates { left: auto; right: .75rem; bottom: calc(var(--sheet-height) + 6rem); }.map-feedback { bottom: calc(var(--sheet-height) + 8.5rem); }.map-context { max-width: calc(100% - 2rem); }
+  .map-coordinates { left: auto; right: .75rem; bottom: calc(var(--sheet-height) + 2.75rem); }.map-feedback { bottom: calc(var(--sheet-height) + 8.5rem); }.map-context { max-width: calc(100% - 2rem); }
 }
 @media (max-width: 42rem) {
   .navbar.navbar--map { top: .5rem; left: .5rem; }.map-workspace { --map-top: 9.5rem; }.map-workspace--fullscreen { --map-top: 1rem; }.map-context { left: .75rem; }.map-state { top: 10rem; }.map-overlays { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .map-workspace button, .map-sheet-chevron { transition: none; } }
+
+.map-view-actions { display: flex; gap: .4rem; }
+.map-view-tools .map-tools-toggle { display: none; }
+@media (max-width: 64rem) {
+  .map-view-tools { display: block; }
+  .map-context { max-width: calc(100% - 5rem); }
+  .map-view-tools .map-tools-toggle { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; }
+  .map-view-actions { display: none; position: absolute; top: calc(100% + .5rem); right: 0; min-width: 11rem; padding: .4rem; border: 1px solid #c4d3c8; border-radius: .65rem; background: #f9f7f2; box-shadow: 0 6px 22px #102c3533; }
+  .map-view-tools--open .map-view-actions { display: grid; gap: .2rem; }
+  .map-view-actions button { text-align: left; border-color: transparent; background: transparent; box-shadow: none; font-size: .8rem; }
+}
+
+@media (max-width: 64rem) {
+  /* Keep the compact attribution circle anchored while its text opens above. */
+  .map-workspace .maplibregl-ctrl-bottom-right > .maplibregl-ctrl-attrib.maplibregl-compact {
+    box-sizing: border-box; position: relative; width: 24px; height: 24px;
+    min-height: 24px; padding: 0; margin: .5rem .75rem .75rem;
+    border-radius: 50%; background: #fffdf8ed;
+  }
+  .map-workspace .maplibregl-ctrl-bottom-right .maplibregl-ctrl-attrib-button {
+    top: auto; bottom: 0; right: 0; width: 24px; height: 24px;
+    border-radius: 50%; background-position: center; background-repeat: no-repeat;
+    background-size: 24px; z-index: 1;
+  }
+  .map-workspace .maplibregl-ctrl-bottom-right .maplibregl-ctrl-attrib-inner {
+    position: absolute; right: 0; bottom: calc(100% + 3rem);
+    width: min(20rem, calc(100vw - 2rem)); max-height: min(35vh, 18rem);
+    overflow: auto; padding: .75rem 1rem; border-radius: .65rem;
+    background: #fffdf8; box-shadow: 0 4px 20px #102c3533;
+    color: #173b35; line-height: 1.6; scrollbar-width: thin;
+  }
+}
+
+.cell-observation-popup h3 { font-size: .85rem; margin: 0 0 .4rem; }
+.cell-observation-popup p { font-size: .75rem; line-height: 1.5; margin: .35rem 0; }
+.cell-observation-popup .cell-observation-value { display: block; font-size: 1.35rem; margin: .45rem 0; }
+.cell-observation-popup .cell-observation-note, .cell-observation-popup small { font-size: .68rem; color: #52645b; }
+.cell-observation-popup small { display: block; overflow-wrap: anywhere; }

@@ -89,6 +89,12 @@ function strings(value: unknown, path: string) { return array(value, path).map((
 export function validateManifest(value: unknown): Manifest {
   const row = object(value, 'manifest')
   string(row.region_id, 'region_id'); string(row.producto, 'producto')
+  if (row.contract_version !== undefined) {
+    choice(row.contract_version, ['1.1'], 'contract_version')
+    const regions = strings(row.regions, 'regions'); unique(regions, 'regions')
+    const expected = ['PE', ...Array.from({length:25}, (_,i)=>`PE-${String(i+1).padStart(2,'0')}`)]
+    if (row.region_id !== 'PE' || regions.length !== 26 || expected.some(id=>!regions.includes(id))) fail('regions', 'se requieren PE y los 25 departamentos')
+  }
   const date = string(row.generated_at, 'generated_at')
   if (!/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(date) || !Number.isFinite(Date.parse(date))) fail('generated_at', 'timestamp con zona requerido')
   const range = object(row.periodo, 'periodo')

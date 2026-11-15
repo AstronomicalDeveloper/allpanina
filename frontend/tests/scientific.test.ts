@@ -23,7 +23,7 @@ Object.defineProperties(globalThis, {
 })
 
 test('entrega científica: seis formatos, 18 hashes, períodos y observaciones geográficas sin B1', async t => {
-  t.mock.method(globalThis, 'fetch', async (url: string) => new Response(await file(url.split('/').at(-1)!)))
+  t.mock.method(globalThis, 'fetch', async (url: string) => new Response(await file((url.includes('/peru/')?'peru/':'')+url.split('/').at(-1)!)))
   const manifest = await loadManifest('/data/manifest.json')
   assert.equal(manifest.region_id, 'PE-UCA')
   assert.deepEqual(manifest.periodo, { desde: '2013-01', hasta: '2026-07' })
@@ -49,7 +49,7 @@ test('entrega científica: seis formatos, 18 hashes, períodos y observaciones g
     t.mock.method(globalThis, 'fetch', async () => new Response(csv))
     assert.deepEqual(await loadMonthlySeries('/download.csv'), rows)
     t.mock.restoreAll()
-    t.mock.method(globalThis, 'fetch', async (url: string) => new Response(await file(url.split('/').at(-1)!)))
+    t.mock.method(globalThis, 'fetch', async (url: string) => new Response(await file((url.includes('/peru/')?'peru/':'')+url.split('/').at(-1)!)))
   }
   assert.ok(monthly.some(r => r.cell_days === 0 && r.status === 'ok'))
   assert.equal(calendarCsvFilename('PE-UCA', 'MODIS'), 'allpanina_PE-UCA_MODIS.csv')
@@ -77,11 +77,11 @@ test('entrega científica: seis formatos, 18 hashes, períodos y observaciones g
   }
 })
 
-test('UI real: fuente por defecto, escala regional, sensor, detalle B1, CSV y métricas separadas sin DEMO', async t => {
-  window.history.replaceState(null, '', '/?periodYear=2024&periodMonth=9')
-  t.after(() => window.history.replaceState(null, '', '/'))
+test('UI piloto explícito: escala regional, sensor, detalle B1, CSV y métricas separadas sin DEMO', async t => {
+  window.history.replaceState(null, '', '/?data=pilot&periodYear=2024&periodMonth=9')
+  t.after(() => window.history.replaceState(null, '', '/?data=pilot'))
   const requested: string[] = []
-  t.mock.method(globalThis, 'fetch', async (url: string) => { requested.push(url); return new Response(await file(url.split('/').at(-1)!)) })
+  t.mock.method(globalThis, 'fetch', async (url: string) => { requested.push(url); return new Response(await file((url.includes('/peru/')?'peru/':'')+url.split('/').at(-1)!)) })
   const host = document.createElement('div'); document.body.append(host)
   const root = createRoot(host)
   t.after(async () => { await act(async () => root.unmount()); host.remove() })
@@ -133,7 +133,7 @@ test('producción falla explícitamente sin fallback; DEMO requiere selección e
   t.mock.method(globalThis, 'fetch', async (url: string) => { urls.push(url); return new Response('inaccesible', { status: 404 }) })
   const host = document.createElement('div'); document.body.append(host)
   const root = createRoot(host)
-  t.after(async () => { await act(async () => root.unmount()); host.remove(); window.history.replaceState(null, '', '/') })
+  t.after(async () => { await act(async () => root.unmount()); host.remove(); window.history.replaceState(null, '', '/?data=pilot') })
   await act(async () => root.render(createElement(BrowserRouter, null, createElement(App))))
   assert.match(host.querySelector('[role="alert"]')!.textContent!, /HTTP 404/)
   assert.ok(urls.every(url => url.startsWith('/data/') && !url.includes('/demo/')))

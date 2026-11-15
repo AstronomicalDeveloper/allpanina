@@ -1,9 +1,12 @@
+import { DEPARTMENT_SOURCE, DEPARTMENT_SQUARE_SOURCE, departmentLayers } from './departmentLayers'
 // Map style and layers retained from Juan Matias.
 import type * as GeoJSON from "geojson";
 import type { MapRuntime } from "./mapRuntime.ts";
 import { percentileColorExpression } from "./juanLayers.ts";
 import type { MapCells } from "../../../services/data/mapExploration.ts";
-export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, filteredGeoJson: MapCells, percentileBreaks: {q25:number;q50:number;q75:number}, opacity: number) {
+import { localOpacity, outlineWidth, outlineOpacity, summarySource, summaryLayers, SUMMARY_SOURCE, LOCAL_ZOOM, SQUARE_IMAGE, squareImage } from './multiscaleLayers'
+import type { SummaryPoints } from '../../../services/data/mapSymbols'
+export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, filteredGeoJson: MapCells, percentileBreaks: {q25:number;q50:number;q75:number}, opacity: number, points: SummaryPoints) {
     const map = new runtime.Map({
       container: container,
 
@@ -11,6 +14,9 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
         version: 8,
 
         sources: {
+          [DEPARTMENT_SOURCE]: {type:'geojson',data:{type:'FeatureCollection',features:[]}},
+          [DEPARTMENT_SQUARE_SOURCE]: {type:'geojson',data:{type:'FeatureCollection',features:[]}},
+          [SUMMARY_SOURCE]: summarySource(points),
           // --------------------------------------------------------------
           // BLUE MARBLE
           // --------------------------------------------------------------
@@ -224,34 +230,43 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
             id: 'celdas-fill',
             type: 'fill',
             source: 'celdas-observadas',
+            minzoom: LOCAL_ZOOM,
             paint: {
               'fill-color': percentileColorExpression(
                 percentileBreaks.q25,
                 percentileBreaks.q50,
                 percentileBreaks.q75,
               ),
-              'fill-opacity': opacity,
+              'fill-opacity': localOpacity(opacity),
+              'fill-antialias': false,
             },
           },
           {
             id: 'celdas-line',
             type: 'line',
             source: 'celdas-observadas',
+            minzoom: LOCAL_ZOOM,
             paint: {
-              'line-color': '#14213D',
-              'line-width': 1,
+              'line-color': '#fff4df',
+              'line-width': outlineWidth,
+              'line-opacity': outlineOpacity,
             },
           },
+          ...summaryLayers(opacity, percentileBreaks),
+          ...departmentLayers(),
         ],
       },
 
       center: [
-        -74.55,
-        -8.65,
+        0,
+        0,
       ],
-      zoom: 7.4,
+      zoom: 1,
     });
 
+    const installSquare = () => { if (!map.hasImage(SQUARE_IMAGE)) map.addImage(SQUARE_IMAGE, squareImage(), {sdf:true}) }
+    map.on('styleimagemissing', event => { if (event.id === SQUARE_IMAGE) installSquare() })
+    map.once('load', installSquare)
     map.addControl(
       new runtime.NavigationControl({
         showCompass: true,

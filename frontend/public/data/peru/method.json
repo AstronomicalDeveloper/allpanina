@@ -1,0 +1,1198 @@
+{
+  "contract_version": "1.1",
+  "estado": "aprobado por Aldo (P11 y P15)",
+  "region_id": "PE",
+  "region": "Perú (PE) = suma de los 25 departamentos INEI 2023. Cada celda de 1 km pertenece al departamento que contiene su centro (docs/region/departamentos_inei_2023.geojson); las celdas fuera de los 25 polígonos no cuentan.",
+  "indicator": "cell_days: número de pares celda-día con al menos una detección de fuego activo en la región, por mes y sensor. Celda de 1 km x 1 km en EPSG:6933; día calendario en hora de Lima (UTC-5). Terra y Aqua cuentan una sola vez por celda-día.",
+  "sensors": [
+    "MODIS Terra",
+    "MODIS Aqua",
+    "VIIRS S-NPP"
+  ],
+  "products": "MCD14ML v6.1 / VNP14IMGML v2 (archivo estándar NASA FIRMS)",
+  "filters": "Se descartan detecciones con type != 0. MODIS: confidence >= 30. VIIRS: confidence nominal o high (se excluye low).",
+  "period_train": "2013-01:2022-12",
+  "period_valid": "2023-01:2024-12",
+  "period_test": "2025-01:2026-07",
+  "error_convention": "signed_error = estimate - modis_observed (positivo = sobreestima). bias = promedio de signed_error; MAE = promedio de |signed_error|; WAPE = suma|signed_error| / suma(modis_observed), indefinido si el denominador es 0.",
+  "status_rule": "ok = sensor operando ese mes, aunque cell_days sea 0. missing = (1) mes fuera de la ventana de disponibilidad del sensor (antes de su cobertura estándar o después de un cese documentado), (2) mes dentro de la ventana pero sin ninguna detección en todo Perú, que se trata como hueco de datos (DECISIONS.md §8; no se activa en 2013-2024), o (3) valor no estimable en la serie calibrada. El valor queda vacío, nunca 0.",
+  "calibration": "B0 = VIIRS sin factor. B1 = B0 × κ del estrato de la región, con κ = suma(cell_days MODIS en train) / suma(cell_days VIIRS en train), calculado una sola vez con train 2013-01:2022-12. 17 departamentos usan su propio κ; 8 (PE-04, PE-07, PE-09, PE-11, PE-15, PE-18, PE-23, PE-24) usan el κ del estrato agrupado (suma de los 8). B1 de PE es la suma de los B1 de los 25 departamentos y B1 de PE-SIN-25 la suma de los 24 sin PE-25 (contrato v1.1 D); el κ nacional solo es la alternativa (b) de DECISIONS.md §11.3 y una referencia en resultados.",
+  "regions": [
+    {
+      "region_id": "PE",
+      "nombre": "Perú",
+      "estrato": "nacional",
+      "kappa": 0.24891429001146811,
+      "kappa_inputs": {
+        "suma_modis_train": 132400,
+        "suma_viirs_train": 531910,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.2216046365477271,
+        0.2856419679016049
+      ]
+    },
+    {
+      "region_id": "PE-01",
+      "nombre": "Amazonas",
+      "estrato": "propio",
+      "kappa": 0.1636604774535809,
+      "kappa_inputs": {
+        "suma_modis_train": 1851,
+        "suma_viirs_train": 11310,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.1329032258064516,
+        0.19549266247379454
+      ]
+    },
+    {
+      "region_id": "PE-02",
+      "nombre": "Áncash",
+      "estrato": "propio",
+      "kappa": 0.2263453048562224,
+      "kappa_inputs": {
+        "suma_modis_train": 1897,
+        "suma_viirs_train": 8381,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.20600858369098712,
+        0.26518987341772154
+      ]
+    },
+    {
+      "region_id": "PE-03",
+      "nombre": "Apurímac",
+      "estrato": "propio",
+      "kappa": 0.2993135838150289,
+      "kappa_inputs": {
+        "suma_modis_train": 1657,
+        "suma_viirs_train": 5536,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.19095477386934673,
+        0.37293956043956045
+      ]
+    },
+    {
+      "region_id": "PE-04",
+      "nombre": "Arequipa",
+      "estrato": "agrupado",
+      "kappa": 0.2074200735789419,
+      "kappa_inputs": {
+        "suma_modis_train": 4003,
+        "suma_viirs_train": 19299,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.17701863354037267,
+        0.2833333333333333
+      ]
+    },
+    {
+      "region_id": "PE-05",
+      "nombre": "Ayacucho",
+      "estrato": "propio",
+      "kappa": 0.25009491268033407,
+      "kappa_inputs": {
+        "suma_modis_train": 2635,
+        "suma_viirs_train": 10536,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.16791044776119404,
+        0.32150943396226417
+      ]
+    },
+    {
+      "region_id": "PE-06",
+      "nombre": "Cajamarca",
+      "estrato": "propio",
+      "kappa": 0.19206349206349208,
+      "kappa_inputs": {
+        "suma_modis_train": 3025,
+        "suma_viirs_train": 15750,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.13439635535307518,
+        0.27255029201817
+      ]
+    },
+    {
+      "region_id": "PE-07",
+      "nombre": "Callao",
+      "estrato": "agrupado",
+      "kappa": 0.2074200735789419,
+      "kappa_inputs": {
+        "suma_modis_train": 4003,
+        "suma_viirs_train": 19299,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": null
+    },
+    {
+      "region_id": "PE-08",
+      "nombre": "Cusco",
+      "estrato": "propio",
+      "kappa": 0.2707177676920491,
+      "kappa_inputs": {
+        "suma_modis_train": 6442,
+        "suma_viirs_train": 23796,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.22548028311425683,
+        0.32462274567537724
+      ]
+    },
+    {
+      "region_id": "PE-09",
+      "nombre": "Huancavelica",
+      "estrato": "agrupado",
+      "kappa": 0.2074200735789419,
+      "kappa_inputs": {
+        "suma_modis_train": 4003,
+        "suma_viirs_train": 19299,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.16831683168316833,
+        0.2774480712166172
+      ]
+    },
+    {
+      "region_id": "PE-10",
+      "nombre": "Huánuco",
+      "estrato": "propio",
+      "kappa": 0.2698616135887993,
+      "kappa_inputs": {
+        "suma_modis_train": 16634,
+        "suma_viirs_train": 61639,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.21797004991680533,
+        0.32347397419167756
+      ]
+    },
+    {
+      "region_id": "PE-11",
+      "nombre": "Ica",
+      "estrato": "agrupado",
+      "kappa": 0.2074200735789419,
+      "kappa_inputs": {
+        "suma_modis_train": 4003,
+        "suma_viirs_train": 19299,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.06956521739130435,
+        0.20277777777777778
+      ]
+    },
+    {
+      "region_id": "PE-12",
+      "nombre": "Junín",
+      "estrato": "propio",
+      "kappa": 0.23387767610875182,
+      "kappa_inputs": {
+        "suma_modis_train": 10684,
+        "suma_viirs_train": 45682,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.18800813008130082,
+        0.2979138233573796
+      ]
+    },
+    {
+      "region_id": "PE-13",
+      "nombre": "La Libertad",
+      "estrato": "propio",
+      "kappa": 0.2500541086501695,
+      "kappa_inputs": {
+        "suma_modis_train": 3466,
+        "suma_viirs_train": 13861,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.21465968586387435,
+        0.3026607538802661
+      ]
+    },
+    {
+      "region_id": "PE-14",
+      "nombre": "Lambayeque",
+      "estrato": "propio",
+      "kappa": 0.27195926397407705,
+      "kappa_inputs": {
+        "suma_modis_train": 2350,
+        "suma_viirs_train": 8641,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.21284185493460167,
+        0.3471444568868981
+      ]
+    },
+    {
+      "region_id": "PE-15",
+      "nombre": "Lima",
+      "estrato": "agrupado",
+      "kappa": 0.2074200735789419,
+      "kappa_inputs": {
+        "suma_modis_train": 4003,
+        "suma_viirs_train": 19299,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.10893246187363835,
+        0.23270440251572327
+      ]
+    },
+    {
+      "region_id": "PE-16",
+      "nombre": "Loreto",
+      "estrato": "propio",
+      "kappa": 0.19987465101703605,
+      "kappa_inputs": {
+        "suma_modis_train": 10524,
+        "suma_viirs_train": 52653,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.1594871794871795,
+        0.2369930356411307
+      ]
+    },
+    {
+      "region_id": "PE-17",
+      "nombre": "Madre de Dios",
+      "estrato": "propio",
+      "kappa": 0.3372677046710196,
+      "kappa_inputs": {
+        "suma_modis_train": 12087,
+        "suma_viirs_train": 35838,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.3048853439680957,
+        0.34944588540438576
+      ]
+    },
+    {
+      "region_id": "PE-18",
+      "nombre": "Moquegua",
+      "estrato": "agrupado",
+      "kappa": 0.2074200735789419,
+      "kappa_inputs": {
+        "suma_modis_train": 4003,
+        "suma_viirs_train": 19299,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.06306306306306306,
+        0.38461538461538464
+      ]
+    },
+    {
+      "region_id": "PE-19",
+      "nombre": "Pasco",
+      "estrato": "propio",
+      "kappa": 0.2660450068985204,
+      "kappa_inputs": {
+        "suma_modis_train": 5592,
+        "suma_viirs_train": 21019,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.22611275964391692,
+        0.3076923076923077
+      ]
+    },
+    {
+      "region_id": "PE-20",
+      "nombre": "Piura",
+      "estrato": "propio",
+      "kappa": 0.19136015457870403,
+      "kappa_inputs": {
+        "suma_modis_train": 2773,
+        "suma_viirs_train": 14491,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.13680781758957655,
+        0.2652767792954709
+      ]
+    },
+    {
+      "region_id": "PE-21",
+      "nombre": "Puno",
+      "estrato": "propio",
+      "kappa": 0.28991750687442713,
+      "kappa_inputs": {
+        "suma_modis_train": 3163,
+        "suma_viirs_train": 10910,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.19545454545454546,
+        0.3811630847029077
+      ]
+    },
+    {
+      "region_id": "PE-22",
+      "nombre": "San Martín",
+      "estrato": "propio",
+      "kappa": 0.21326906202636947,
+      "kappa_inputs": {
+        "suma_modis_train": 18715,
+        "suma_viirs_train": 87753,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.1554925455044361,
+        0.244951877712776
+      ]
+    },
+    {
+      "region_id": "PE-23",
+      "nombre": "Tacna",
+      "estrato": "agrupado",
+      "kappa": 0.2074200735789419,
+      "kappa_inputs": {
+        "suma_modis_train": 4003,
+        "suma_viirs_train": 19299,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.07272727272727272,
+        0.35294117647058826
+      ]
+    },
+    {
+      "region_id": "PE-24",
+      "nombre": "Tumbes",
+      "estrato": "agrupado",
+      "kappa": 0.2074200735789419,
+      "kappa_inputs": {
+        "suma_modis_train": 4003,
+        "suma_viirs_train": 19299,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.1323529411764706,
+        0.38764044943820225
+      ]
+    },
+    {
+      "region_id": "PE-25",
+      "nombre": "Ucayali",
+      "estrato": "propio",
+      "kappa": 0.2936037257560573,
+      "kappa_inputs": {
+        "suma_modis_train": 24902,
+        "suma_viirs_train": 84815,
+        "meses_train": 120
+      },
+      "kappa_anual_rango": [
+        0.2618312757201646,
+        0.3378405650857719
+      ]
+    }
+  ],
+  "estratos": {
+    "agrupado": {
+      "miembros": [
+        "PE-04",
+        "PE-07",
+        "PE-09",
+        "PE-11",
+        "PE-15",
+        "PE-18",
+        "PE-23",
+        "PE-24"
+      ],
+      "kappa": 0.2074200735789419,
+      "kappa_inputs": {
+        "suma_modis_train": 4003,
+        "suma_viirs_train": 19299,
+        "meses_train": 120
+      }
+    },
+    "nacional": {
+      "region_id": "PE",
+      "kappa": 0.24891429001146811,
+      "kappa_inputs": {
+        "suma_modis_train": 132400,
+        "suma_viirs_train": 531910,
+        "meses_train": 120
+      }
+    }
+  },
+  "resultados": {
+    "valid": {
+      "PE": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 32381,
+        "B0": {
+          "mae": 3851.917,
+          "wape": 2.855,
+          "bias": 3851.917
+        },
+        "B1": {
+          "mae": 164.021,
+          "wape": 0.122,
+          "bias": -53.24
+        }
+      },
+      "PE-SIN-25": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 24844,
+        "B0": {
+          "mae": 3206.0,
+          "wape": 3.097,
+          "bias": 3206.0
+        },
+        "B1": {
+          "mae": 126.058,
+          "wape": 0.122,
+          "bias": -21.046
+        }
+      },
+      "PE-01": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 591,
+        "B0": {
+          "mae": 114.833,
+          "wape": 4.663,
+          "bias": 114.833
+        },
+        "B1": {
+          "mae": 7.604,
+          "wape": 0.309,
+          "bias": -1.801
+        }
+      },
+      "PE-02": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 542,
+        "B0": {
+          "mae": 62.5,
+          "wape": 2.768,
+          "bias": 62.5
+        },
+        "B1": {
+          "mae": 6.017,
+          "wape": 0.266,
+          "bias": -3.325
+        }
+      },
+      "PE-03": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 207,
+        "B0": {
+          "mae": 18.583,
+          "wape": 2.155,
+          "bias": 18.5
+        },
+        "B1": {
+          "mae": 3.09,
+          "wape": 0.358,
+          "bias": -0.506
+        }
+      },
+      "PE-04": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 120,
+        "B0": {
+          "mae": 26.625,
+          "wape": 5.325,
+          "bias": 26.625
+        },
+        "B1": {
+          "mae": 2.957,
+          "wape": 0.591,
+          "bias": 1.56
+        }
+      },
+      "PE-05": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 447,
+        "B0": {
+          "mae": 46.25,
+          "wape": 2.483,
+          "bias": 46.25
+        },
+        "B1": {
+          "mae": 5.529,
+          "wape": 0.297,
+          "bias": -2.4
+        }
+      },
+      "PE-06": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 1085,
+        "B0": {
+          "mae": 148.583,
+          "wape": 3.287,
+          "bias": 148.583
+        },
+        "B1": {
+          "mae": 15.37,
+          "wape": 0.34,
+          "bias": -7.988
+        }
+      },
+      "PE-08": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 1050,
+        "B0": {
+          "mae": 121.542,
+          "wape": 2.778,
+          "bias": 121.542
+        },
+        "B1": {
+          "mae": 4.75,
+          "wape": 0.109,
+          "bias": 0.997
+        }
+      },
+      "PE-09": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 178,
+        "B0": {
+          "mae": 23.167,
+          "wape": 3.124,
+          "bias": 23.167
+        },
+        "B1": {
+          "mae": 2.849,
+          "wape": 0.384,
+          "bias": -1.073
+        }
+      },
+      "PE-10": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 3907,
+        "B0": {
+          "mae": 427.917,
+          "wape": 2.629,
+          "bias": 427.917
+        },
+        "B1": {
+          "mae": 29.036,
+          "wape": 0.178,
+          "bias": -3.382
+        }
+      },
+      "PE-11": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 146,
+        "B0": {
+          "mae": 25.25,
+          "wape": 4.151,
+          "bias": 25.25
+        },
+        "B1": {
+          "mae": 2.133,
+          "wape": 0.351,
+          "bias": 0.416
+        }
+      },
+      "PE-12": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 2087,
+        "B0": {
+          "mae": 273.5,
+          "wape": 3.145,
+          "bias": 273.5
+        },
+        "B1": {
+          "mae": 12.898,
+          "wape": 0.148,
+          "bias": -2.655
+        }
+      },
+      "PE-13": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 920,
+        "B0": {
+          "mae": 99.0,
+          "wape": 2.583,
+          "bias": 99.0
+        },
+        "B1": {
+          "mae": 8.746,
+          "wape": 0.228,
+          "bias": -3.993
+        }
+      },
+      "PE-14": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 520,
+        "B0": {
+          "mae": 41.5,
+          "wape": 1.915,
+          "bias": 41.333
+        },
+        "B1": {
+          "mae": 7.024,
+          "wape": 0.324,
+          "bias": -4.533
+        }
+      },
+      "PE-15": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 157,
+        "B0": {
+          "mae": 28.583,
+          "wape": 4.369,
+          "bias": 28.583
+        },
+        "B1": {
+          "mae": 3.394,
+          "wape": 0.519,
+          "bias": 0.744
+        }
+      },
+      "PE-16": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 3183,
+        "B0": {
+          "mae": 508.417,
+          "wape": 3.833,
+          "bias": 508.417
+        },
+        "B1": {
+          "mae": 18.154,
+          "wape": 0.137,
+          "bias": -4.497
+        }
+      },
+      "PE-17": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 3420,
+        "B0": {
+          "mae": 294.042,
+          "wape": 2.063,
+          "bias": 294.042
+        },
+        "B1": {
+          "mae": 22.562,
+          "wape": 0.158,
+          "bias": 4.731
+        }
+      },
+      "PE-19": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 996,
+        "B0": {
+          "mae": 132.25,
+          "wape": 3.187,
+          "bias": 130.917
+        },
+        "B1": {
+          "mae": 9.443,
+          "wape": 0.228,
+          "bias": 4.371
+        }
+      },
+      "PE-20": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 577,
+        "B0": {
+          "mae": 113.25,
+          "wape": 4.711,
+          "bias": 113.25
+        },
+        "B1": {
+          "mae": 7.954,
+          "wape": 0.331,
+          "bias": 2.23
+        }
+      },
+      "PE-21": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 448,
+        "B0": {
+          "mae": 47.167,
+          "wape": 2.527,
+          "bias": 47.083
+        },
+        "B1": {
+          "mae": 4.328,
+          "wape": 0.232,
+          "bias": 0.395
+        }
+      },
+      "PE-22": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 4097,
+        "B0": {
+          "mae": 623.583,
+          "wape": 3.653,
+          "bias": 623.583
+        },
+        "B1": {
+          "mae": 40.613,
+          "wape": 0.238,
+          "bias": -1.31
+        }
+      },
+      "PE-24": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 112,
+        "B0": {
+          "mae": 15.417,
+          "wape": 3.304,
+          "bias": 15.25
+        },
+        "B1": {
+          "mae": 1.822,
+          "wape": 0.39,
+          "bias": -0.536
+        }
+      },
+      "PE-25": {
+        "periodo": "2023-01:2024-12",
+        "n_meses": 24,
+        "suma_modis": 7537,
+        "B0": {
+          "mae": 645.917,
+          "wape": 2.057,
+          "bias": 645.917
+        },
+        "B1": {
+          "mae": 55.78,
+          "wape": 0.178,
+          "bias": -32.194
+        }
+      }
+    },
+    "test": {
+      "PE": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 8881,
+        "B0": {
+          "mae": 2009.474,
+          "wape": 4.299,
+          "bias": 2009.474
+        },
+        "B1": {
+          "mae": 143.841,
+          "wape": 0.308,
+          "bias": 143.841
+        },
+        "nota": "incluye a Ucayali (PE-25), cuyo test ya se vio en T29; el resultado limpio es PE-SIN-25"
+      },
+      "PE-SIN-25": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 7052,
+        "B0": {
+          "mae": 1699.895,
+          "wape": 4.58,
+          "bias": 1699.895
+        },
+        "B1": {
+          "mae": 120.947,
+          "wape": 0.326,
+          "bias": 120.947
+        }
+      },
+      "PE-01": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 112,
+        "B0": {
+          "mae": 50.421,
+          "wape": 8.554,
+          "bias": 50.421
+        },
+        "B1": {
+          "mae": 3.687,
+          "wape": 0.626,
+          "bias": 3.322
+        }
+      },
+      "PE-02": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 195,
+        "B0": {
+          "mae": 47.316,
+          "wape": 4.61,
+          "bias": 47.316
+        },
+        "B1": {
+          "mae": 3.898,
+          "wape": 0.38,
+          "bias": 2.77
+        }
+      },
+      "PE-03": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 88,
+        "B0": {
+          "mae": 10.263,
+          "wape": 2.216,
+          "bias": 9.947
+        },
+        "B1": {
+          "mae": 2.721,
+          "wape": 0.588,
+          "bias": -0.268
+        }
+      },
+      "PE-04": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 117,
+        "B0": {
+          "mae": 27.211,
+          "wape": 4.419,
+          "bias": 27.211
+        },
+        "B1": {
+          "mae": 3.161,
+          "wape": 0.513,
+          "bias": 0.763
+        }
+      },
+      "PE-05": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 160,
+        "B0": {
+          "mae": 33.789,
+          "wape": 4.013,
+          "bias": 33.789
+        },
+        "B1": {
+          "mae": 2.634,
+          "wape": 0.313,
+          "bias": 2.136
+        }
+      },
+      "PE-06": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 175,
+        "B0": {
+          "mae": 55.632,
+          "wape": 6.04,
+          "bias": 55.632
+        },
+        "B1": {
+          "mae": 4.638,
+          "wape": 0.504,
+          "bias": 3.243
+        }
+      },
+      "PE-08": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 332,
+        "B0": {
+          "mae": 72.947,
+          "wape": 4.175,
+          "bias": 72.947
+        },
+        "B1": {
+          "mae": 8.072,
+          "wape": 0.462,
+          "bias": 7.005
+        }
+      },
+      "PE-09": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 89,
+        "B0": {
+          "mae": 10.947,
+          "wape": 2.337,
+          "bias": 10.842
+        },
+        "B1": {
+          "mae": 2.067,
+          "wape": 0.441,
+          "bias": -1.464
+        }
+      },
+      "PE-10": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 683,
+        "B0": {
+          "mae": 202.0,
+          "wape": 5.619,
+          "bias": 202.0
+        },
+        "B1": {
+          "mae": 28.698,
+          "wape": 0.798,
+          "bias": 28.265
+        }
+      },
+      "PE-11": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 178,
+        "B0": {
+          "mae": 22.421,
+          "wape": 2.393,
+          "bias": 22.421
+        },
+        "B1": {
+          "mae": 4.064,
+          "wape": 0.434,
+          "bias": -2.775
+        }
+      },
+      "PE-12": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 613,
+        "B0": {
+          "mae": 152.368,
+          "wape": 4.723,
+          "bias": 152.368
+        },
+        "B1": {
+          "mae": 11.585,
+          "wape": 0.359,
+          "bias": 10.918
+        }
+      },
+      "PE-13": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 417,
+        "B0": {
+          "mae": 68.895,
+          "wape": 3.139,
+          "bias": 68.895
+        },
+        "B1": {
+          "mae": 6.446,
+          "wape": 0.294,
+          "bias": 0.768
+        }
+      },
+      "PE-14": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 316,
+        "B0": {
+          "mae": 38.579,
+          "wape": 2.32,
+          "bias": 38.579
+        },
+        "B1": {
+          "mae": 5.923,
+          "wape": 0.356,
+          "bias": -1.617
+        }
+      },
+      "PE-15": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 176,
+        "B0": {
+          "mae": 38.789,
+          "wape": 4.188,
+          "bias": 38.789
+        },
+        "B1": {
+          "mae": 5.048,
+          "wape": 0.545,
+          "bias": 0.704
+        }
+      },
+      "PE-16": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 599,
+        "B0": {
+          "mae": 202.737,
+          "wape": 6.431,
+          "bias": 202.737
+        },
+        "B1": {
+          "mae": 15.705,
+          "wape": 0.498,
+          "bias": 15.297
+        }
+      },
+      "PE-17": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 843,
+        "B0": {
+          "mae": 119.526,
+          "wape": 2.694,
+          "bias": 119.316
+        },
+        "B1": {
+          "mae": 12.029,
+          "wape": 0.271,
+          "bias": 10.837
+        }
+      },
+      "PE-19": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 225,
+        "B0": {
+          "mae": 77.526,
+          "wape": 6.547,
+          "bias": 77.526
+        },
+        "B1": {
+          "mae": 12.004,
+          "wape": 1.014,
+          "bias": 11.934
+        }
+      },
+      "PE-20": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 275,
+        "B0": {
+          "mae": 95.158,
+          "wape": 6.575,
+          "bias": 95.158
+        },
+        "B1": {
+          "mae": 8.538,
+          "wape": 0.59,
+          "bias": 6.505
+        }
+      },
+      "PE-21": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 231,
+        "B0": {
+          "mae": 32.0,
+          "wape": 2.632,
+          "bias": 32.0
+        },
+        "B1": {
+          "mae": 2.205,
+          "wape": 0.181,
+          "bias": 0.644
+        }
+      },
+      "PE-22": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 1157,
+        "B0": {
+          "mae": 323.211,
+          "wape": 5.308,
+          "bias": 323.211
+        },
+        "B1": {
+          "mae": 21.473,
+          "wape": 0.353,
+          "bias": 21.023
+        }
+      },
+      "PE-25": {
+        "periodo": "2025-01:2026-07",
+        "n_meses": 19,
+        "suma_modis": 1829,
+        "B0": {
+          "mae": 309.579,
+          "wape": 3.216,
+          "bias": 309.579
+        },
+        "B1": {
+          "mae": 29.676,
+          "wape": 0.308,
+          "bias": 22.894
+        },
+        "nota": "test ya visto en T29 (piloto Ucayali); no es una evaluación ciega"
+      }
+    },
+    "test_no_reportables": {
+      "PE-07": "Σ MODIS en test = 0, por debajo del mínimo de 50 (DECISIONS.md §11.3)",
+      "PE-18": "Σ MODIS en test = 26, por debajo del mínimo de 50 (DECISIONS.md §11.3)",
+      "PE-23": "Σ MODIS en test = 7, por debajo del mínimo de 50 (DECISIONS.md §11.3)",
+      "PE-24": "Σ MODIS en test = 38, por debajo del mínimo de 50 (DECISIONS.md §11.3)"
+    },
+    "test_evaluacion": "corrida única el 15-nov-2026 con los κ congelados (DECISIONS.md §12), autorizada en docs/peru/AUTORIZACION_TEST.md; resultado verificado y firmado por Aldo en docs/peru/RESULTADO_TEST.md",
+    "resultado_limpio": "PE-SIN-25",
+    "referencia_kappa_nacional": {
+      "nota": "B1 de PE como VIIRS × κ nacional. Solo referencia: la estimación de PE es la suma de los B1 departamentales.",
+      "valid": {
+        "periodo": "2023-01:2024-12",
+        "kappa": 0.24891429001146811,
+        "mae": 192.62,
+        "wape": 0.143,
+        "bias": -54.574
+      },
+      "test": {
+        "periodo": "2025-01:2026-07",
+        "kappa": 0.24891429001146811,
+        "mae": 149.113,
+        "wape": 0.319,
+        "bias": 149.113
+      }
+    },
+    "metodo_elegido": "B1 estratificado (DECISIONS.md §11.2 y §12)"
+  },
+  "limitations": [
+    "El κ cambia de un departamento a otro (de 0.164 a 0.337 entre los de κ propio, en train).",
+    "El κ también cambia de un año a otro dentro de cada región, y un κ fijo no sigue esos cambios; el rango anual de cada región está en regions[].kappa_anual_rango.",
+    "El estrato agrupado (8 departamentos con poca actividad) tiene error alto en validación: WAPE B1 de Arequipa 0,59 y de Lima 0,52. Su κ propio es muy inestable año a año y se usa uno común para los 8.",
+    "El κ nacional único tiene menor WAPE que el κ estratificado en 4 departamentos en validación (Áncash, Cajamarca, Huancavelica, Pasco); la estratificada gana en el agregado de los 25 y en los demás departamentos reportables.",
+    "3 departamentos no llegan al mínimo de Σ MODIS ≥ 50 en validación y no tienen métricas propias (Callao, Moquegua, Tacna); sus meses sí cuentan dentro de PE y PE-SIN-25 (DECISIONS.md §11.3).",
+    "Callao tiene Σ MODIS = 0 en train: no tiene κ propio y su κ anual no está definido.",
+    "Las celdas cuyo centro cae fuera de los 25 polígonos INEI no cuentan (2,619 de 824,137 celdas-día entre 2013 y 2024, 0.3%).",
+    "B1 se valida a escala región-mes. No debe aplicarse a celdas individuales del mapa.",
+    "El indicador cuenta detecciones satelitales de anomalías térmicas, no incendios confirmados ni superficie quemada.",
+    "MODIS cambia de versión V6 a V6.1 en febrero de 2023, al inicio de validación.",
+    "FIRMS no entrega cobertura de nubes: un mes con 0 detecciones puede reflejar ausencia de fuego o falta de observación.",
+    "κ fijo con 2013-2022 no sigue un cambio de régimen de MODIS: la razón anual MODIS/VIIRS de PE fue 0.222 a 0.286 entre 2013 y 2024, 0.191 en 2025 y 0.176 en 2026 (ene-jul). En el test B1 quedó por encima de MODIS en los 19 meses, en PE y en PE-SIN-25. Los resultados de 2025-2026 no deben leerse como la precisión normal del método; para usar B1 hacia adelante hay que recalibrar y volver a validar.",
+    "En años de mucha actividad, B1 subestima el pico: en setiembre de 2024 (validación) estimó 611 celdas-día en San Martín frente a 885 de MODIS (−31%) y 1,639 en Ucayali frente a 2,323 (−29%). Es el caso opuesto al test, donde con poca actividad sobreestimó: un κ fijo no sigue la intensidad de cada temporada (REVISION_P11.md, anexo A.2).",
+    "Hipótesis no probada: la deriva orbital de Terra y Aqua afecta el muestreo del ciclo diurno y el tamaño y espaciado de píxel de MODIS (L. Giglio, LANCE UWG, mayo de 2025); es compatible con la caída de la razón MODIS/VIIRS, pero no se probó que sea la causa.",
+    "Hubo mucha menos actividad en el test: MODIS promedio mensual de PE bajó de 1,349 celdas-día en validación a 467 en test. El WAPE se infla por el denominador pequeño (WAPE B1 de PE-SIN-25: 0.122 en validación, 0.326 en test), aunque el MAE de PE bajó (164.0 a 143.8). Con MODIS bajo, departamentos de poca actividad (Pasco, Huánuco, Amazonas, Piura) dan WAPE altos aunque el MAE sea de pocas celdas-día.",
+    "PE-25 (Ucayali) no es una evaluación ciega: su test ya se vio en T29. PE tampoco lo es del todo; la lectura principal de generalización es PE-SIN-25.",
+    "4 departamentos no llegan al mínimo de Σ MODIS ≥ 50 en test y no tienen métricas de test (Callao, Moquegua, Tacna, Tumbes); sus meses sí cuentan dentro de PE y PE-SIN-25 (DECISIONS.md §11.3).",
+    "VIIRS S-NPP: FIRMS dejó de producir datos nuevos el 2 de noviembre de 2026, a las 13:00 UTC (NASA Earthdata, «Transitioning from Suomi NPP VIIRS»). La serie hasta 2026-07 no se afecta; cualquier actualización necesita otro VIIRS.",
+    "Un error retrospectivo de B1 no es un porcentaje de confianza para meses futuros."
+  ]
+}

@@ -1,3 +1,70 @@
+## Filtro territorial — corrección UX actual
+
+Seleccionar un departamento oculta las celdas exteriores y recorta visualmente las fronterizas, incluidos los cuadrados ampliados. Sus valores originales se conservan completos, sin atribución exclusiva al departamento. El resumen procede del CSV. PE restaura todas las celdas; se usa exclusivamente el selector geográfico para cambiar ámbito. No hay máscara oscura, contorno naranja ni botón «Ver Perú completo». Se conservan Encuadrar, Pantalla completa, Copiar enlace, piloto y DEMO.
+
+Detalles técnicos, procedencia y limitaciones: `docs/peru/NAVEGACION_DEPARTAMENTAL.md`. Las notas históricas siguientes describen implementaciones anteriores y quedan sustituidas por este comportamiento.
+
+## Navegación territorial — corrección de etapa 2
+
+El Mapa encuadra el departamento elegido y resalta su límite INEI simplificado, con atenuación exterior visual. `Encuadrar` vuelve al ámbito elegido y `Ver Perú completo` restaura la extensión nacional sin cambiar el resumen departamental. El inspector conserva valores de celdas nacionales; los indicadores departamentales proceden del CSV, sin recortes ni reparto. PE elimina el resaltado. La navegación manual y los cambios de mes/sensor no fuerzan otro encuadre.
+
+Se carga una sola vez el recurso de 1,68 MB en `public/cartography/`, conservando el original de 14,2 MB fuera del despliegue. Procedencia, generación reproducible, limitaciones y requisitos para una futura desagregación: `docs/peru/NAVEGACION_DEPARTAMENTAL.md`. Las notas siguientes describen etapas anteriores; la referencia a mostrar siempre el país completo queda sustituida por este enfoque territorial. Piloto y DEMO permanecen disponibles.
+
+## Integración nacional — etapa 2 (estado actual)
+
+Mapa y Método nacionales ya están conectados. Las secciones de etapas previas que siguen documentan el proceso; los avisos de integración pendiente de etapa 1 fueron sustituidos por estas vistas funcionales.
+
+- Mapa: `/mapa?mapRegion=PE&periodYear=2024&periodMonth=9&scope=month`. Carga un GeoJSON anual, mantiene cuadrados/polígonos e inspector y explica que cada geometría de 10 km acumula pares celda-día de 1 km. No hay límite de 31 ni calibración B1 en geometrías.
+- Departamento: `/mapa?mapRegion=PE-25&periodYear=2024&periodMonth=9&scope=month`. El resumen procede de sus filas CSV; la capa sigue mostrando Perú completo, explícitamente como contexto nacional. No se reparte actividad por centroide/intersección ni se presenta como cartografía departamental exacta.
+- Método: `/metodo?mapRegion=PE` o cualquier departamento. Metadatos, κ propios/agrupados, validación, test, motivos no reportables y serie calibrada corresponden a la región elegida. PE utiliza la suma de estimaciones departamentales; el κ nacional alternativo no se aplica en la interfaz. El test PE-SIN-25 se consulta como análisis separado dentro de Método PE.
+- Fuentes piloto y DEMO continúan explícitas (`?data=pilot&mapRegion=PE-UCA`, `?data=demo`). No se modificaron el Calendario, el navbar ni el diseño editorial general en esta etapa.
+
+Los 14 GeoJSON se copiaron byte a byte desde el mismo commit científico de etapa 1; todos coinciden con el manifiesto. Los productos nacionales y el piloto no se recalculan. Ver `docs/peru/INTEGRACION_ETAPA2.md` y `PROCEDENCIA_ETAPA2.json`.
+
+**Despliegue pendiente:** el servidor debe comprimir JSON/GeoJSON. No se ha configurado ni verificado el servidor personal en esta sesión. Instrucciones Nginx y comandos de comprobación: `docs/peru/DESPLIEGUE_COMPRESION.md`. Las pruebas locales de gzip no sustituyen comprobar los encabezados HTTP reales.
+
+## Integración nacional — etapa 1
+
+La aplicación usa ahora `/data/peru/` por defecto en Calendario. Puede abrirse `/calendario?mapRegion=PE` (Perú) o `/calendario?mapRegion=PE-25&periodYear=2024&periodMonth=9` (Ucayali nacional). El selector compartido lee 26 identificadores desde el manifiesto y sus nombres desde `method.json`; `PE-SIN-25` solo es un agregado de evaluación y no aparece como opción geográfica.
+
+- Piloto recuperable y operativo: `/calendario?data=pilot&mapRegion=PE-UCA`, `/mapa?data=pilot&mapRegion=PE-UCA`, `/metodo?data=pilot&mapRegion=PE-UCA`. Los enlaces anteriores con `mapRegion=PE-UCA` también abren el piloto. Su cartografía multiescala, popups e inspector permanecen disponibles.
+- DEMO requiere `?data=demo`; jamás se utiliza como fallback. Si una URL combina un identificador nacional válido con `data=pilot`, prevalece el identificador nacional, evitando atribuirle cifras del piloto. La selección explícita DEMO conserva su conjunto separado.
+- Mapa y Método nacionales muestran un aviso de integración pendiente con la región seleccionada y enlaces honestos al Calendario o al piloto. No cargan los productos del piloto como resultados nacionales. Sus etapas nacionales no se implementan aquí.
+- `types/data.ts`, `peruValidators.ts` y los lectores `loadMethodDocument`/`loadValidationDocument` admiten los documentos v1.0 y v1.1 sin aplanar el sobre regional. Se conservan `reportable`, `motivo`, `nota`, null y los splits; se rechazan métricas añadidas a regiones no reportables. Los lectores existentes del piloto continúan disponibles. Se acepta el rango anual de κ nulo publicado para Callao.
+- Calendario lee los CSV aprobados, filtra la región elegida y conserva series, años, selección de comparación, detalles, ceros/ausencia, procedencia y exportación. `PE` se lee directamente del CSV; no se calcula sumando departamentos en la interfaz.
+
+**Archivos incorporados:** `frontend/public/data/peru/{monthly_series.csv,calibrated_series.csv,method.json,validation.json,manifest.json}`, idénticos a `origin/feature/calibracion` en el commit `78f2ca71e59dd41b03f5557e6063e7fa42bcb4ca`. Se importó el contrato vigente y se conservó una copia del README científico en `docs/peru/SOURCE_README.md`. Procedencia y SHA-256: `docs/peru/PROCEDENCIA_ETAPA1.json`; informe: `docs/peru/INTEGRACION_ETAPA1.md`. No se trajeron los 14 GeoJSON nacionales ni algoritmos. El manifiesto original enumera esos GeoJSON; esta etapa entrega solo los cinco archivos necesarios y no pretende ser la publicación cartográfica completa.
+
+**Diferencia documentada:** las 326 filas mensuales de PE-25 coinciden con PE-UCA en período, sensor, valor, estado y versión; `updated_at` cambia de 2026-11-14 a 2026-11-15. Las 326 filas calibradas coinciden salvo `region_id`. Se conserva esa diferencia de publicación, sin tocar el piloto ni el producto nacional.
+
+El contrato científico importado también documenta v1.2 para salidas futuras del algoritmo; los archivos nacionales publicados siguen declarando v1.1, sin `sin_validar` ni `actualizacion.json`. Esta etapa no implementa esa extensión futura. No hay dependencias ni pasos de instalación nuevos: desde `frontend/`, `npm ci`, `npm run dev`, `npm test`, `npm run lint`, `npm run build`.
+
+## Comunicación científica en Calendario y Mapa
+
+Los textos distinguen el indicador regional del valor de una sola celda, según el contrato y `public/data/method.json`. No se cambiaron magnitudes, productos científicos ni clasificación cromática.
+
+- `services/data/map.ts` construye popups seguros con título, período/sensor, días registrados en la celda, explicación corta e identificador secundario. La modalidad anual recibe el número de meses utilizables para indicar año parcial/completo; cuando no se conoce, no inventa disponibilidad. `useJuanMap.ts` los abre tanto al pasar el cursor como al seleccionar por clic/toque. Se conservan cuadrados/polígonos, filtros y controles.
+- `CalendarDetail` presenta mes/año, nombre regional obtenido de metadatos (o código cuando falta), sensor, valor observado, días-celda acumulados y estado. Explica que la suma abarca distintas celdas y no equivale a incendios ni días distintos regionales. Cero, missing y no publicado tienen explicaciones diferentes. B0/B1 y procedencia permanecen en detalles secundarios.
+- `components/ui/CellDaysHelp.tsx` es un desplegable HTML nativo reutilizado en ambas leyendas: define un par celda-día y explica aportes simultáneos de varias celdas. Funciona con teclado y toque, sin dependencias adicionales. Los estilos quedan limitados a sus clases.
+- La leyenda del Mapa identifica los percentiles por período y sensor, mantiene sus valores y explica que el color no mide riesgo, gravedad ni superficie quemada. Los cuadrados siguen identificados como símbolos ampliados de localización.
+- El inspector anual conserva su desglose mensual y explica la suma de días, no necesariamente consecutivos, durante los meses disponibles.
+
+El producto actual continúa siendo PE-UCA. Aunque el método declara una malla de 1 km × 1 km en EPSG:6933, no se añade una equivalencia de superficie quemada a los popups. Las pruebas `scientific-copy.test.ts` cubren jerarquía del popup, selección táctil, cobertura anual, descripción regional, estados y ayuda desplegable. No se modificaron Método ni navbar; sin revisión visual mediante navegador o Computer Use.
+
+## Mapa multiescala — cuadrados individuales y polígonos originales
+
+Se conserva la composición de Mapa y las fuentes cartográficas de Juan. No hay agrupación ni círculos en la visualización principal: la fuente GeoJSON de localización usa `cluster: false` y cada registro de celda origina un símbolo individual, sin sumar celdas vecinas.
+
+- `services/data/mapSymbols.ts` prepara un punto interior por celda del período/sensor seleccionado. Usa intersecciones de una línea horizontal con los anillos, excluye los huecos y elige un intervalo interior; admite Polygon cóncavo y MultiPolygon. Son coordenadas derivadas para localizar símbolos, nunca observaciones nuevas ni reemplazos de las coordenadas/geometrías originales. Se rechazan celdas duplicadas, períodos/sensores incompatibles y valores inválidos.
+- `pages/map/cartography/multiscaleLayers.ts` dibuja una sola capa `symbol` mediante un pequeño cuadrado SDF generado localmente; no requiere sprites ni tipografías externas. El tamaño visual aproximado crece de 6 a 10 píxeles con el zoom. Los iconos permiten superposición y no se descartan por colisión. El halo es fino (0.35 px). Los colores y percentiles por valor observado son los mismos que en los polígonos originales.
+- Los símbolos se desvanecen al acercarse al zoom 9; su rango termina en 9 y los polígonos empiezan exactamente en 9. Esta sustitución excluyente evita dibujar dos veces la misma celda en una transición cruzada. Los contornos de los polígonos recuperan grosor y opacidad progresivamente; la geometría real permanece intacta.
+- Clic y hover sobre el cuadrado utilizan el mismo identificador, popup seguro e inspector que el polígono. El inspector anual conserva el desglose mensual. Cambiar el zoom no recrea fuentes ni actualiza sus datos; cambiar período/sensor actualiza ambas fuentes y bloquea temporalmente la interacción antigua.
+- La leyenda explica que los cuadrados ampliados son símbolos de localización, no área ocupada ni incendios individuales. No hay una escala de totales agrupados. Se conserva B1 exclusivamente en su ámbito regional; nunca se aplica a estas capas.
+
+**Alcance y rendimiento:** la entrega integrada sigue siendo PE-UCA, 2013-01 a 2026-07. No se inventaron datos nacionales. La preparación requiere recorrer la geometría una vez por selección y memoria proporcional a las celdas; se usan capas de MapLibre, sin componentes React por celda. A escala nacional los cuadrados podrán superponerse y ocultarse parcialmente entre sí, sin que eso cambie los datos ni sus totales; no se reintroduce clustering automáticamente. Antes de incorporar productos nacionales debe medirse tamaño, tiempo y memoria de la carga anual completa, y acordar con el equipo cualquier particionado o contrato de teselas necesario.
+
+**Pruebas:** `map-multiscale.test.ts` comprueba una posición interior por celda (incluidos huecos y geometrías cóncavas), ausencia de clustering/círculos, sumas observadas, separación de períodos/sensores, anual, ceros/vacíos, rangos de zoom excluyentes, escala de colores, inspector y cobertura parcial. Se valida el estilo completo con el compilador incluido en MapLibre. Las pruebas UI usan runtime simulado. La revisión visual queda a cargo de Landry: no se utilizó navegador ni Computer Use. Sin cambios de productos científicos ni contratos.
+
 ## Publicación v2 sin dependencia de legacy
 
 `frontend/src/legacy/` queda excluido por `.gitignore` y se conserva únicamente en el disco local. Una copia limpia utiliza exclusivamente la arquitectura v2. El frontend anterior permanece recuperable en el commit `26a7a7745694339cfd66352ab5c51f4cf8da230d` (historial Git), sin necesitar incluir su copia local en esta versión.

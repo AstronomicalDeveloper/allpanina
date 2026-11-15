@@ -33,3 +33,20 @@ a { color: inherit; }
 
 .brand { display: flex; align-items: center; gap: .625rem; }
 .brand-symbol { width: 1.25rem; height: 1.5rem; flex-shrink: 0; color: var(--fire); }
+
+.cell-days-help { font-size: .75rem; }
+.cell-days-help > summary { display: flex; align-items: center; gap: .4rem; cursor: pointer; list-style: none; min-height: 36px; color: var(--forest); padding: .3rem 0; font-weight: 500; }
+.cell-days-help > summary::-webkit-details-marker { display: none; }
+.cell-days-help > summary svg { flex-shrink: 0; }
+.cell-days-help > div { max-width: 55ch; padding: .2rem .7rem; border-left: 2px solid var(--soft); }
+.cell-days-help p { font-size: .75rem; line-height: 1.6; margin: .4rem 0; }
+
+.geographic-selection { position: relative; z-index: 9; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 1rem clamp(1rem,4vw,3rem) 0; font-size: .8rem; }
+.geographic-selection label { display: flex; align-items: center; gap: .6rem; }
+.geographic-selection select { max-width: min(19rem,65vw); padding: .45rem .6rem; min-height: 36px; font: inherit; color: var(--forest); background: var(--page); border: 1px solid #a4b9ab; border-radius: .4rem; }
+body:has(.map-workspace) .geographic-selection { position: fixed; top: 5.7rem; left: 0; margin: 0 1rem; padding: .35rem .5rem; background: var(--page); border-radius: .4rem; }
+body:has(.map-workspace) .map-workspace:not(.map-workspace--fullscreen) { --map-top: 9.5rem; }
+@media (max-width:42rem) { body:has(.map-workspace) .geographic-selection { top: 9rem; } body:has(.map-workspace) .map-workspace:not(.map-workspace--fullscreen) { --map-top: 12rem; } }
+
+body:has(.navbar--map):not(:has(.map-workspace)) #main { padding-top: 6rem; }
+@media (max-width:42rem) { body:has(.navbar--map):not(:has(.map-workspace)) #main { padding-top: 9rem; } }

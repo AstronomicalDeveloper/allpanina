@@ -48,6 +48,9 @@ function fakeRuntime() {
     }
     once(name: string, callback: Listener) { return this.on(name, callback) }
     emit(name: string, event = {}) { for (const callback of this.listeners.get(name) ?? []) callback(event) }
+    images = new Map<string, unknown>()
+    hasImage(id: string) { return this.images.has(id) }
+    addImage(id: string, image: unknown) { this.images.set(id,image) }
     addControl() { return this }
     getCanvas() { return this.canvas }
     getSource(id: string) { return this.sources[id] }
@@ -83,7 +86,8 @@ async function choose(host: HTMLElement, label: string, value: string) {
 }
 
 async function setup(t: TestContext, query = '?periodYear=2024&periodMonth=9&scope=month&calendarSeries=VIIRS&mapSensor=MODIS') {
-  window.history.replaceState(null, '', `/mapa${query}`)
+  const url=new URL(`/mapa${query}`,'http://localhost');if(!url.searchParams.has('data'))url.searchParams.set('data','pilot')
+  window.history.replaceState(null,'',url.pathname+url.search+url.hash)
   const runtime = fakeRuntime()
   const { host, root } = await mount(t, createElement(BrowserRouter, null, createElement(Navbar), createElement(Routes, null,
     createElement(Route, { path: '/mapa', element: createElement(MapPage, { runtimeLoader: runtime.loader }) }),
@@ -108,7 +112,7 @@ test('Mapa v2 real: septiembre 2024, capas conservadas, percentiles, clic seguro
   for (const id of ['basemap-firefly-layer', 'basemap-streets-layer', 'basemap-topographic-layer', 'overlay-protected-layer', 'celdas-fill']) assert.ok(runtime.maps[0].getLayer(id))
   const cell = observations(runtime).features[0].properties
   await act(async () => runtime.maps[0].emit('click:celdas-fill', { features: [{ properties: { cell_id: cell.cell_id } }] }))
-  assert.match(host.querySelector('.map-cell-detail')!.textContent!, new RegExp(`${cell.cell_days} días-celda`))
+  assert.match(host.querySelector('.map-cell-detail')!.textContent!, new RegExp(`${cell.cell_days} ${cell.cell_days === 1 ? 'día' : 'días'} con detecciones`))
   await act(async () => button(host, 'VIIRS').click())
   assert.equal(total(runtime), 5581)
   assert.equal(new URLSearchParams(window.location.search).get('calendarSeries'), 'VIIRS')
@@ -287,4 +291,22 @@ test('aviso de copia se reinicia, desaparece a los cuatro segundos y admite cier
   assert.match(host.querySelector('.map-feedback--share')!.textContent!, /Copia este enlace/)
   await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Cerrar aviso de enlace"]')!.click())
   assert.equal(host.querySelector('.map-feedback--share'), null)
+})
+
+
+test('herramientas móviles abren, cierran con Escape y al ejecutar una acción', async t => {
+  mockFiles(t); const { host, runtime } = await setup(t, '?data=demo&periodYear=2024')
+  const toggle = host.querySelector<HTMLButtonElement>('[aria-label="Herramientas del mapa"]')!
+  assert.equal(toggle.getAttribute('aria-expanded'), 'false')
+  await act(async () => toggle.click())
+  assert.equal(toggle.getAttribute('aria-expanded'), 'true')
+  assert.equal(toggle.getAttribute('aria-controls'), 'map-view-actions')
+  await act(async () => host.querySelector('.map-view-tools')!.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })))
+  assert.equal(toggle.getAttribute('aria-expanded'), 'false')
+  assert.equal(document.activeElement, toggle)
+  await act(async () => toggle.click())
+  await act(async () => button(host, 'Encuadrar').click())
+  assert.ok(runtime.maps[0].fitted)
+  assert.equal(toggle.getAttribute('aria-expanded'), 'false')
+  assert.equal(document.activeElement, toggle)
 })

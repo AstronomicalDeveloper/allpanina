@@ -270,3 +270,6 @@
 .calendar-period-slot > .calendar-year-navigation, .calendar-period-slot > .calendar-year-menu { grid-area: 1 / 1; width: 100%; }
 .calendar-period-slot .calendar-year-menu > summary { justify-content: space-between; }
 .calendar-period-slot .calendar-year-navigation { justify-content: space-between; }
+
+.calendar-unit-explanation { font-size: .78rem; line-height: 1.6; }
+.calendar-legend > .cell-days-help { flex-basis: 100%; width: 100%; }

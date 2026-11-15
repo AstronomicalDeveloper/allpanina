@@ -12,9 +12,11 @@ const dom = new JSDOM('<body></body>', { url: 'http://localhost/' })
 Object.defineProperties(globalThis, { window: { value: dom.window, configurable: true }, document: { value: dom.window.document, configurable: true }, IS_REACT_ACT_ENVIRONMENT: { value: true, configurable: true } })
 const files: Record<string,string> = {}
 for (const prefix of ['', 'demo/']) for (const name of ['monthly_series.csv','calibrated_series.csv','manifest.json','method.json']) files[`/data/${prefix}${name}`] = await readFile(new URL(`../public/data/${prefix}${name}`, import.meta.url), 'utf8')
+for (const name of ['manifest.json','method.json']) files[`/data/peru/${name}`] = await readFile(new URL(`../public/data/peru/${name}`, import.meta.url), 'utf8')
 function mockFiles(t: TestContext) { return t.mock.method(globalThis, 'fetch', async (url: string) => new Response(files[url] ?? '', { status: files[url] === undefined ? 404 : 200 })) }
 async function mount(t: TestContext, url = '/calendario') {
- window.history.replaceState(null,'',url)
+ const pilotUrl=new URL(url,'http://localhost');if(!pilotUrl.searchParams.has('data'))pilotUrl.searchParams.set('data','pilot')
+ window.history.replaceState(null,'',pilotUrl.pathname+pilotUrl.search+pilotUrl.hash)
  const host=document.createElement('div');document.body.append(host);const root=createRoot(host)
  await act(async()=>root.render(createElement(BrowserRouter,null,createElement(AppRoutes))))
  t.after(async()=>{await act(async()=>root.unmount());host.remove();window.sessionStorage.clear()})
@@ -105,7 +107,7 @@ test('v2 errores visibles y reintento sin fallback; observaciones disponibles au
  assert.equal(host.querySelector('#calendar-detail-title')!.textContent,'Selecciona un mes')
  fail=false;await act(async()=>button(host,'Reintentar carga').click())
  assert.equal(host.querySelectorAll('.calendar-annual-grid button').length,12)
- assert.match(host.querySelector('[role="alert"]')!.textContent!,/Estimaciones no disponibles/)
+ assert.match(host.querySelector('.calendar-v2 [role="alert"]')!.textContent!,/Estimaciones no disponibles/)
  assert.ok(urls.every(url=>!url.includes('/demo/')))
 })
 

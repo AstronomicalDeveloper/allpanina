@@ -1,3 +1,4 @@
+import { datasetMode, datasetRoot } from '../../services/data/geography'
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import useExplorationSelection from '../../app/useExplorationSelection'
@@ -19,7 +20,8 @@ function MapData({ dataRoot, selection, onChange, runtimeLoader }: {
 }) {
   const [state, setState] = useState<State>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
-  const { region: requestedRegion, year: requestedYear } = selection
+  const national=dataRoot.endsWith('/peru')
+  const requestedRegion=national?'PE':selection.region, requestedYear=selection.year
   useEffect(() => {
     const controller = new AbortController()
     void (async () => {
@@ -49,19 +51,20 @@ function MapData({ dataRoot, selection, onChange, runtimeLoader }: {
   if (state.year === null) return <p className="map-state" role="status">No hay años geográficos publicados en este conjunto. Revisa el manifiesto de datos.</p>
   if (!model?.ok) return <div className="map-state" role="alert"><h2>Los datos geográficos no son consistentes</h2><p>{model?.message}</p><p>Revisa la entrega científica; no se generan valores de reemplazo.</p></div>
   const months = state.records.filter(row => row.region_id === state.region && row.year === state.year && row.sensor_group === selection.sensor && row.status === 'ok').map(row => row.month)
-  const effective = { ...selection, region: state.region, year: state.year, month: selection.month ?? Math.max(1, ...months), scope: selection.scope ?? 'year' }
+  if (national && !state.manifest.regions?.includes(selection.region || 'PE')) return <p className="map-state" role="alert">Región no válida en el manifiesto nacional.</p>
+  const effective = { ...selection, region: national ? selection.region || 'PE' : state.region, year: state.year, month: selection.month ?? Math.max(1, ...months), scope: selection.scope ?? 'year' }
   return <MapWorkspace data={state.data ?? empty} model={model.value} selection={effective}
-    years={[...new Set([...state.years, ...(state.year === null ? [] : [state.year])])]} onChange={next => onChange({ ...next, region: requestedRegion, year: next.year === state.year ? requestedYear : next.year })}
-    unavailable={!state.data} manifest={state.manifest} demo={dataRoot.endsWith('/demo')} runtimeLoader={runtimeLoader} />
+    years={[...new Set([...state.years, ...(state.year === null ? [] : [state.year])])]} onChange={next => onChange({ ...next, region: selection.region, year: next.year === state.year ? requestedYear : next.year })}
+    national={national} records={state.records} unavailable={!state.data} manifest={state.manifest} demo={dataRoot.endsWith('/demo')} runtimeLoader={runtimeLoader} />
 }
 
 export default function MapPage({ runtimeLoader }: { runtimeLoader?: RuntimeLoader }) {
   const [params] = useSearchParams()
   const { selection, changeMap } = useExplorationSelection()
-  const dataRoot = params.get('data') === 'demo' ? '/data/demo' : '/data'
+  const mode=datasetMode(params),dataRoot=datasetRoot(mode)
   const mapSelection = { region: selection.region, year: selection.year, month: selection.month, scope: selection.scope, sensor: selection.mapSensor }
   return <section className="map-page-v2" aria-label="Exploración geográfica">
     <h1 className="map-sr-only">Mapa de observaciones</h1>
-    <MapData key={`${dataRoot}-${selection.region}-${selection.year}`} dataRoot={dataRoot} selection={mapSelection} onChange={changeMap} runtimeLoader={runtimeLoader} />
+    <MapData key={`${dataRoot}-${mode==='peru'?'PE':selection.region}-${selection.year}`} dataRoot={dataRoot} selection={mapSelection} onChange={changeMap} runtimeLoader={runtimeLoader} />
   </section>
 }

@@ -11,9 +11,12 @@ export const dom = new JSDOM('<body></body>', { url: 'http://localhost/calendari
 Object.defineProperties(globalThis, { window: { value: dom.window, configurable: true }, document: { value: dom.window.document, configurable: true }, IS_REACT_ACT_ENVIRONMENT: { value: true, configurable: true } })
 export const files: Record<string, string> = {}
 for (const prefix of ['', 'demo/']) for (const name of ['method.json', 'validation.json', 'manifest.json', 'monthly_series.csv', 'calibrated_series.csv', ...(prefix ? ['cells_PE-DEMO_2024.geojson'] : ['cells_PE-UCA_2024.geojson','cells_PE-UCA_2026.geojson'])]) files[`/data/${prefix}${name}`] = await readFile(new URL(`../public/data/${prefix}${name}`, import.meta.url), 'utf8')
+for (const name of ['manifest.json','method.json','monthly_series.csv','calibrated_series.csv','validation.json']) files[`/data/peru/${name}`] = await readFile(new URL(`../public/data/peru/${name}`, import.meta.url), 'utf8')
+files['/cartography/departamentos_inei_2023.navigation.geojson']=await readFile(new URL('../public/cartography/departamentos_inei_2023.navigation.geojson',import.meta.url),'utf8')
 export function mockFiles(t: TestContext, overrides: Record<string, string> = {}) { return t.mock.method(globalThis, 'fetch', async (url: string) => new Response(overrides[url] ?? files[url] ?? '', { status: files[url] === undefined && overrides[url] === undefined ? 404 : 200 })) }
-export async function mount(t: TestContext, url = '/calendario', element = createElement(AppRoutes)) {
- window.history.replaceState(null,'',url)
+export async function mount(t: TestContext, url = '/calendario', element = createElement(AppRoutes), mode: 'pilot'|'peru' = 'pilot') {
+ const pilotUrl=new URL(url,'http://localhost');if(mode==='pilot'&&!pilotUrl.searchParams.has('data'))pilotUrl.searchParams.set('data','pilot')
+ window.history.replaceState(null,'',pilotUrl.pathname+pilotUrl.search+pilotUrl.hash)
  const host=document.createElement('div');document.body.append(host);const root=createRoot(host)
  await act(async()=>root.render(createElement(BrowserRouter,null,element)))
  t.after(async()=>{await act(async()=>root.unmount());host.remove();window.sessionStorage.clear()})
@@ -28,6 +31,7 @@ export async function choose(host: HTMLElement, selector: string, value: string)
  await act(async()=>{select.value=value;select.dispatchEvent(new dom.window.Event('change',{bubbles:true}))})
 }
 export async function navigate(path: string) {
+ const url=new URL(path,'http://localhost');if(!url.searchParams.has('data'))url.searchParams.set('data','pilot');path=url.pathname+url.search+url.hash
  await act(async()=>{window.history.pushState(null,'',path);window.dispatchEvent(new dom.window.PopStateEvent('popstate'))})
 }
 type Listener = (event: { features?: { properties: Record<string, unknown> }[]; lngLat?: unknown; error?: Error }) => void
@@ -47,10 +51,13 @@ export function fakeRuntime() {
     canvas = document.createElement('canvas')
     listeners = new Map<string, Listener[]>()
     sources: Record<string, { data: unknown; setData: (data: unknown) => void }> = {}
+    style: unknown
     layers: { id: string }[]
     removed = 0
     fitted: unknown = null
+    fits: unknown[] = []
     constructor(options: { style: { sources: Record<string, { data?: unknown }>; layers: { id: string }[] } }) {
+      this.style = options.style
       this.layers = options.style.layers
       for (const [key, value] of Object.entries(options.style.sources)) this.sources[key] = { data: value.data, setData: data => { this.sources[key].data = data } }
       maps.push(this)
@@ -60,8 +67,12 @@ export function fakeRuntime() {
       const key = typeof layerOrCallback === 'string' ? `${name}:${layerOrCallback}` : name
       this.listeners.set(key, [...(this.listeners.get(key) ?? []), callback ?? layerOrCallback as Listener]); return this
     }
+    off(name: string, callback: Listener) { this.listeners.set(name,(this.listeners.get(name) ?? []).filter(listener=>listener!==callback)); return this }
     once(name: string, callback: Listener) { return this.on(name, callback) }
     emit(name: string, event = {}) { for (const callback of this.listeners.get(name) ?? []) callback(event) }
+    images = new Map<string, unknown>()
+    hasImage(id: string) { return this.images.has(id) }
+    addImage(id: string, image: unknown) { this.images.set(id,image) }
     addControl() { return this }
     getCanvas() { return this.canvas }
     getSource(id: string) { return this.sources[id] }
@@ -71,8 +82,11 @@ export function fakeRuntime() {
     setLayoutProperty(id: string, key: string, value: unknown) { this.layouts[`${id}:${key}`] = value }
     setPaintProperty() {}
     getBounds() { return { getWest: () => -76, getEast: () => -74, getSouth: () => -13, getNorth: () => -11 } }
-    getZoom() { return 7 }
-    fitBounds(bounds: unknown) { this.fitted = bounds }
+    zoom = 7
+    getZoom() { return this.zoom }
+    eased: unknown = null
+    easeTo(options: { zoom: number }) { this.eased = options; this.zoom = options.zoom; this.emit('zoomend') }
+    fitBounds(bounds: unknown) { this.fitted = bounds; this.fits.push(bounds) }
     resize() {}
     remove() { this.removed++; this.listeners.clear() }
   }

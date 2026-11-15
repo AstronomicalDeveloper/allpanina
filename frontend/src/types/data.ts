@@ -48,6 +48,8 @@ export interface MethodInfo {
   limitations: string[]
 }
 export interface Manifest {
+  contract_version?: '1.1'
+  regions?: string[]
   region_id: string
   generated_at: string
   producto: string
@@ -65,3 +67,15 @@ export interface CellsData {
     geometry: { type: 'Polygon'; coordinates: Position[][] } | { type: 'MultiPolygon'; coordinates: Position[][][] }
   }[]
 }
+
+export type NationalRegion = { region_id: string; nombre: string; estrato: 'propio' | 'agrupado' | 'nacional'; kappa: number; kappa_inputs: { suma_modis_train: number; suma_viirs_train: number; meses_train: number }; kappa_anual_rango: [number, number] | null }
+export type RegionalMetrics = { periodo: string; n_meses: number; suma_modis: number; B0: Metrics; B1: Metrics }
+export interface NationalMethod extends Omit<MethodInfo, 'resultados' | 'kappa'> {
+  contract_version: '1.1'; region_id: string; regions: NationalRegion[]
+  estratos: { agrupado: { miembros: string[]; kappa: number }; nacional: { region_id: string; kappa: number } }
+  resultados: { valid: Record<string, RegionalMetrics>; test: Record<string, RegionalMetrics>; test_no_reportables: Record<string, string>; resultado_limpio: string }
+}
+export type RegionalValidation = { region_id: string; estrato: NationalRegion['estrato']; nota?: string } & (
+  { reportable: true; methods: ValidationResult['methods'] } | { reportable: false; motivo: string; methods?: never }
+)
+export interface NationalValidation { contract_version: '1.1'; split: Split; regions: RegionalValidation[] }

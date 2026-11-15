@@ -1,3 +1,4 @@
+import { validateMethodDocument, validateValidationDocument } from './peruValidators'
 import { parseCalibratedSeries, parseMonthlySeries, validateCells, validateManifest, validateMethod, validateValidation } from './validators.ts'
 
 export type LoadResult<T> = { ok: true; data: T } | { ok: false; error: string }
@@ -43,3 +44,6 @@ export function loadDemo(baseUrl: string, signal?: AbortSignal) {
     safelyLoad(() => loadManifest(`${root}/manifest.json`, signal)),
   ])
 }
+
+export const loadMethodDocument = (url: string, signal?: AbortSignal) => loadJson(url, validateMethodDocument, signal)
+export const loadValidationDocument = (url: string, signal?: AbortSignal) => loadJson(url, validateValidationDocument, signal)

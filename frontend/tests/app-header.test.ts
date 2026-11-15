@@ -15,7 +15,7 @@ test('v2 metadatos fallidos no inventan descripción ni fallback y permiten rein
  const {host}=await mount(t)
  assert.match(host.querySelector('.calendar-heading')!.textContent!,/PE-UCA/)
  assert.doesNotMatch(host.querySelector('.calendar-heading')!.textContent!,/Ucayali, Perú/)
- assert.match(host.querySelector('[role="alert"]')!.textContent!,/Descripción de región no disponible/)
+ assert.match(host.querySelector('.calendar-v2 [role="alert"]')!.textContent!,/Descripción de región no disponible/)
  fail=false;await act(async()=>[...host.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent==='Reintentar archivos')!.click())
  assert.match(host.querySelector('.calendar-heading')!.textContent!,/Ucayali, Perú/)
 })

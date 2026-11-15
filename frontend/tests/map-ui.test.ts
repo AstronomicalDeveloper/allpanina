@@ -18,7 +18,7 @@ test('v2 cartografía conserva popup seguro con texto potencialmente malicioso',
 test('v2 cartografía permite seleccionar con teclado y limpia al cambiar mes',async t=>{
  mockFiles(t);const {host}=await setup(t)
  await choose(host,'[aria-label="Seleccionar celda del mapa"]','DEMO-cell-001')
- assert.match(host.querySelector('.map-cell-detail')!.textContent!,/3 días-celda/)
+ assert.match(host.querySelector('.map-cell-detail')!.textContent!,/3 días con detecciones/)
  await choose(host,'[aria-label="Mes del mapa"]','9');assert.equal(host.querySelector('.map-cell-detail'),null)
  assert.match(host.querySelector('.map-observed')!.textContent!,/Cero válido/)
 })

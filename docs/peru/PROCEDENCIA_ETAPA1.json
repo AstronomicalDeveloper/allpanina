@@ -1,0 +1,13 @@
+{
+  "source_branch": "origin/feature/calibracion",
+  "source_commit": "78f2ca71e59dd41b03f5557e6063e7fa42bcb4ca",
+  "files": {
+    "frontend/public/data/peru/monthly_series.csv": "a633da77d258c832b929d9cc672b11a08a6d3651f620469dcb3d7233acf73ede",
+    "frontend/public/data/peru/calibrated_series.csv": "5eb84f1675f826544dc978df6de210630443024aa9a16bf97eb535e0c4a67458",
+    "frontend/public/data/peru/method.json": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "frontend/public/data/peru/validation.json": "b2b259928bf830abfdcc53641693343c82699f0dc9738f8fe60644677c7f1d1e",
+    "frontend/public/data/peru/manifest.json": "c481e3ae2374e67b43fee6e96cb9134c6e8298b7a62abc245b0066895f2326a6",
+    "docs/contrato_datos.md": "782fd73af267bfe5145cf4a486488506c9e844e60b19a67311cbe902f258d2d7",
+    "docs/peru/SOURCE_README.md": "189d36a1337dcef41e08c5d3abc7e7a1d873a8da999645cd751351e8c788503f"
+  }
+}

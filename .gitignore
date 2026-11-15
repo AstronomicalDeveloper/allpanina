@@ -327,3 +327,19 @@ crash.log
 
 # Local frontend reference; v2 and regression tests must not depend on it.
 /frontend/src/legacy/
+
+# Approved national integration contract and provenance (stage 1)
+!/docs/peru/
+/docs/peru/*
+!/docs/peru/SOURCE_README.md
+!/docs/peru/PROCEDENCIA_ETAPA1.json
+!/docs/peru/INTEGRACION_ETAPA1.md
+
+# Approved national map integration evidence (stage 2)
+!/docs/peru/PROCEDENCIA_ETAPA2.json
+!/docs/peru/INTEGRACION_ETAPA2.md
+!/docs/peru/DESPLIEGUE_COMPRESION.md
+
+# Official INEI boundaries and derived navigation provenance
+!/docs/region/departamentos_inei_2023.geojson
+!/docs/peru/NAVEGACION_DEPARTAMENTAL.md
