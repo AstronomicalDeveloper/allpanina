@@ -49,7 +49,7 @@ export async function descargarFirms(op: OpcionesDescarga): Promise<{ MODIS: str
         await dormir(VENTANA_MS - (ahora - hist[0][0]) + 500)
       }
       const url = `${base}/api/area/csv/${op.mapKey}/${FUENTES[sensor]}/${area}/${k}/${dia}`
-      let texto = ''
+      let texto: string
       for (let intento = 0; ; intento++) {
         let r: Response
         try { r = await pedir(url, { signal: op.signal }) }
