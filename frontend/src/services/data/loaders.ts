@@ -1,9 +1,11 @@
+import { leerArchivoLocal } from '../region/store.ts'
 import { validateMethodDocument, validateValidationDocument } from './peruValidators'
 import { parseCalibratedSeries, parseMonthlySeries, validateCells, validateManifest, validateMethod, validateValidation } from './validators.ts'
 
 export type LoadResult<T> = { ok: true; data: T } | { ok: false; error: string }
 
 async function readText(url: string, signal?: AbortSignal): Promise<string> {
+  if (url.startsWith('local:')) return leerArchivoLocal(decodeURIComponent(url.slice('local:'.length).replace(/^\/+/, '')))
   const response = await fetch(url, { signal })
   if (!response.ok) throw new Error(`HTTP ${response.status}`)
   return response.text()

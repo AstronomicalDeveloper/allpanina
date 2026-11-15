@@ -24,7 +24,7 @@ a { color: inherit; }
   .navbar { width: calc(100% - 1rem); margin-top: .5rem; grid-template-columns: minmax(0,1fr) 44px; gap: .75rem; padding: .75rem 1rem; }
   .brand { font-size: 1.4rem; }
   .secondary-navigation { grid-row: 1; grid-column: 2; }
-  .navbar nav { grid-row: 2; grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .5rem; }
+  .navbar nav { grid-row: 2; grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: .5rem; }
   .navbar nav a { display: flex; align-items: center; justify-content: center; padding: .75rem .25rem; font-size: .875rem; text-align: center; }
 }
 @media (prefers-reduced-motion: reduce) {

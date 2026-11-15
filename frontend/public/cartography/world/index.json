@@ -1,0 +1,14 @@
+{
+ "fuente": "Semilla: departamentos INEI 2023 (versión de navegación). Para todos los países: python scripts/11_world_boundaries.py (geoBoundaries).",
+ "licencia": "INEI (Perú); geoBoundaries CC BY 4.0 para el resto",
+ "paises": [
+  {
+   "iso3": "PER",
+   "iso2": "PE",
+   "nombre": "Peru",
+   "archivo": "PER.geojson",
+   "regiones": 25,
+   "licencia": "INEI"
+  }
+ ]
+}

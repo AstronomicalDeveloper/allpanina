@@ -1,6 +1,6 @@
 import { Link, NavLink, useLocation } from 'react-router-dom'
 
-const destinations = [['/calendario', 'Calendario'], ['/mapa', 'Mapa'], ['/metodo', 'Método']]
+const destinations = [['/calendario', 'Calendario'], ['/mapa', 'Mapa'], ['/metodo', 'Método'], ['/mi-region', 'Mi región']]
 
 export default function Navbar() {
   const { pathname, search, hash } = useLocation()

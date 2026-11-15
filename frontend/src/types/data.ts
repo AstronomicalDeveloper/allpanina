@@ -15,7 +15,7 @@ export interface MonthlyRecord extends Period {
 export interface CalibratedRecord extends Period {
   method: Method
   value: number | null
-  split: Split
+  split: Split | 'sin_validar'
   status: DataStatus
   residual: number | null
 }
@@ -37,8 +37,8 @@ export interface MethodInfo {
   region_id?: string
   region?: string
   estado?: string
-  kappa?: number
-  resultados?: { valid?: { periodo: string; n_meses: number; B0: Metrics; B1: Metrics } }
+  kappa?: number | null
+  resultados?: { valid?: { periodo: string; n_meses: number; B0?: Metrics; B1?: Metrics } }
   indicator: string
   sensors: string[]
   period_train: string
@@ -48,7 +48,7 @@ export interface MethodInfo {
   limitations: string[]
 }
 export interface Manifest {
-  contract_version?: '1.1'
+  contract_version?: '1.1' | '1.0-region'
   regions?: string[]
   region_id: string
   generated_at: string

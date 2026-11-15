@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { loadManifest, loadMethodDocument } from '../../services/data/loaders'
 import { datasetMode, datasetRoot } from '../../services/data/geography'
+import { leerConjunto } from '../../services/region/store'
 export default function GeographicSelection() {
   const [params] = useSearchParams(), navigate = useNavigate(), location = useLocation()
   const [state,setState] = useState<{options:{id:string;name:string}[];error?:string}>({options:[]})
@@ -17,6 +18,7 @@ export default function GeographicSelection() {
     return ()=>controller.abort()
   },[attempt])
   const mode=datasetMode(params),selected=params.get('mapRegion')||(mode==='pilot'?'PE-UCA':'PE')
+  if(mode==='local')return <LocalSelection />
   return <div className="geographic-selection" aria-label="Ámbito geográfico compartido">
     {mode==='demo'?<span>Modo DEMO explícito · regiones ficticias</span>:<label>Ámbito geográfico <select aria-label="Ámbito geográfico" value={selected} disabled={!state.options.length} onChange={event=>{
       const next=new URLSearchParams(params),id=event.target.value
@@ -31,5 +33,19 @@ export default function GeographicSelection() {
     {mode==='peru'&&<Link to={{pathname:location.pathname,search:`?${new URLSearchParams({...Object.fromEntries(params),data:'pilot',mapRegion:'PE-UCA'})}`,hash:location.hash}}>Piloto v1.0</Link>}
     {!state.options.length&&!state.error&&<span role="status">Cargando ámbitos…</span>}
     {state.error&&<span role="alert">No se pudieron cargar los ámbitos: {state.error} <button onClick={()=>{setState({options:[]});setAttempt(attempt+1)}}>Reintentar ámbitos</button></span>}
+  </div>
+}
+
+/** Mi región: el conjunto procesado o subido en este navegador. */
+function LocalSelection() {
+  const [params] = useSearchParams(), location = useLocation()
+  const [name,setName] = useState<string|null|undefined>(undefined)
+  useEffect(()=>{ void leerConjunto().then(c=>setName(c?c.nombre:null)) },[])
+  const peru=new URLSearchParams(params); peru.delete('data'); peru.delete('mapRegion')
+  return <div className="geographic-selection geographic-selection--local" aria-label="Ámbito geográfico compartido">
+    <span className="local-chip"><span aria-hidden="true">●</span> Mi región{name?` · ${name}`:''} <em>exploratorio</em></span>
+    {name===null&&<span role="alert">No hay datos de Mi región en este navegador.</span>}
+    <Link to="/mi-region">Cambiar región</Link>
+    <Link to={{pathname:location.pathname,search:`?${peru}`,hash:location.hash}}>Volver a Perú</Link>
   </div>
 }

@@ -9,7 +9,7 @@ export default function EvaluationSection({ method, validation, demo }: { method
   const [errorMethod, setErrorMethod] = useState<Method>('B1')
   const entries: Entry[] = []
   const valid = method?.resultados?.valid
-  if (valid) for (const name of METHODS) entries.push({ name, split: 'valid', metrics: valid[name], months: valid.n_meses, source: 'method.json' })
+  if (valid) for (const name of METHODS) { const metrics = valid[name]; if (metrics) entries.push({ name, split: 'valid', metrics, months: valid.n_meses, source: 'method.json' }) }
   for (const name of METHODS) {
     const result = validation?.methods[name]
     if (result) {

@@ -7,6 +7,7 @@ const titles: Record<string, string> = {
   '/calendario': `Calendario histórico · ${SITE}`,
   '/mapa': `Mapa de observaciones · ${SITE}`,
   '/metodo': `Método y evaluación · ${SITE}`,
+  '/mi-region': `Mi región · ${SITE}`,
 }
 
 /** Título de la pestaña según la ruta; las rutas desconocidas se identifican como tales. */
