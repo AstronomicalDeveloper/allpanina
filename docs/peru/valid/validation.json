@@ -1,0 +1,624 @@
+{
+  "contract_version": "1.1",
+  "split": "valid",
+  "regions": [
+    {
+      "region_id": "PE",
+      "estrato": "nacional",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 3851.9166666666665,
+            "wape": 2.8549458015502918,
+            "bias": 3851.9166666666665
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 192.62037202408922,
+            "wape": 0.14276547755097563,
+            "bias": -54.57399669743625
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-SIN-25",
+      "estrato": "nacional",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 3206.0,
+            "wape": 3.0970858154886494,
+            "bias": 3206.0
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 141.0825390260257,
+            "wape": 0.13628968510000872,
+            "bias": 20.520322986971507
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-01",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 114.83333333333333,
+            "wape": 4.6632825719120135,
+            "bias": 114.83333333333333
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 7.604431918656057,
+            "wape": 0.3088094180164896,
+            "bias": -1.8011825817860316
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-02",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 62.5,
+            "wape": 2.7675276752767526,
+            "bias": 62.5
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 6.017460128067455,
+            "wape": 0.2664557990288172,
+            "bias": -3.3251203118164114
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-03",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 18.583333333333332,
+            "wape": 2.154589371980676,
+            "bias": 18.5
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 3.090445869460501,
+            "wape": 0.35831256457513055,
+            "bias": -0.5061190390173401
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-04",
+      "estrato": "agrupado",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 26.625,
+            "wape": 5.325,
+            "bias": 26.625
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 2.956929979100817,
+            "wape": 0.5913859958201634,
+            "bias": 1.5596598269340378
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-05",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 46.25,
+            "wape": 2.4832214765100673,
+            "bias": 46.25
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 5.529031416097191,
+            "wape": 0.2968607471730036,
+            "bias": -2.400092539863327
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-06",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 148.58333333333334,
+            "wape": 3.286635944700461,
+            "bias": 148.58333333333334
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 15.369642857142857,
+            "wape": 0.3399736668861093,
+            "bias": -7.988029100529098
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-07",
+      "estrato": "agrupado",
+      "reportable": false,
+      "motivo": "Σ MODIS en valid = 0, por debajo del mínimo de 50 (DECISIONS.md §11.3)"
+    },
+    {
+      "region_id": "PE-08",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 121.54166666666667,
+            "wape": 2.778095238095238,
+            "bias": 121.54166666666667
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 4.75020661735866,
+            "wape": 0.10857615125391223,
+            "bias": 0.99739101809828
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-09",
+      "estrato": "agrupado",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 23.166666666666668,
+            "wape": 3.1235955056179776,
+            "bias": 23.166666666666668
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 2.8492106672193724,
+            "wape": 0.3841632360295783,
+            "bias": -1.0730694163773602
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-10",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 427.9166666666667,
+            "wape": 2.6286153058612745,
+            "bias": 427.9166666666667
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 29.03552607386017,
+            "wape": 0.17836002707259893,
+            "bias": -3.3821626729830214
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-11",
+      "estrato": "agrupado",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 25.25,
+            "wape": 4.1506849315068495,
+            "bias": 25.25
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 2.132800490526279,
+            "wape": 0.3505973409084295,
+            "bias": 0.4158289721401796
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-12",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 273.5,
+            "wape": 3.145184475323431,
+            "bias": 273.5
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 12.898306043226361,
+            "wape": 0.14832742934232518,
+            "bias": -2.6551759992995003
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-13",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 99.0,
+            "wape": 2.582608695652174,
+            "bias": 99.0
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 8.746428829088812,
+            "wape": 0.2281677085849255,
+            "bias": -3.9925690787100514
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-14",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 41.5,
+            "wape": 1.9153846153846155,
+            "bias": 41.333333333333336
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 7.024495621648729,
+            "wape": 0.32420749022994133,
+            "bias": -4.533233036299813
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-15",
+      "estrato": "agrupado",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 28.583333333333332,
+            "wape": 4.369426751592357,
+            "bias": 28.583333333333332
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 3.394182772855243,
+            "wape": 0.5188559652772347,
+            "bias": 0.7439634177936677
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-16",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 508.4166666666667,
+            "wape": 3.8334904178448004,
+            "bias": 508.4166666666667
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 18.154058173323453,
+            "wape": 0.13688262524654818,
+            "bias": -4.497020587620848
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-17",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 294.0416666666667,
+            "wape": 2.0634502923976608,
+            "bias": 294.0416666666667
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 22.56157918968692,
+            "wape": 0.15832687150657487,
+            "bias": 4.731405909928003
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-18",
+      "estrato": "agrupado",
+      "reportable": false,
+      "motivo": "Σ MODIS en valid = 43, por debajo del mínimo de 50 (DECISIONS.md §11.3)"
+    },
+    {
+      "region_id": "PE-19",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 132.25,
+            "wape": 3.1867469879518073,
+            "bias": 130.91666666666666
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 9.442587658784909,
+            "wape": 0.22753223274180503,
+            "bias": 4.370593272753226
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-20",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 113.25,
+            "wape": 4.710571923743501,
+            "bias": 113.25
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 7.953988682630598,
+            "wape": 0.3308418169551722,
+            "bias": 2.2304878890345745
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-21",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 47.166666666666664,
+            "wape": 2.5267857142857144,
+            "bias": 47.083333333333336
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 4.3284295753131685,
+            "wape": 0.2318801558203483,
+            "bias": 0.395409410326917
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-22",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 623.5833333333334,
+            "wape": 3.6529167683670978,
+            "bias": 623.5833333333334
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 40.61339973182304,
+            "wape": 0.23791105529991527,
+            "bias": -1.3104946079716109
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-23",
+      "estrato": "agrupado",
+      "reportable": false,
+      "motivo": "Σ MODIS en valid = 11, por debajo del mínimo de 50 (DECISIONS.md §11.3)"
+    },
+    {
+      "region_id": "PE-24",
+      "estrato": "agrupado",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 15.416666666666666,
+            "wape": 3.3035714285714284,
+            "bias": 15.25
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 1.822231721850873,
+            "wape": 0.3904782261109014,
+            "bias": -0.5355502012194071
+          },
+          "n_months_matched": 24
+        }
+      }
+    },
+    {
+      "region_id": "PE-25",
+      "estrato": "propio",
+      "reportable": true,
+      "methods": {
+        "B0": {
+          "split": "valid",
+          "metrics": {
+            "mae": 645.9166666666666,
+            "wape": 2.0567865198354784,
+            "bias": 645.9166666666666
+          },
+          "n_months_matched": 24
+        },
+        "B1": {
+          "split": "valid",
+          "metrics": {
+            "mae": 55.77998536029397,
+            "wape": 0.17761969598607605,
+            "bias": -32.19432342942482
+          },
+          "n_months_matched": 24
+        }
+      }
+    }
+  ]
+}

@@ -15,7 +15,9 @@ Instalar: `pip install -r requirements.txt`. Probar: `python -m pytest`.
 | 5 | `05_geojson_export.py` | T20 | `cell_days.parquet` | `cells_<region>_<anio>.geojson` |
 | 8 | `08_manifest.py` | T12, T31 | carpeta de entregables | `manifest.json` |
 
-Los pasos 6 y 7 (calibracion y metricas) son de Antonella.
+Los pasos 6 y 7 (calibracion y metricas) son de Antonella. Para Peru (P09/P10):
+`python scripts/06_calibrate_peru.py docs/peru/ejemplo/monthly_series.csv --out docs/peru/valid`
+(kappa por estrato solo con train, validacion 2023-2024; rechaza meses de test).
 
 ```bash
 python scripts/01_download.py
