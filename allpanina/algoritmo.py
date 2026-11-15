@@ -46,7 +46,7 @@ DESDE = (2013, 1)
 ULTIMO_MES_VALIDADO = "2026-07"                                        # fin del test (P14/P15)
 SPLIT_NUEVO = "sin_validar"
 COLUMNAS_FIRMS = ("latitude", "longitude", "acq_date", "acq_time", "satellite", "confidence", "version", "type")
-SATELITES = {"MODIS": {"Terra", "Aqua"}, "VIIRS": {"N"}}
+SATELITES = {"MODIS": {"Terra", "Aqua"}, "VIIRS": {"SNPP", "N"}}  # SNPP en el archivo estándar; N = código antiguo de FIRMS
 
 
 class ErrorDeEntrada(ValueError):
@@ -93,7 +93,7 @@ def validar_csv(path: Path, sensor: str) -> dict:
     sats = set(datos["satellite"].dropna().astype(str).str.strip())
     otros = sats - SATELITES[sensor]
     if otros:
-        esperado = "Terra o Aqua" if sensor == "MODIS" else "Suomi NPP (código 'N')"
+        esperado = "Terra o Aqua" if sensor == "MODIS" else "Suomi NPP ('SNPP' o 'N')"
         raise ErrorDeEntrada(
             f"{path.name}: satélite {sorted(otros)} no válido para {sensor}; se espera {esperado}. "
             "Los κ congelados solo valen para MODIS Terra/Aqua y VIIRS Suomi NPP. "

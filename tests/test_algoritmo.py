@@ -24,7 +24,7 @@ def _csv(path, filas, sensor="MODIS", sin_type=False):
         w.writeheader()
         for (lat, lon), fecha, extra in filas:
             fila = {"latitude": lat, "longitude": lon, "brightness": 320, "scan": 1, "track": 1,
-                    "acq_date": fecha, "acq_time": "1530", "satellite": "Terra" if sensor == "MODIS" else "N",
+                    "acq_date": fecha, "acq_time": "1530", "satellite": "Terra" if sensor == "MODIS" else "SNPP",
                     "instrument": sensor, "confidence": 80 if sensor == "MODIS" else "n",
                     "version": "61.03" if sensor == "MODIS" else "2", "bright_t31": 300, "frp": 10,
                     "daynight": "D", "type": 0}
@@ -45,10 +45,17 @@ def test_rechaza_version_nrt(tmp_path):
         validar_csv(p, "VIIRS")
 
 
-def test_rechaza_noaa20(tmp_path):
-    p = _csv(tmp_path / "v.csv", [(PUCALLPA, "2027-01-05", {"satellite": "N20"})], sensor="VIIRS")
+@pytest.mark.parametrize("sat", ["N20", "1", "N21"])
+def test_rechaza_noaa20_y_noaa21(tmp_path, sat):
+    p = _csv(tmp_path / "v.csv", [(PUCALLPA, "2027-01-05", {"satellite": sat})], sensor="VIIRS")
     with pytest.raises(ErrorDeEntrada, match="Suomi NPP"):
         validar_csv(p, "VIIRS")
+
+
+@pytest.mark.parametrize("sat", ["SNPP", "N"])
+def test_acepta_suomi_npp(tmp_path, sat):
+    p = _csv(tmp_path / "v.csv", [(PUCALLPA, "2024-08-01", {"satellite": sat})], sensor="VIIRS")
+    assert validar_csv(p, "VIIRS")["filas"] == 1
 
 
 def test_flujo_sintetico_con_mes_nuevo(tmp_path):
