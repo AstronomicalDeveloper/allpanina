@@ -15,55 +15,67 @@ export type {
   FireMapProps,
   SensorGroup,
 } from './types/fireMap';
-export { validateGeoJson } from './utils/geo';
 
 export function FireMapTest(props: FireMapProps = {}) {
-  const vm = useFireMap(props);
+  const {
+    mapContainer, baseMap, setBaseMap, dynamicImagery, setDynamicImagery,
+    year, month, day, sensor, activeToolPanel, setActiveToolPanel, isFullScreen,
+    overlays, setOverlays, showMenu, setShowMenu,
+    captureFormat, setCaptureFormat, captureHeader, setCaptureHeader,
+    captureTimestamp, setCaptureTimestamp, captureScalebar, setCaptureScalebar,
+    captureMessage, setCaptureMessage, isCapturing,
+    shareUrl, shareMessage, opacity, setOpacity,
+    selectedCell, cursorCoords, simulateCorruptFile, setSimulateCorruptFile,
+    validatedSource, percentileBreaks, stats,
+    handleFilterChange, resetView, getShareUrl,
+    openSharePanel, handleCopyShareUrl, handleSocialShare,
+    handleCapture, toggleFullScreen,
+  } = useFireMap(props);
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', fontFamily: 'system-ui, sans-serif', overflow: 'hidden' }}>
-      {!vm.isFullScreen && (
-        <MapHeader cursorCoords={vm.cursorCoords} day={vm.day} month={vm.month} year={vm.year} sensor={vm.sensor} />
+      {!isFullScreen && (
+        <MapHeader cursorCoords={cursorCoords} day={day} month={month} year={year} sensor={sensor} />
       )}
 
       <div
-        ref={vm.mapContainer}
-        style={{ position: 'absolute', left: 0, right: 0, top: vm.isFullScreen ? 0 : '54px', bottom: 0, width: '100%', height: vm.isFullScreen ? '100vh' : 'calc(100vh - 54px)' }}
+        ref={mapContainer}
+        style={{ position: 'absolute', left: 0, right: 0, top: isFullScreen ? 0 : '54px', bottom: 0, width: '100%', height: isFullScreen ? '100vh' : 'calc(100vh - 54px)' }}
       />
 
-      {vm.showMenu && (
+      {showMenu && (
         <ControlSidebar
-          isFullScreen={vm.isFullScreen} validatedSource={vm.validatedSource}
-          baseMap={vm.baseMap} setBaseMap={vm.setBaseMap}
-          dynamicImagery={vm.dynamicImagery} setDynamicImagery={vm.setDynamicImagery}
-          overlays={vm.overlays} setOverlays={vm.setOverlays}
-          year={vm.year} month={vm.month} day={vm.day} sensor={vm.sensor} onFilterChange={vm.handleFilterChange}
-          opacity={vm.opacity} setOpacity={vm.setOpacity}
-          stats={vm.stats} percentileBreaks={vm.percentileBreaks} selectedCell={vm.selectedCell}
+          isFullScreen={isFullScreen} validatedSource={validatedSource}
+          baseMap={baseMap} setBaseMap={setBaseMap}
+          dynamicImagery={dynamicImagery} setDynamicImagery={setDynamicImagery}
+          overlays={overlays} setOverlays={setOverlays}
+          year={year} month={month} day={day} sensor={sensor} onFilterChange={handleFilterChange}
+          opacity={opacity} setOpacity={setOpacity}
+          stats={stats} percentileBreaks={percentileBreaks} selectedCell={selectedCell}
         />
       )}
 
       <MapToolbar
-        year={vm.year} month={vm.month} sensor={vm.sensor}
-        activeToolPanel={vm.activeToolPanel} simulateCorruptFile={vm.simulateCorruptFile}
-        onResetView={vm.resetView} onFilterChange={(y, m, s) => vm.handleFilterChange(y, m, s, vm.day)}
-        onOpenCapture={() => { vm.setCaptureMessage(''); vm.setActiveToolPanel('capture'); }}
-        onOpenShare={vm.openSharePanel}
-        onToggleViewPanel={() => vm.setActiveToolPanel(vm.activeToolPanel === 'view' ? null : 'view')}
-        onToggleCorrupt={() => vm.setSimulateCorruptFile((prev) => !prev)}
+        year={year} month={month} sensor={sensor}
+        activeToolPanel={activeToolPanel} simulateCorruptFile={simulateCorruptFile}
+        onResetView={resetView} onFilterChange={(y, m, s) => handleFilterChange(y, m, s, day)}
+        onOpenCapture={() => { setCaptureMessage(''); setActiveToolPanel('capture'); }}
+        onOpenShare={openSharePanel}
+        onToggleViewPanel={() => setActiveToolPanel(activeToolPanel === 'view' ? null : 'view')}
+        onToggleCorrupt={() => setSimulateCorruptFile((prev) => !prev)}
       />
 
       <ToolPanels
-        activeToolPanel={vm.activeToolPanel} setActiveToolPanel={vm.setActiveToolPanel}
-        captureFormat={vm.captureFormat} setCaptureFormat={vm.setCaptureFormat}
-        captureHeader={vm.captureHeader} setCaptureHeader={vm.setCaptureHeader}
-        captureTimestamp={vm.captureTimestamp} setCaptureTimestamp={vm.setCaptureTimestamp}
-        captureScalebar={vm.captureScalebar} setCaptureScalebar={vm.setCaptureScalebar}
-        captureMessage={vm.captureMessage} isCapturing={vm.isCapturing} onCapture={() => void vm.handleCapture()}
-        shareUrl={vm.shareUrl} getShareUrl={vm.getShareUrl} shareMessage={vm.shareMessage}
-        onCopyShareUrl={() => void vm.handleCopyShareUrl()} onSocialShare={vm.handleSocialShare}
-        isFullScreen={vm.isFullScreen} onToggleFullScreen={() => void vm.toggleFullScreen()}
-        showMenu={vm.showMenu} setShowMenu={vm.setShowMenu}
+        activeToolPanel={activeToolPanel} setActiveToolPanel={setActiveToolPanel}
+        captureFormat={captureFormat} setCaptureFormat={setCaptureFormat}
+        captureHeader={captureHeader} setCaptureHeader={setCaptureHeader}
+        captureTimestamp={captureTimestamp} setCaptureTimestamp={setCaptureTimestamp}
+        captureScalebar={captureScalebar} setCaptureScalebar={setCaptureScalebar}
+        captureMessage={captureMessage} isCapturing={isCapturing} onCapture={() => void handleCapture()}
+        shareUrl={shareUrl} getShareUrl={getShareUrl} shareMessage={shareMessage}
+        onCopyShareUrl={() => void handleCopyShareUrl()} onSocialShare={handleSocialShare}
+        isFullScreen={isFullScreen} onToggleFullScreen={() => void toggleFullScreen()}
+        showMenu={showMenu} setShowMenu={setShowMenu}
       />
     </div>
   );

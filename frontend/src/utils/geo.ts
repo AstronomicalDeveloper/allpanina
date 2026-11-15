@@ -104,6 +104,16 @@ export function calculatePercentile(values: number[], percentile: number): numbe
   return sorted[lower] * (1 - fraction) + sorted[upper] * fraction;
 }
 
-export function percentileColorExpression(q25: number, q50: number, q75: number): any {
-  return ['case', ['<=', ['get', 'cell_days'], q25], '#FEE2E2', ['<=', ['get', 'cell_days'], q50], '#FCA5A5', ['<=', ['get', 'cell_days'], q75], '#EF4444', '#991B1B'];
+export function percentileColorExpression(
+  q25: number,
+  q50: number,
+  q75: number,
+): maplibregl.ExpressionSpecification {
+  return [
+    'case',
+    ['<=', ['get', 'cell_days'], q25], '#FEE2E2',
+    ['<=', ['get', 'cell_days'], q50], '#FCA5A5',
+    ['<=', ['get', 'cell_days'], q75], '#EF4444',
+    '#991B1B',
+  ];
 }

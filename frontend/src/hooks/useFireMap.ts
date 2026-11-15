@@ -23,10 +23,16 @@ export function useFireMap({ year: externalYear, month: externalMonth, day: exte
 
   const [baseMap, setBaseMap] = useState<BaseMapId>(initialView.baseMap ?? 'blue-marble');
   const [dynamicImagery, setDynamicImagery] = useState<DynamicImageryId>(initialView.dynamicImagery ?? 'none');
-  const [year, setYear] = useState<number>(externalYear ?? initialView.year ?? 2023);
-  const [month, setMonth] = useState<number>(externalMonth ?? initialView.month ?? 1);
-  const [day, setDay] = useState<number>(externalDay ?? initialView.day ?? 1);
-  const [sensor, setSensor] = useState<SensorGroup>(externalSensor ?? initialView.sensor ?? 'VIIRS_SNPP');
+  const [internalYear, setInternalYear] = useState<number>(initialView.year ?? 2023);
+  const [internalMonth, setInternalMonth] = useState<number>(initialView.month ?? 1);
+  const [internalDay, setInternalDay] = useState<number>(initialView.day ?? 1);
+  const [internalSensor, setInternalSensor] = useState<SensorGroup>(initialView.sensor ?? 'VIIRS_SNPP');
+
+  const year = externalYear ?? internalYear;
+  const month = externalMonth ?? internalMonth;
+  const day = externalDay ?? internalDay;
+  const sensor = externalSensor ?? internalSensor;
+
   const [activeToolPanel, setActiveToolPanel] = useState<ToolPanel>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('windowed');
   const isFullScreen = viewMode === 'full';
@@ -41,14 +47,17 @@ export function useFireMap({ year: externalYear, month: externalMonth, day: exte
   const [shareUrl, setShareUrl] = useState<string>('');
   const [shareMessage, setShareMessage] = useState<string>('');
   const [opacity, setOpacity] = useState<number>(1);
-  const [selectedCell, setSelectedCell] = useState<CellProperties | null>(null);
   const [cursorCoords, setCursorCoords] = useState<{ lat: number; lon: number }>({ lat: -8.52, lon: -74.55 });
   const [simulateCorruptFile, setSimulateCorruptFile] = useState<boolean>(false);
 
-  useEffect(() => { if (externalYear !== undefined) setYear(externalYear); }, [externalYear]);
-  useEffect(() => { if (externalMonth !== undefined) setMonth(externalMonth); }, [externalMonth]);
-  useEffect(() => { if (externalDay !== undefined) setDay(externalDay); }, [externalDay]);
-  useEffect(() => { if (externalSensor !== undefined) setSensor(externalSensor); }, [externalSensor]);
+  const periodKey = `${year}-${month}-${day}-${sensor}-${simulateCorruptFile}`;
+  const periodKeyRef = useRef<string>(periodKey);
+  const [selectedCellEntry, setSelectedCellEntry] = useState<{ key: string; cell: CellProperties } | null>(null);
+  const selectedCell = selectedCellEntry?.key === periodKey ? selectedCellEntry.cell : null;
+
+  useEffect(() => {
+    periodKeyRef.current = periodKey;
+  }, [periodKey]);
 
   useEffect(() => {
     overlaysRef.current = overlays;
@@ -92,11 +101,7 @@ export function useFireMap({ year: externalYear, month: externalMonth, day: exte
         const adjustedDays = Math.max(1, Math.min(maxMonthDays, f.properties.cell_days + delta));
         return {
           ...f,
-          properties: {
-            ...f.properties,
-            day,
-            cell_days: adjustedDays,
-          },
+          properties: { ...f.properties, day, cell_days: adjustedDays },
         };
       });
     return { type: 'FeatureCollection', features };
@@ -113,25 +118,30 @@ export function useFireMap({ year: externalYear, month: externalMonth, day: exte
     maxCell: filteredGeoJson.features.reduce((max, f) => Math.max(max, f.properties.cell_days), 0),
   }), [filteredGeoJson]);
 
+  const initConfigRef = useRef({
+    filteredGeoJson, percentileBreaks, opacity, initialView, dynamicImagery, sensor, year, month, day,
+  });
+
   const handleFilterChange = (newYear: number, newMonth: number, newSensor: SensorGroup, newDay: number = day) => {
     const maxD = getDaysInMonth(newYear, newMonth);
     const clampedDay = Math.min(Math.max(1, newDay), maxD);
-    setYear(newYear);
-    setMonth(newMonth);
-    setDay(clampedDay);
-    setSensor(newSensor);
+    setInternalYear(newYear);
+    setInternalMonth(newMonth);
+    setInternalDay(clampedDay);
+    setInternalSensor(newSensor);
     onPeriodChange?.(newYear, newMonth, newSensor, clampedDay);
   };
 
   useEffect(() => {
     if (!mapContainer.current) return;
+    const init = initConfigRef.current;
     maplibregl.setWorkerUrl(workerUrl);
     const map = new maplibregl.Map({
       container: mapContainer.current,
       canvasContextAttributes: { preserveDrawingBuffer: true },
-      style: buildMapStyle(filteredGeoJson, percentileBreaks, opacity),
-      center: [initialView.longitude ?? DEFAULT_CENTER[0], initialView.latitude ?? DEFAULT_CENTER[1]],
-      zoom: initialView.zoom ?? DEFAULT_ZOOM,
+      style: buildMapStyle(init.filteredGeoJson, init.percentileBreaks, init.opacity),
+      center: [init.initialView.longitude ?? DEFAULT_CENTER[0], init.initialView.latitude ?? DEFAULT_CENTER[1]],
+      zoom: init.initialView.zoom ?? DEFAULT_ZOOM,
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-left');
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-left');
@@ -155,11 +165,14 @@ export function useFireMap({ year: externalYear, month: externalMonth, day: exte
     map.on('click', 'celdas-fill', (e) => {
       if (e.features && e.features.length > 0) {
         const raw = e.features[0].properties;
-        setSelectedCell({
-          id: String(raw.id), region_id: String(raw.region_id), year: Number(raw.year),
-          month: Number(raw.month), day: raw.day !== undefined ? Number(raw.day) : undefined,
-          sensor: raw.sensor as SensorGroup, cell_days: Number(raw.cell_days),
-          status: (raw.status as 'ok' | 'missing') ?? 'ok',
+        setSelectedCellEntry({
+          key: periodKeyRef.current,
+          cell: {
+            id: String(raw.id), region_id: String(raw.region_id), year: Number(raw.year),
+            month: Number(raw.month), day: raw.day !== undefined ? Number(raw.day) : undefined,
+            sensor: raw.sensor as SensorGroup, cell_days: Number(raw.cell_days),
+            status: (raw.status as 'ok' | 'missing') ?? 'ok',
+          },
         });
       }
     });
@@ -174,8 +187,8 @@ export function useFireMap({ year: externalYear, month: externalMonth, day: exte
       applyBasemap(map, baseMapRef.current);
       refreshGraticule();
       applyOverlayVisibility(map, overlaysRef.current);
-      updateDynamicImageryLayer(map, dynamicImagery, sensor, year, month, day);
-      map.setPaintProperty('celdas-fill', 'fill-color', percentileColorExpression(percentileBreaks.q25, percentileBreaks.q50, percentileBreaks.q75));
+      updateDynamicImageryLayer(map, init.dynamicImagery, init.sensor, init.year, init.month, init.day);
+      map.setPaintProperty('celdas-fill', 'fill-color', percentileColorExpression(init.percentileBreaks.q25, init.percentileBreaks.q50, init.percentileBreaks.q75));
     });
     return () => {
       map.off('moveend', refreshGraticule); map.off('zoomend', refreshGraticule);
@@ -197,7 +210,6 @@ export function useFireMap({ year: externalYear, month: externalMonth, day: exte
   useEffect(() => {
     const src = mapRef.current?.getSource('celdas-observadas') as maplibregl.GeoJSONSource | undefined;
     if (src) src.setData(filteredGeoJson as unknown as GeoJSON.FeatureCollection);
-    setSelectedCell(null);
   }, [filteredGeoJson]);
 
   useEffect(() => {
