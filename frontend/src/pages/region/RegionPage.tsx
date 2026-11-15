@@ -4,6 +4,7 @@ import { cargarIndice, cargarRegiones, nombrePais } from '../../services/region/
 import type { IndiceMundo, Pais, RegionMundo } from '../../services/region/mundo'
 import { RegionShape } from '../../services/region/polygon'
 import { zonaPorLongitud } from '../../services/region/pipeline'
+import { LocalDay } from '../../services/region/localDay'
 import { borrarConjunto, guardarConjunto, leerConjunto } from '../../services/region/store'
 import type { ConjuntoLocal } from '../../services/region/store'
 import { escribirZip } from '../../services/region/zip'
@@ -23,6 +24,10 @@ export default function RegionPage() {
   const [indice, setIndice] = useState<IndiceMundo | null | 'error'>(null)
   const [pais, setPais] = useState<Pais | null>(null)
   const [regiones, setRegiones] = useState<RegionMundo[] | 'cargando' | 'error'>([])
+  const [errorIndice, setErrorIndice] = useState('')
+  const [errorRegiones, setErrorRegiones] = useState('')
+  const [errorPoligono, setErrorPoligono] = useState('')
+  const [intento, setIntento] = useState(0)
   const [region, setRegion] = useState<RegionMundo | null>(null)
   const [propio, setPropio] = useState<{ nombre: string; geometry: unknown } | null>(null)
   const [modoPropio, setModoPropio] = useState(false)
@@ -37,29 +42,47 @@ export default function RegionPage() {
   const [arrastrando, setArrastrando] = useState(false)
   const worker = useRef<Worker | null>(null)
 
-  useEffect(() => { const c = new AbortController(); cargarIndice(c.signal).then(setIndice).catch(() => { if (!c.signal.aborted) setIndice('error') }); return () => c.abort() }, [])
+  useEffect(() => {
+    const c = new AbortController()
+    cargarIndice(c.signal).then(setIndice).catch(e => { if (!c.signal.aborted) { setErrorIndice(e instanceof Error ? e.message : String(e)); setIndice('error') } })
+    return () => c.abort()
+  }, [intento])
   useEffect(() => { void leerConjunto().then(setGuardado) }, [])
   useEffect(() => () => worker.current?.terminate(), [])
   useEffect(() => {
     if (!pais) return
     const c = new AbortController()
-    cargarRegiones(pais, c.signal).then(setRegiones).catch(() => { if (!c.signal.aborted) setRegiones('error') })
+    cargarRegiones(pais, c.signal).then(setRegiones).catch(e => { if (!c.signal.aborted) { setErrorRegiones(e instanceof Error ? e.message : String(e)); setRegiones('error') } })
     return () => c.abort()
-  }, [pais])
-  function elegirPais(p: Pais | null) { setPais(p); setRegion(null); setZona(null); setRegiones(p ? 'cargando' : []) }
+  }, [pais, intento])
+  function elegirPais(p: Pais | null) { setPais(p); setRegion(null); setZona(null); setErrorRegiones(''); setRegiones(p ? 'cargando' : []) }
+  function reintentar() { setErrorIndice(''); setErrorRegiones(''); if (indice === 'error') setIndice(null); if (pais) setRegiones('cargando'); setIntento(i => i + 1) }
 
   const paises = useMemo(() => indice && indice !== 'error' ? [...indice.paises].map(p => ({ ...p, etiqueta: nombrePais(p) })).sort((a, b) => a.etiqueta.localeCompare(b.etiqueta, 'es')) : [], [indice])
   const elegida = modoPropio ? propio : region
-  const forma = useMemo(() => { try { return elegida ? RegionShape.fromGeoJson(elegida.geometry) : null } catch { return null } }, [elegida])
+  const [forma, errorForma] = useMemo((): [RegionShape | null, string] => { try { return [elegida ? RegionShape.fromGeoJson(elegida.geometry) : null, ''] } catch (e) { return [null, e instanceof Error ? e.message : String(e)] } }, [elegida])
   const nombreRegion = modoPropio ? propio?.nombre ?? '' : region ? `${region.nombre}${pais ? `, ${nombrePais(pais)}` : ''}` : ''
   const regionId = modoPropio ? (propio?.nombre ?? 'MI-REGION').normalize('NFD').replace(/[^\w-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30).toUpperCase() || 'MI-REGION' : region?.id ?? ''
   const zona = zonaManual ?? (forma ? (modoPropio ? null : region?.zona_horaria) || zonaPorLongitud((forma.bbox[0] + forma.bbox[2]) / 2) : '')
 
   const bboxTxt = forma ? forma.bbox.map(v => fmt(v, 4).replace(',', '.')).join(', ') : ''
-  const tieneDatos = fuente === 'archivos' ? archivos.length > 0 : /^[0-9A-Za-z]{32}$/.test(mapKey)
-  const listo = !!forma && !!zona && tieneDatos && estado.fase !== 'procesando'
+  // Requisitos de cada paso: el siguiente se habilita apenas se cumple el anterior.
+  const zonaValida = !!zona && LocalDay.valid(zona)
+  const regionLista = !!forma && zonaValida
+  const conSensor = (s: string) => archivos.some(a => a.sensor === s || a.sensor === 'ZIP')
+  const mapKeyValida = /^[0-9A-Za-z]{32}$/.test(mapKey)
+  const fechasValidas = !!desde && !!hasta && desde <= hasta
+  const faltanDatos: string[] = fuente === 'archivos'
+    ? [...(!archivos.length ? ['agrega los archivos de FIRMS'] : []), ...(archivos.length && !conSensor('MODIS') ? ['falta el archivo de MODIS'] : []), ...(archivos.length && !conSensor('VIIRS') ? ['falta el archivo de VIIRS'] : [])]
+    : [...(!mapKeyValida ? ['escribe tu MAP_KEY de 32 caracteres'] : []), ...(!fechasValidas ? ['revisa las fechas: «Desde» debe ser anterior a «Hasta»'] : [])]
+  const tieneDatos = faltanDatos.length === 0
+  const listo = regionLista && tieneDatos && estado.fase !== 'procesando'
+  const pasoDatosBloqueado = !regionLista || estado.fase === 'procesando'
+  const motivoPaso2 = !forma ? 'Primero elige un país y una región (paso 1), o sube tu polígono.' : !zonaValida ? 'Revisa la zona horaria del paso 1: no es un nombre válido (por ejemplo, America/Lima).' : ''
+  const motivoPaso3 = !regionLista ? 'Completa el paso 1: elige la región.' : !tieneDatos ? `Completa el paso 2: ${faltanDatos.join('; ')}.` : ''
 
   async function agregar(lista: FileList | File[]) {
+    if (pasoDatosBloqueado) return
     const nuevos = await Promise.all(Array.from(lista).filter(f => /\.(csv|zip)$/i.test(f.name)).map(async file => {
       if (/\.zip$/i.test(file.name)) return { file, sensor: 'ZIP' }
       const cab = await file.slice(0, 4096).text()
@@ -73,12 +96,12 @@ export default function RegionPage() {
     try {
       const geo = JSON.parse(await file.text())
       RegionShape.fromGeoJson(geo)
-      setZona(null); setPropio({ nombre: file.name.replace(/\.(geo)?json$/i, ''), geometry: geo })
-    } catch (e) { setAviso(`No se pudo leer el polígono: ${e instanceof Error ? e.message : e}`) }
+      setErrorPoligono(''); setZona(null); setPropio({ nombre: file.name.replace(/\.(geo)?json$/i, ''), geometry: geo })
+    } catch (e) { setPropio(null); setErrorPoligono(`No se pudo usar ${file.name}: ${e instanceof SyntaxError ? 'no es un JSON válido.' : e instanceof Error ? e.message : e}`) }
   }
 
   function procesar() {
-    if (!forma || !elegida) return
+    if (!forma || !elegida || !listo) return
     worker.current?.terminate()
     let w: Worker
     try { w = new Worker(new URL('../../services/region/region.worker.ts', import.meta.url), { type: 'module' }) }
@@ -131,14 +154,15 @@ export default function RegionPage() {
         <section className="region-card" aria-labelledby="paso1">
           <h2 id="paso1">{paso(1, !!forma)} ¿Qué región quieres ver?</h2>
           {!modoPropio ? <>
-            {indice === 'error' && <p className="region-note">La lista de países todavía no está publicada en este servidor. Puedes <button className="region-link" onClick={() => setModoPropio(true)}>subir tu propio polígono</button>.</p>}
+            {indice === 'error' && <div className="region-alert" role="alert"><strong>No se pudo cargar la lista de países.</strong> {errorIndice} <button className="region-link" onClick={reintentar}>Reintentar</button> o <button className="region-link" onClick={() => setModoPropio(true)}>sube tu propio polígono</button>.</div>}
+            {regiones === 'error' && <div className="region-alert" role="alert"><strong>No se pudieron cargar las regiones.</strong> {errorRegiones} <button className="region-link" onClick={reintentar}>Reintentar</button> o <button className="region-link" onClick={() => setModoPropio(true)}>sube tu propio polígono</button>.</div>}
             <div className="region-grid2">
-              <label className="region-field"><span>País</span>
+              <label className="region-field"><span>País {paises.length > 0 && <small>({paises.length} disponibles)</small>}</span>
                 <select value={pais?.iso3 ?? ''} disabled={!paises.length} onChange={e => elegirPais(paises.find(p => p.iso3 === e.target.value) ?? null)}>
                   <option value="">{indice === null ? 'Cargando países…' : 'Elige un país'}</option>
                   {paises.map(p => <option key={p.iso3} value={p.iso3}>{p.etiqueta}</option>)}
                 </select></label>
-              <label className="region-field"><span>Región (primer nivel: departamento, provincia, estado…)</span>
+              <label className="region-field"><span>Región (primer nivel: departamento, provincia, estado…) {Array.isArray(regiones) && regiones.length > 0 && <small>({regiones.length})</small>}</span>
                 <select value={region?.id ?? ''} disabled={!Array.isArray(regiones) || !regiones.length} onChange={e => { setZona(null); setRegion(Array.isArray(regiones) ? regiones.find(r => r.id === e.target.value) ?? null : null) }}>
                   <option value="">{regiones === 'cargando' ? 'Cargando regiones…' : regiones === 'error' ? 'No se pudieron cargar' : pais ? 'Elige una región' : 'Primero elige un país'}</option>
                   {Array.isArray(regiones) && regiones.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
@@ -148,6 +172,7 @@ export default function RegionPage() {
           </> : <>
             <label className="region-drop region-drop--small"><input type="file" accept=".geojson,.json,application/geo+json" onChange={e => e.target.files?.[0] && void subirPoligono(e.target.files[0])} />
               <span>{propio ? <>Polígono: <strong>{propio.nombre}</strong></> : 'Elige un archivo GeoJSON (WGS84) con el contorno de tu región'}</span></label>
+            {errorPoligono && <div className="region-alert" role="alert">{errorPoligono}</div>}
             <button className="region-link" onClick={() => setModoPropio(false)}>Volver a la lista de países</button>
           </>}
           {forma && <dl className="region-facts">
@@ -156,20 +181,28 @@ export default function RegionPage() {
             <div><dt>Superficie</dt><dd>{fmt(forma.area_km2)} km²</dd></div>
             <div><dt>Mapa</dt><dd>celdas de {forma.area_km2 <= 150000 ? '1 km' : '10 km'}</dd></div>
             <div className="region-facts-wide"><dt><label htmlFor="zona">Zona horaria del calendario</label></dt><dd>
-              <input id="zona" list="zonas" value={zona} onChange={e => setZona(e.target.value)} spellCheck={false} />
+              <input id="zona" list="zonas" value={zona} onChange={e => setZona(e.target.value)} spellCheck={false} aria-invalid={!zonaValida} aria-describedby="zona-ayuda" />
               <datalist id="zonas">{ZONAS.map(z => <option key={z} value={z} />)}</datalist>
-              <small>Define a qué día local pertenece cada detección.</small></dd></div>
+              <small id="zona-ayuda">{zonaValida ? 'Define a qué día local pertenece cada detección.' : 'Zona horaria no reconocida: elige una de la lista (por ejemplo, America/Lima).'}</small></dd></div>
           </dl>}
+          {errorForma && <div className="region-alert" role="alert"><strong>No se puede usar el contorno de esta región.</strong> {errorForma} La cartografía publicada está dañada para esta región: <button className="region-link" onClick={() => setModoPropio(true)}>usa tu propio polígono</button>.</div>}
+          {regionLista && <p className="region-next" role="status">Listo. Siguiente: trae los datos de NASA FIRMS (paso 2).</p>}
         </section>
 
-        <section className={`region-card${forma ? '' : ' is-locked'}`} aria-labelledby="paso2">
-          <h2 id="paso2">{paso(2, tieneDatos)} Datos de NASA FIRMS</h2>
+        <section className={`region-card${pasoDatosBloqueado ? ' is-locked' : ''}`} aria-labelledby="paso2" aria-describedby={motivoPaso2 ? 'paso2-motivo' : undefined}>
+          <h2 id="paso2">{paso(2, regionLista && tieneDatos)} Datos de NASA FIRMS</h2>
+          {motivoPaso2 && <p className="region-lock-note" id="paso2-motivo">{motivoPaso2}</p>}
+          <fieldset className="region-fieldset" disabled={pasoDatosBloqueado}>
+          <legend className="region-sr-only">Origen de los datos de FIRMS</legend>
           <div className="region-tabs" role="tablist" aria-label="Origen de los datos">
             <button role="tab" aria-selected={fuente === 'archivos'} onClick={() => setFuente('archivos')}>Tengo los archivos</button>
             <button role="tab" aria-selected={fuente === 'mapkey'} onClick={() => setFuente('mapkey')}>Descargar con mi MAP_KEY</button>
           </div>
           {fuente === 'archivos' ? <>
-            <label className={`region-drop${arrastrando ? ' is-over' : ''}`} onDragOver={e => { e.preventDefault(); setArrastrando(true) }} onDragLeave={() => setArrastrando(false)} onDrop={e => { e.preventDefault(); setArrastrando(false); void agregar(e.dataTransfer.files) }}>
+            <label className={`region-drop${arrastrando ? ' is-over' : ''}${pasoDatosBloqueado ? ' is-disabled' : ''}`} aria-disabled={pasoDatosBloqueado}
+              onDragOver={e => { e.preventDefault(); if (pasoDatosBloqueado) { e.dataTransfer.dropEffect = 'none'; return } setArrastrando(true) }}
+              onDragLeave={() => setArrastrando(false)}
+              onDrop={e => { e.preventDefault(); setArrastrando(false); if (!pasoDatosBloqueado) void agregar(e.dataTransfer.files) }}>
               <input type="file" multiple accept=".csv,.zip" onChange={e => e.target.files && void agregar(e.target.files)} />
               <span className="region-drop-icon" aria-hidden="true">⇪</span>
               <span><strong>Arrastra aquí</strong> los CSV o el .zip que te envió FIRMS, o haz clic para elegirlos</span>
@@ -189,13 +222,18 @@ export default function RegionPage() {
             <div className="region-grid2">
               <label className="region-field"><span>Desde</span><input type="date" value={desde} min="2012-01-20" onChange={e => setDesde(e.target.value)} /></label>
               <label className="region-field"><span>Hasta</span><input type="date" value={hasta} onChange={e => setHasta(e.target.value)} /></label></div>
+            {!fechasValidas && <p className="region-alert" role="alert">«Desde» debe ser anterior o igual a «Hasta».</p>}
             <p className="region-note">La MAP_KEY no se guarda. La descarga depende de la disponibilidad de FIRMS y de CORS. Si falla, descarga los CSV desde FIRMS y súbelos aquí. Si se configura un proxy, la clave también transita por ese servidor.</p>
           </div>}
+          </fieldset>
+          {regionLista && fuente === 'archivos' && archivos.length > 0 && faltanDatos.length > 0 && <p className="region-lock-note" role="status">Para seguir: {faltanDatos.join('; ')}.</p>}
+          {regionLista && tieneDatos && <p className="region-next" role="status">Listo. Siguiente: procesa los datos (paso 3).</p>}
         </section>
 
         <section className={`region-card${listo || estado.fase !== 'inicio' ? '' : ' is-locked'}`} aria-labelledby="paso3">
           <h2 id="paso3">{paso(3, estado.fase === 'listo')} Procesar</h2>
-          {estado.fase !== 'procesando' && <button className="region-primary" disabled={!listo} onClick={procesar}>{estado.fase === 'listo' ? 'Procesar de nuevo' : 'Procesar en mi computadora'}</button>}
+          {motivoPaso3 && estado.fase !== 'procesando' && <p className="region-lock-note" id="paso3-motivo">{motivoPaso3}</p>}
+          {estado.fase !== 'procesando' && <button className="region-primary" disabled={!listo} aria-describedby={motivoPaso3 ? 'paso3-motivo' : undefined} onClick={procesar}>{estado.fase === 'listo' ? 'Procesar de nuevo' : 'Procesar en mi computadora'}</button>}
           {estado.fase === 'procesando' && <div className="region-progress" role="status" aria-live="polite">
             <div className="region-bar"><span style={{ width: `${Math.round(estado.fraccion * 100)}%` }} /></div>
             <p>{estado.etapa}… <strong>{Math.round(estado.fraccion * 100)}%</strong></p>

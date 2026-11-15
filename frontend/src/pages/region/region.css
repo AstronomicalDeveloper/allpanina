@@ -84,3 +84,12 @@
 @media (max-width: 60rem) { .region-layout { grid-template-columns: 1fr; } .region-aside { position: static; } }
 @media (max-width: 30rem) { .region-stats { grid-template-columns: 1fr; } .region-tabs { display: flex; } .region-tabs button { flex: 1; padding: .5rem; } }
 @media (prefers-reduced-motion: reduce) { .region-page * { transition: none !important; } }
+.region-fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.region-fieldset:disabled .region-tabs button, .region-fieldset:disabled input, .region-fieldset:disabled .region-drop { cursor: not-allowed; }
+.region-drop.is-disabled { border-style: solid; border-color: #D5DED9; background: #F3F5F4; color: #7d8c88; }
+.region-drop.is-disabled:hover { border-color: #D5DED9; background: #F3F5F4; }
+.region-lock-note { margin: -.4rem 0 1rem; padding: .55rem .8rem; border-radius: .6rem; background: #FFF6F1; font-size: .88rem; font-weight: 600; color: #9A3F17; }
+.region-next { margin: 1rem 0 0; font-size: .88rem; font-weight: 600; color: var(--forest); }
+.region-field small { font-weight: 400; color: #6c7f7a; }
+.region-facts input[aria-invalid="true"] { border-color: #C8553D; }
+.region-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
