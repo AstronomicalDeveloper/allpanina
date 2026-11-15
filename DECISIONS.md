@@ -237,3 +237,57 @@ gráfico que Landry construya con el signo del error — nadie la invierte por s
   Antes de mirar métricas se verifica que el script imprima κ = 0.2936…;
   si no coincide, se detiene y se revisa con Aldo.
 - Nada de lo anterior se modifica después de ver el resultado del test.
+
+## 11. Extensión Perú (versión 2)
+
+### 11.1 Alcance — P01 (aprobado por Aldo, 14-nov-2026)
+
+Plan de referencia: *AllpaNina Perú — Plan de pasos para incluir todo el Perú v2.1*.
+Esta sección se escribe **antes** de que nadie calcule métricas de validación o
+test para cualquier región que no sea Ucayali.
+
+- **Regiones (26):** Perú nacional + sus 25 departamentos, con los polígonos
+  oficiales del INEI, capa "Departamental (Actualizado al 2023)", la misma fuente
+  que el polígono de Ucayali (§1).
+- **Códigos `region_id`:**
+  - `PE`: Perú nacional.
+  - `PE-<ccdd>` por departamento, con el código INEI de 2 dígitos: `PE-01` Amazonas,
+    `PE-02` Áncash, `PE-03` Apurímac, `PE-04` Arequipa, `PE-05` Ayacucho,
+    `PE-06` Cajamarca, `PE-07` Callao, `PE-08` Cusco, `PE-09` Huancavelica,
+    `PE-10` Huánuco, `PE-11` Ica, `PE-12` Junín, `PE-13` La Libertad,
+    `PE-14` Lambayeque, `PE-15` Lima, `PE-16` Loreto, `PE-17` Madre de Dios,
+    `PE-18` Moquegua, `PE-19` Pasco, `PE-20` Piura, `PE-21` Puno, `PE-22` San Martín,
+    `PE-23` Tacna, `PE-24` Tumbes, `PE-25` Ucayali.
+  - Ucayali dentro de la extensión es `PE-25`. `PE-UCA` queda **solo** para el
+    piloto v1. Así la prueba de regresión compara `PE-25` con `PE-UCA` sin
+    ambigüedad: deben ser iguales salvo el nombre de la región.
+- **Asignación de celdas:** una celda de 1 km pertenece al departamento cuyo polígono
+  contiene su **centro** (misma regla que §1), así que cada celda cae en uno solo.
+  Las celdas cuyo centro cae fuera de los 25 polígonos se descartan. `PE` es la
+  suma de los 25 departamentos.
+- **Datos:** no hay descarga nueva. Se usan los mismos zips de FIRMS de `docs/`
+  (MODIS hasta 2026-08 y VIIRS hasta 2026-07, todo Perú), con los mismos hashes
+  de `docs/datos.md`.
+- **Reglas que no cambian:** periodo y split (§3 y §4: train 2013-01 a 2022-12,
+  valid 2023-01 a 2024-12, test 2025-01 a 2026-07), celda y malla (§5), día en hora
+  de Lima (§6), filtros (§7), `status` `ok`/`missing` (§8), fórmula de κ y
+  convención de signo del error (§10).
+- **Test reservado:** el test 2025-01 a 2026-07 queda reservado para todas las
+  regiones nuevas. El de Ucayali ya se vio en T29, así que el test nacional se
+  reporta con y sin Ucayali (detalle en 11.3).
+- **Dónde va:** todo lo de Perú va en `frontend/public/data/peru/`. Los archivos del
+  piloto Ucayali v1 en `frontend/public/data/` quedan **congelados**: no se
+  modifican. Se trabaja en la rama `feature/calibracion`.
+- **Mapa nacional:** celdas de 10 km, armadas sumando las celdas de 1 km ya
+  deduplicadas. Las series por departamento siempre usan la celda de 1 km.
+  Detalle en el contrato v1.1 (P03).
+- **No incluye:** el resto del mundo, pronóstico, calibración por celda ni trabajo
+  de frontend (Landry recibe los archivos al final, en P20).
+
+### 11.2 Estratos de κ — P02
+
+Pendiente.
+
+### 11.3 Reglas de métricas — P04
+
+Pendiente.
