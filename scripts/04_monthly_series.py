@@ -27,9 +27,17 @@ Test reservado (DECISIONS.md, regla de oro): por defecto la serie termina en 202
 (train + validacion). La serie completa hasta 2026-07 requiere --include-test y solo se
 corre con la autorizacion conjunta de Aldo y Antonella.
 
+Extension Peru (DECISIONS.md seccion 11, contrato v1.1, paso P06): con --peru la serie sale
+para 26 regiones, `PE` (nacional) y `PE-01` ... `PE-25` (departamentos, codigo INEI). Cada celda
+de 1 km se asigna al departamento que contiene su centro (docs/region/departamentos_inei_2023.geojson).
+Las celdas fuera de los 25 poligonos no cuentan. `PE` es la suma de los 25 departamentos. Las reglas
+de `ok`/`missing` son las mismas del piloto. Sin --peru el script hace exactamente lo mismo que antes
+(piloto Ucayali, `PE-UCA`).
+
 Uso (sin preguntas interactivas):
     python scripts/04_monthly_series.py
     python scripts/04_monthly_series.py --first-month 2024-08 --last-month 2024-09   # muestra T12
+    python scripts/04_monthly_series.py --peru                                       # P06, 26 regiones
 """
 
 from __future__ import annotations
@@ -51,6 +59,8 @@ TEST_LAST_MONTH = (2026, 7)
 SENSOR_FIRST_COMPLETE_MONTH = {"MODIS": (2003, 1), "VIIRS": (2012, 2)}
 SENSORS = tuple(SENSOR_FIRST_COMPLETE_MONTH)
 STATUS_OK, STATUS_MISSING = "ok", "missing"
+DEPARTMENTS_POLYGONS = ROOT / "docs" / "region" / "departamentos_inei_2023.geojson"  # P05, 25 poligonos INEI 2023
+NATIONAL_ID = "PE"
 COLUMNS = ["region_id", "year", "month", "sensor_group", "cell_days", "status", "source_version", "updated_at"]
 
 
@@ -90,6 +100,83 @@ def filter_region(
 
         region = region[shapely.contains_xy(polygon, region["center_lon"].to_numpy(), region["center_lat"].to_numpy())]
     return region
+
+
+def load_departments(path: Path) -> list[tuple[str, object]]:
+    """Lee los 25 poligonos departamentales y devuelve [(region_id, geometria preparada)] ordenado por region_id."""
+    import json
+
+    import shapely
+    from shapely.geometry import shape
+
+    if not Path(path).exists():
+        raise FileNotFoundError(f"Falta el archivo de departamentos: {path}")
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    departments = []
+    for feature in data["features"]:
+        geometry = shape(feature["geometry"])
+        shapely.prepare(geometry)
+        departments.append((feature["properties"]["region_id"], geometry))
+    ids = [region_id for region_id, _ in departments]
+    if len(set(ids)) != len(ids):
+        raise ValueError("region_id repetido en el archivo de departamentos")
+    return sorted(departments)
+
+
+def assign_departments(cell_days: pd.DataFrame, departments: list[tuple[str, object]]) -> pd.Series:
+    """region_id del departamento que contiene el centro de cada celda (NA si no cae en ninguno).
+
+    Falla si un centro cae en dos departamentos: la particion tiene que ser exacta (P05).
+    """
+    import numpy as np
+    import shapely
+
+    lon = cell_days["center_lon"].to_numpy()
+    lat = cell_days["center_lat"].to_numpy()
+    assigned = np.full(len(cell_days), None, dtype=object)
+    for region_id, geometry in departments:
+        inside = shapely.contains_xy(geometry, lon, lat)
+        if (inside & (assigned != None)).any():  # noqa: E711 (comparacion elemento a elemento)
+            raise ValueError(f"Hay celdas que caen en {region_id} y en otro departamento a la vez")
+        assigned[inside] = region_id
+    return pd.Series(assigned, index=cell_days.index, dtype="object")
+
+
+def build_peru_series(
+    cell_days: pd.DataFrame,
+    departments: list[tuple[str, object]],
+    first_month: tuple[int, int] = FIRST_MONTH,
+    last_month: tuple[int, int] = DEFAULT_LAST_MONTH,
+    updated_at: str | None = None,
+) -> pd.DataFrame:
+    """Serie de las 26 regiones de la extension Peru: `PE` y luego `PE-01` ... `PE-25`.
+
+    Mismas columnas y mismas reglas de status que el piloto. `PE` = suma de los departamentos.
+    """
+    stamp = updated_at or date.today().isoformat()
+    national = cell_days.groupby(["sensor_group", "year", "month"]).size()
+    covered = set(national.index)
+    versions = _versions(cell_days)
+    frame = cell_days.assign(region_id=assign_departments(cell_days, departments)).dropna(subset=["region_id"])
+    counts = frame.groupby(["region_id", "sensor_group", "year", "month"]).size()
+    totals = frame.groupby(["sensor_group", "year", "month"]).size()
+
+    rows = []
+    for region_id in [NATIONAL_ID] + [region_id for region_id, _ in departments]:
+        for index in range(_month_index(first_month), _month_index(last_month) + 1):
+            year, month = index // 12, index % 12 + 1
+            for sensor in SENSORS:
+                in_window = index >= _month_index(SENSOR_FIRST_COMPLETE_MONTH[sensor])
+                key = (sensor, year, month)
+                if in_window and key in covered:
+                    value = totals.get(key, 0) if region_id == NATIONAL_ID else counts.get((region_id,) + key, 0)
+                    rows.append((region_id, year, month, sensor, int(value), STATUS_OK, versions.get(key, ""), stamp))
+                else:
+                    rows.append((region_id, year, month, sensor, None, STATUS_MISSING, "", stamp))
+
+    series = pd.DataFrame(rows, columns=COLUMNS)
+    series["cell_days"] = series["cell_days"].astype("Int64")
+    return series
 
 
 def _versions(frame: pd.DataFrame) -> dict[tuple[str, int, int], str]:
@@ -155,6 +242,21 @@ def run(cell_days_path: Path, out_path: Path, region_id: str, bbox, first_month,
     )
 
 
+def run_peru(cell_days_path: Path, out_path: Path, departments_path: Path, first_month, last_month, updated_at) -> None:
+    if not cell_days_path.exists():
+        raise FileNotFoundError(f"Falta {cell_days_path}. Ejecuta antes scripts/03_grid_dedupe.py.")
+    departments = load_departments(departments_path)
+    cell_days = pd.read_parquet(cell_days_path)
+    series = build_peru_series(cell_days, departments, first_month, last_month, updated_at)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    series.to_csv(out_path, index=False)
+    print(series.groupby(["sensor_group", "status"]).size().unstack(fill_value=0).to_string())
+    print(
+        f"{len(series)} filas en {out_path} ({series['region_id'].nunique()} regiones, "
+        f"{first_month[0]}-{first_month[1]:02d} a {last_month[0]}-{last_month[1]:02d})"
+    )
+
+
 def _parse_month(text: str) -> tuple[int, int]:
     year, month = text.split("-")
     return int(year), int(month)
@@ -170,6 +272,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--first-month", type=_parse_month, default=FIRST_MONTH, help="AAAA-MM")
     parser.add_argument("--last-month", type=_parse_month, default=DEFAULT_LAST_MONTH, help="AAAA-MM")
     parser.add_argument("--include-test", action="store_true", help="Llega hasta 2026-07 (periodo de test reservado).")
+    parser.add_argument("--peru", action="store_true", help="Extension Peru (P06): 26 regiones, PE y PE-01 ... PE-25.")
+    parser.add_argument("--departments", type=Path, default=DEPARTMENTS_POLYGONS, help="GeoJSON con los 25 departamentos (solo con --peru)")
     parser.add_argument("--updated-at", default=None, help="AAAA-MM-DD (por defecto, hoy)")
     args = parser.parse_args(argv)
 
@@ -180,8 +284,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.include_test:
         print("AVISO: incluye el periodo de test reservado (2025-01 a 2026-07). No interpretes estos valores sin autorizacion.")
     try:
+        if args.peru:
+            out = args.out if args.out != parser.get_default("out") else ROOT / "data" / "processed" / "peru" / "monthly_series.csv"
+            run_peru(args.cell_days, out, args.departments, args.first_month, last_month, args.updated_at)
+            return 0
         run(args.cell_days, args.out, args.region_id, tuple(args.bbox), args.first_month, last_month, args.updated_at, args.polygon)
-    except FileNotFoundError as error:
+    except (FileNotFoundError, ValueError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
     return 0
