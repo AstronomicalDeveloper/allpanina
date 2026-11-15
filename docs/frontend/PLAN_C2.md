@@ -18,8 +18,8 @@ Verificado en un clon de trabajo limpio: `npm ci` correcto; `npm test` 185 de 18
 | 2.4 Mensajes de error | ⬜ Pendiente | Se muestran textos técnicos (`String(error)`) en `GeographicSelection.tsx`, `MapPage.tsx` y `useJuanMap.ts`. Coordinar con Landry |
 | 2.5 Párrafo nacional en Método | ✅ Hecho (Landry, A5) | `NationalMethodNotes.tsx` |
 | 2.6 Menú «Acerca de» (nuevo) | ✅ Hecho (Marco) | `Navbar.tsx`: el enlace al manifiesto sigue al conjunto de datos activo (Perú v1.1, piloto Ucayali v1.0 o DEMO) y lo nombra; el texto de ayuda obsoleto se sustituyó por una descripción de las tres vistas. Prueba en `app-header.test.ts` |
-| 3.1 Leyenda del mapa | ⬜ Pendiente | `CartographyPanel.tsx` sigue usando `toFixed(1)` en los cortes por percentil |
-| 3.2 Escala del calendario | ⬜ Pendiente | `CalendarExplorer.tsx` sigue usando `toFixed(1)` en las marcas de la escala |
+| 3.1 Leyenda del mapa | ✅ Hecho | `percentileLegend.ts`: tramos en enteros (`cell_days` es entero por validación, así que v ≤ q equivale a v ≤ ⌊q⌋); un tramo vacío dice «Sin valores en este tramo». Los cortes y colores del mapa no cambian. Pruebas en `legend-format.test.ts`, incluida una que comprueba que cada valor cae en el tramo de su color |
+| 3.2 Escala del calendario | ✅ Hecho | `calendarScaleTicks` en `calendarPresentation.ts`: marcas enteras; el máximo manual conserva su decimal. El control «Escala» explica de dónde sale el máximo por defecto. Pruebas en `legend-format.test.ts` y `calendar-v2.test.ts` |
 | 3.3 Móvil del mapa | ⬜ Sin verificar | Requiere capturas con el mapa base real |
 | 3.4 Tokens y orden del código | ⬜ Pendiente | `tokens.css` sin ampliar; `juanLayers.ts` sin renombrar |
 | 3.5 Contexto comparativo | ✅ Cubierto (Landry) | `HistoricalAnalysis.tsx`: mismo mes en años anteriores |

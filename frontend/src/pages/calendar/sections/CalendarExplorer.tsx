@@ -8,7 +8,7 @@ import type { CalendarCell } from '../../../services/data/calendar'
 import { calendarCsvFilename, downloadCsv, serializeMonthlySeries } from '../../../services/data/csvExport'
 import CalendarGrid, { AnnualCalendarGrid } from './CalendarGrid'
 import CalendarDetail from './CalendarDetail'
-import { calendarHeatColor } from './calendarPresentation'
+import { calendarHeatColor, calendarScaleTicks } from './calendarPresentation'
 
 const comparisonKey = 'allpanina.calendar.comparison-years'
 function storedYears(): Record<string, number[]> {
@@ -96,8 +96,8 @@ export default function CalendarExplorer({ showRegionSelector = true, regionLabe
         {!records.length ? <p role="status">No hay datos disponibles en la serie mensual.</p> : comparing ? compared.length ? <CalendarGrid years={compared} region={region} {...gridProps} /> : <p role="status">Selecciona al menos un año para comparar.</p> : <AnnualCalendarGrid cells={cells} year={year} {...gridProps} />}
         {!!records.length && !visibleRecords.length && <p role="status">No hay registros para {region} / {sensor}. No se sustituyen por ceros.</p>}
         <section className="calendar-legend" aria-label="Leyenda">
-          <details className="calendar-scale-control"><summary>Escala</summary><div><label>Máximo de escala (días-celda)<input type="number" min="1" value={scaleMax} onInput={e=>{const value=Number(e.currentTarget.value);if(Number.isFinite(value)&&value>0)setCustomScale(value)}} /></label><button type="button" onClick={()=>setCustomScale(null)}>Automática</button><p>La saturación solo afecta el color; los valores se conservan.</p></div></details>
-          <div className="calendar-numeric-legend"><span className="calendar-legend-title">Intensidad observada <small>días-celda</small></span><div className="calendar-scale-gradient" aria-hidden="true" style={{background:`linear-gradient(to right, ${calendarHeatColor(0,scaleMax)}, ${calendarHeatColor(scaleMax,scaleMax)})`}} /><div className="calendar-scale-ticks">{[0,.25,.5,.75,1].map(f=><span key={f}>{(f*scaleMax).toFixed(1)}</span>)}</div></div>
+          <details className="calendar-scale-control"><summary>Escala</summary><div><label>Máximo de escala (días-celda)<input type="number" min="1" value={scaleMax} onInput={e=>{const value=Number(e.currentTarget.value);if(Number.isFinite(value)&&value>0)setCustomScale(value)}} /></label><button type="button" onClick={()=>setCustomScale(null)}>Automática</button><p>Por defecto, el máximo es el mayor valor mensual publicado para este ámbito en toda la serie. La saturación solo afecta el color; los valores se conservan.</p></div></details>
+          <div className="calendar-numeric-legend"><span className="calendar-legend-title">Intensidad observada <small>días-celda</small></span><div className="calendar-scale-gradient" aria-hidden="true" style={{background:`linear-gradient(to right, ${calendarHeatColor(0,scaleMax)}, ${calendarHeatColor(scaleMax,scaleMax)})`}} /><div className="calendar-scale-ticks">{calendarScaleTicks(scaleMax).map((tick,i)=><span key={i}>{tick}</span>)}</div></div>
           <ul><li><i className="calendar-cell--zero" />Cero válido</li><li><i className="calendar-cell--missing" />Sin dato</li><li><i className="calendar-cell--absent" />No publicado</li></ul>
           <CellDaysHelp purpose={PURPOSE_COMPARE} />
         </section>
