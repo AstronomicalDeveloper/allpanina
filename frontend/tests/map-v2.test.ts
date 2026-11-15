@@ -8,7 +8,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { JSDOM } from 'jsdom'
 import MapPage from '../src/pages/map/MapPage'
 import CalendarPage from '../src/pages/calendar/CalendarPage'
-import Navbar from '../src/components/layout/Navbar'
+import TopBar from '../src/shell/TopBar'
 import type { MapRuntime } from '../src/pages/map/cartography/mapRuntime'
 import type { MapCells } from '../src/services/data/mapExploration'
 const dom = new JSDOM('<body></body>', { url: 'http://localhost/mapa' })
@@ -86,12 +86,12 @@ async function choose(host: HTMLElement, label: string, value: string) {
 }
 
 async function setup(t: TestContext, query = '?periodYear=2024&periodMonth=9&scope=month&calendarSeries=VIIRS&mapSensor=MODIS') {
-  const url=new URL(`/mapa${query}`,'http://localhost');if(!url.searchParams.has('data'))url.searchParams.set('data','pilot')
+  const url=new URL(`/map${query}`,'http://localhost');if(!url.searchParams.has('data'))url.searchParams.set('data','pilot')
   window.history.replaceState(null,'',url.pathname+url.search+url.hash)
   const runtime = fakeRuntime()
-  const { host, root } = await mount(t, createElement(BrowserRouter, null, createElement(Navbar), createElement(Routes, null,
-    createElement(Route, { path: '/mapa', element: createElement(MapPage, { runtimeLoader: runtime.loader }) }),
-    createElement(Route, { path: '/calendario', element: createElement(CalendarPage) }))))
+  const { host, root } = await mount(t, createElement(BrowserRouter, null, createElement(TopBar), createElement(Routes, null,
+    createElement(Route, { path: '/map', element: createElement(MapPage, { runtimeLoader: runtime.loader }) }),
+    createElement(Route, { path: '/calendar', element: createElement(CalendarPage) }))))
   return { host, root, runtime }
 }
 function observations(runtime: ReturnType<typeof fakeRuntime>) { return runtime.maps.at(-1)!.sources['celdas-observadas'].data as MapCells }
@@ -108,7 +108,7 @@ test('Mapa v2 real: septiembre 2024, capas conservadas, percentiles, clic seguro
   mockFiles(t); const { host, runtime } = await setup(t)
   assert.equal(total(runtime), 2323)
   assert.doesNotMatch(host.textContent!, /DATOS DEMO/)
-  assert.ok(host.querySelector('.navbar--map'))
+  assert.ok(host.querySelector('.topbar--map'))
   for (const id of ['basemap-firefly-layer', 'basemap-streets-layer', 'basemap-topographic-layer', 'overlay-protected-layer', 'celdas-fill']) assert.ok(runtime.maps[0].getLayer(id))
   const cell = observations(runtime).features[0].properties
   await act(async () => runtime.maps[0].emit('click:celdas-fill', { features: [{ properties: { cell_id: cell.cell_id } }] }))
@@ -182,7 +182,7 @@ test('Mapa v2 URL e historial: período compartido, sensores independientes y re
   await history('back'); assert.equal(total(runtime), 2323)
   await history('forward'); assert.equal(total(runtime), 5581)
   await choose(host, 'Mes del mapa', '8')
-  const calendar = [...host.querySelectorAll<HTMLAnchorElement>('nav a')].find(a => a.textContent === 'Calendario')!
+  const calendar = [...host.querySelectorAll<HTMLAnchorElement>('nav a')].find(a => a.textContent === 'Calendar')!
   await act(async () => calendar.click())
   assert.equal(host.querySelector<HTMLSelectElement>('#calendar-sensor')!.value, 'MODIS')
   assert.equal(new URLSearchParams(window.location.search).get('periodMonth'), '8')
@@ -190,7 +190,7 @@ test('Mapa v2 URL e historial: período compartido, sensores independientes y re
   assert.equal(runtime.maps[0].removed, 1)
   const mapLink = host.querySelector<HTMLAnchorElement>('.calendar-map-action')!
   await act(async () => mapLink.click())
-  assert.equal(window.location.pathname, '/mapa')
+  assert.equal(window.location.pathname, '/map')
   assert.equal(new URLSearchParams(window.location.search).get('scope'), 'month')
   assert.equal(new URLSearchParams(window.location.search).get('mapSensor'), 'VIIRS')
 })

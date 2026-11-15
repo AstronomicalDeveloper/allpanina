@@ -1,3 +1,4 @@
+import { PATHS } from './routes'
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import type { ExplorationSelection, CalendarSelection, MapSelection } from '../types/selection'
 import type { Sensor } from '../types/data'
@@ -38,7 +39,7 @@ export default function useExplorationSelection() {
     const result = parameters({ ...selection, region: period.region, year: period.year, month: period.month, scope: 'month' })
     result.set('sensor', selection.mapSensor)
     result.delete('view')
-    return `/mapa?${result}${hash}`
+    return `${PATHS.map}?${result}${hash}`
   }
   return { selection, changeCalendar, changeMap, mapHref }
 }

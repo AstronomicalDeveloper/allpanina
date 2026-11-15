@@ -1,19 +1,20 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { PATHS, normalizePath } from './routes'
 
 const SITE = 'AllpaNina'
 const titles: Record<string, string> = {
-  '/': `${SITE} · Detecciones térmicas satelitales`,
-  '/calendario': `Calendario histórico · ${SITE}`,
-  '/mapa': `Mapa de observaciones · ${SITE}`,
-  '/metodo': `Método y evaluación · ${SITE}`,
-  '/mi-region': `Mi región · ${SITE}`,
+  [PATHS.home]: `${SITE} · Satellite fire detections`,
+  [PATHS.calendar]: `Calendar · ${SITE}`,
+  [PATHS.map]: `Map · ${SITE}`,
+  [PATHS.method]: `Method · ${SITE}`,
+  [PATHS.myRegion]: `My region · ${SITE}`,
+  [PATHS.about]: `About · ${SITE}`,
 }
 
-/** Título de la pestaña según la ruta; las rutas desconocidas se identifican como tales. */
+/** Tab title for each route; unknown routes say so. */
 export function titleFor(pathname: string): string {
-  const key = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname
-  return titles[key] ?? `Página no encontrada · ${SITE}`
+  return titles[normalizePath(pathname)] ?? `Page not found · ${SITE}`
 }
 
 export default function useDocumentTitle() {

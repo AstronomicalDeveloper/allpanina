@@ -39,7 +39,7 @@ test('v2 evaluación no fabrica residuos cuando solo hay métricas globales',asy
 })
 test('v2 Método navega por rutas reales y conserva parámetros exploratorios',async t=>{
  mockFiles(t);const {host}=await mount(t,'/calendario?periodYear=2024&periodMonth=9')
- await act(async()=>[...host.querySelectorAll<HTMLAnchorElement>('nav a')].find(a=>a.textContent==='Método')!.click())
+ await act(async()=>[...host.querySelectorAll<HTMLAnchorElement>('nav a')].find(a=>a.textContent==='Method')!.click())
  assert.equal(host.querySelector('h1')!.textContent,'Método y evaluación')
  assert.equal(new URLSearchParams(window.location.search).get('periodMonth'),'9')
  await navigate('/calendario?periodYear=2024&periodMonth=9');assert.equal(host.querySelector('.calendar-observed-value')!.textContent,'2323')
