@@ -21,6 +21,7 @@ export interface CalibratedRecord extends Period {
 }
 export interface ValidationResult {
   region_id: string
+  reportable?: boolean
   methods: Partial<Record<Method, {
     split: Split
     metrics: { mae: number | null; wape: number | null; bias: number | null }
@@ -38,7 +39,7 @@ export interface MethodInfo {
   region?: string
   estado?: string
   kappa?: number | null
-  resultados?: { valid?: { periodo: string; n_meses: number; B0?: Metrics; B1?: Metrics } }
+  resultados?: { valid?: { periodo: string; n_meses: number; reportable?: boolean; B0?: Metrics; B1?: Metrics } }
   indicator: string
   sensors: string[]
   period_train: string

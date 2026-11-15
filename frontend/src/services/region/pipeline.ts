@@ -1,7 +1,6 @@
 /**
- * Modo región de AllpaNina en el navegador: el mismo algoritmo que allpanina/region.py
- * (procesar_region), reescrito en TypeScript para correr en la computadora del usuario.
- * Salida: los archivos de una región del contrato v1.0 (docs/contrato_datos.md, sección v1.0-region).
+ * Modo exploratorio en el navegador. Reutiliza reglas de scripts 02–06 y contrasta
+ * el caso Ucayali con los productos publicados; no reemplaza los κ de Perú.
  */
 import { cellBounds, cellOf } from './ea6933.ts'
 import { ErrorDeEntrada, detectarSensor, leerFirms } from './firms.ts'
@@ -85,13 +84,15 @@ function validacion(cal: Calibrada[], modisMes: Map<string, number | null>, regi
 export async function procesarRegion(modis: ArchivoEntrada[], viirs: ArchivoEntrada[], op: Opciones): Promise<Resultado> {
   const avisar = op.progreso ?? (() => {})
   const region_id = op.region_id
-  if (!region_id || /[/\\\s]/.test(region_id) || region_id.length > 40) throw new ErrorDeEntrada("El código de región debe ser corto, sin espacios ni barras (p. ej. 'AR-M').")
+  if (!/^[\w.-]+$/.test(region_id) || region_id.length > 40) throw new ErrorDeEntrada("El código de región debe usar letras ASCII, números, guiones, puntos o guion bajo, sin espacios ni barras (p. ej. 'AR-M').")
   if (!modis.length || !viirs.length) throw new ErrorDeEntrada('Hacen falta archivos de los dos sensores: MODIS y VIIRS.')
   const forma = op.poligono !== undefined ? RegionShape.fromGeoJson(op.poligono) : op.bbox ? RegionShape.fromBbox(op.bbox) : null
   if (!forma) throw new ErrorDeEntrada('Hace falta la región: un polígono GeoJSON o una caja (oeste, sur, este, norte).')
   if (!LocalDay.valid(op.zona_horaria)) throw new ErrorDeEntrada(`Zona horaria desconocida: ${op.zona_horaria} (use un nombre IANA).`)
   const advertencias: string[] = []
   const km = op.celda_mapa_km ?? (forma.area_km2 <= AREA_1KM_MAX ? 1 : 10)
+  if (!Number.isInteger(km) || km < 1) throw new ErrorDeEntrada('La celda del mapa debe ser un número entero positivo de kilómetros.')
+  for (const mes of [op.desde, op.hasta]) if (mes !== undefined && !/^[1-9]\d{3}-(0[1-9]|1[0-2])$/.test(mes)) throw new ErrorDeEntrada('El período debe usar meses AAAA-MM válidos.')
   const actualizado = op.actualizado ?? new Date().toISOString().slice(0, 10)
   const uv = op.umbral_viirs ?? UMBRAL_VIIRS, um = op.umbral_modis ?? UMBRAL_MODIS
   const dia = new LocalDay(op.zona_horaria)
@@ -210,7 +211,7 @@ export async function procesarRegion(modis: ArchivoEntrada[], viirs: ArchivoEntr
   for (let year = Math.floor(ini / 12); year <= ultimoAno; year++) {
     const grupos = new Map<string, number>()
     for (const [s, x, y, yr, mo] of enRegion) {
-      if (yr !== year || yr * 12 + mo - 1 > fin) continue
+      if (yr !== year || yr * 12 + mo - 1 < ini || yr * 12 + mo - 1 > fin) continue
       const bx = Math.floor(x / km) * km, by = Math.floor(y / km) * km
       const k = `${mo}|${s}|${bx}|${by}`
       grupos.set(k, (grupos.get(k) ?? 0) + 1)

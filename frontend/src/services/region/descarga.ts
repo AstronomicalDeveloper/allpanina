@@ -3,12 +3,17 @@
  * La base se puede cambiar a un proxy propio (VITE_FIRMS_BASE=/firms) si FIRMS bloquea CORS.
  */
 export const FUENTES = { MODIS: 'MODIS_SP', VIIRS: 'VIIRS_SNPP_SP' } as const
-export const MAX_DIAS = 10
+export const MAX_DIAS = 5
 const VENTANA_MS = 600_000, MAX_TX = 4000
 
 export class ErrorDeDescarga extends Error { constructor(m: string) { super(m); this.name = 'ErrorDeDescarga' } }
 
 export function tramos(desde: string, hasta: string, dias = MAX_DIAS): [string, number][] {
+  for (const fecha of [desde, hasta]) {
+    const ms = Date.parse(`${fecha}T00:00:00Z`)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || !Number.isFinite(ms) || new Date(ms).toISOString().slice(0, 10) !== fecha) throw new ErrorDeDescarga('Fecha inválida: usa AAAA-MM-DD.')
+  }
+  if (!Number.isInteger(dias) || dias < 1 || dias > MAX_DIAS) throw new ErrorDeDescarga(`Cada pedido admite de 1 a ${MAX_DIAS} días.`)
   let d = Date.parse(`${desde}T00:00:00Z`)
   const h = Date.parse(`${hasta}T00:00:00Z`)
   if (!(h >= d)) throw new ErrorDeDescarga('La fecha final es anterior a la inicial.')

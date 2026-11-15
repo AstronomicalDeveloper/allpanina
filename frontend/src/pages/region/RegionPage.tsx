@@ -6,10 +6,9 @@ import { RegionShape } from '../../services/region/polygon'
 import { zonaPorLongitud } from '../../services/region/pipeline'
 import { borrarConjunto, guardarConjunto, leerConjunto } from '../../services/region/store'
 import type { ConjuntoLocal } from '../../services/region/store'
-import { escribirZip, leerZip } from '../../services/region/zip'
-import { parseMonthlySeries, validateManifest } from '../../services/data/validators'
+import { escribirZip } from '../../services/region/zip'
+import { importarResultado } from '../../services/region/importar'
 import type { Pedido, Respuesta } from '../../services/region/region.worker'
-import './region.css'
 
 type Resumen = Extract<Respuesta, { tipo: 'listo' }>['resumen']
 type Estado = { fase: 'inicio' } | { fase: 'procesando'; etapa: string; fraccion: number } | { fase: 'listo'; resumen: Resumen; archivos: Record<string, string> } | { fase: 'error'; mensaje: string }
@@ -19,28 +18,6 @@ const ZONAS: string[] = (() => { try { return (Intl as unknown as { supportedVal
 const fmt = (v: number, d = 0) => v.toLocaleString('es', { maximumFractionDigits: d })
 const mb = (b: number) => `${fmt(b / 1e6, 1)} MB`
 const enlace = (ruta: string, id: string) => `${ruta}?${new URLSearchParams({ data: 'local', mapRegion: id })}`
-
-async function sha256(t: string) {
-  const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t))
-  return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join('')
-}
-
-/** Valida un .zip de resultado (manifiesto, hashes y serie) y lo guarda como Mi región. */
-async function importarResultado(file: File): Promise<ConjuntoLocal> {
-  const dentro = await leerZip(await file.arrayBuffer()), dec = new TextDecoder(), archivos: Record<string, string> = {}
-  for (const [ruta, bytes] of Object.entries(dentro)) archivos[ruta.split('/').pop()!] = dec.decode(bytes)
-  if (!archivos['manifest.json']) throw new Error('El .zip no tiene manifest.json: no parece un resultado de AllpaNina.')
-  const manifest = validateManifest(JSON.parse(archivos['manifest.json']))
-  if (manifest.contract_version === '1.1') throw new Error('Este es el conjunto nacional de Perú; ya está publicado en la web.')
-  for (const n of manifest.files) {
-    if (archivos[n] === undefined) throw new Error(`Falta ${n} dentro del .zip.`)
-    if (manifest.hash[n] !== 'sha256:' + await sha256(archivos[n])) throw new Error(`${n} no coincide con su hash del manifiesto: el archivo fue modificado o está dañado.`)
-  }
-  parseMonthlySeries(archivos['monthly_series.csv'])
-  let nombre = manifest.region_id
-  try { nombre = JSON.parse(archivos['method.json']).region || nombre } catch { /* se usa el código */ }
-  return { archivos, region_id: manifest.region_id, nombre, guardado: new Date().toISOString() }
-}
 
 export default function RegionPage() {
   const [indice, setIndice] = useState<IndiceMundo | null | 'error'>(null)
@@ -103,7 +80,9 @@ export default function RegionPage() {
   function procesar() {
     if (!forma || !elegida) return
     worker.current?.terminate()
-    const w = new Worker(new URL('../../services/region/region.worker.ts', import.meta.url), { type: 'module' })
+    let w: Worker
+    try { w = new Worker(new URL('../../services/region/region.worker.ts', import.meta.url), { type: 'module' }) }
+    catch { setEstado({ fase: 'error', mensaje: 'No se pudo iniciar el Web Worker. Revisa que tu navegador permita procesamiento local.' }); return }
     worker.current = w
     setEstado({ fase: 'procesando', etapa: 'Preparando', fraccion: 0 })
     w.onmessage = async (ev: MessageEvent<Respuesta>) => {
@@ -112,11 +91,11 @@ export default function RegionPage() {
       else if (r.tipo === 'error') { setEstado({ fase: 'error', mensaje: r.mensaje }); w.terminate() }
       else {
         const conjunto = { archivos: r.archivos, region_id: r.resumen.region_id, nombre: r.resumen.nombre, guardado: new Date().toISOString() }
-        await guardarConjunto(conjunto); setGuardado(conjunto)
+        const advertencia = await guardarConjunto(conjunto); setAviso(advertencia); setGuardado(conjunto)
         setEstado({ fase: 'listo', resumen: r.resumen, archivos: r.archivos }); w.terminate()
       }
     }
-    w.onerror = ev => setEstado({ fase: 'error', mensaje: ev.message || 'El procesamiento se detuvo (¿memoria insuficiente?).' })
+    w.onerror = ev => { w.terminate(); setEstado({ fase: 'error', mensaje: ev.message || 'El procesamiento se detuvo (¿memoria insuficiente?).' }) }
     const pedido: Pedido = {
       archivos: fuente === 'archivos' ? archivos.map(a => a.file) : undefined,
       descarga: fuente === 'mapkey' ? { mapKey, desde, hasta, base: FIRMS_BASE } : undefined,
@@ -133,7 +112,7 @@ export default function RegionPage() {
 
   async function subirResultado(file: File) {
     setAviso(null)
-    try { const c = await importarResultado(file); await guardarConjunto(c); setGuardado(c); setAviso(`Listo: ${c.nombre} quedó cargado. Ábrelo en el Calendario o el Mapa.`) }
+    try { const c = await importarResultado(file); const advertencia = await guardarConjunto(c); setGuardado(c); setAviso(advertencia ?? `Listo: ${c.nombre} quedó cargado. Ábrelo en el Calendario o el Mapa.`) }
     catch (e) { setAviso(`No se pudo cargar el resultado: ${e instanceof Error ? e.message : e}`) }
   }
 
@@ -142,7 +121,8 @@ export default function RegionPage() {
   return <div className="region-page">
     <header className="region-hero">
       <p className="region-kicker">Mi región · exploratorio</p>
-      <h1>Focos de calor de cualquier lugar del mundo</h1>
+      <h1>Explora focos de calor en tu región</h1>
+      <p>El selector incluye los países publicados en este servidor; para otros lugares puedes subir un polígono GeoJSON.</p>
       <p>Elige tu región, trae los datos de NASA FIRMS y AllpaNina arma el calendario y el mapa con el mismo método que usamos en Perú. <strong>Todo se procesa en tu computadora:</strong> tus archivos no se suben a ningún servidor.</p>
     </header>
 
@@ -209,7 +189,7 @@ export default function RegionPage() {
             <div className="region-grid2">
               <label className="region-field"><span>Desde</span><input type="date" value={desde} min="2012-01-20" onChange={e => setDesde(e.target.value)} /></label>
               <label className="region-field"><span>Hasta</span><input type="date" value={hasta} onChange={e => setHasta(e.target.value)} /></label></div>
-            <p className="region-note">Tu MAP_KEY solo se usa en este navegador para pedir los datos; no se guarda. Bajar 2013–2026 completo toma unos 20–30 minutos porque FIRMS limita los pedidos.</p>
+            <p className="region-note">La MAP_KEY no se guarda. La descarga depende de la disponibilidad de FIRMS y de CORS. Si falla, descarga los CSV desde FIRMS y súbelos aquí. Si se configura un proxy, la clave también transita por ese servidor.</p>
           </div>}
         </section>
 
@@ -233,7 +213,7 @@ export default function RegionPage() {
           {aviso && <p className="region-note" role="status">{aviso}</p>}
         </section>
         {guardado && <section className="region-card region-card--saved">
-          <h2>Guardado en este navegador</h2>
+          <h2>Resultado en este navegador</h2>
           <p><strong>{guardado.nombre}</strong><br /><small>{guardado.region_id} · {new Date(guardado.guardado).toLocaleString('es')}</small></p>
           <div className="region-actions">
             <Link className="region-secondary" to={enlace('/calendario', guardado.region_id)}>Calendario</Link>
@@ -241,7 +221,7 @@ export default function RegionPage() {
           </div>
           <div className="region-actions">
             <button className="region-link" onClick={() => descargar(guardado.archivos, guardado.region_id)}>Descargar .zip</button>
-            <button className="region-link" onClick={() => void borrarConjunto().then(() => setGuardado(null))}>Borrar</button>
+            <button className="region-link" onClick={() => void borrarConjunto().then(() => setGuardado(null)).catch(() => setAviso('No se pudo borrar el resultado persistente. Inténtalo de nuevo.'))}>Borrar</button>
           </div>
         </section>}
         <p className="region-fineprint">Resultados exploratorios: el factor κ se calcula automáticamente para tu región y no tiene la revisión del equipo que sí tienen Ucayali y Perú. Una detección térmica no es un incendio confirmado. Límites administrativos: geoBoundaries (CC BY 4.0).</p>

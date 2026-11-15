@@ -8,4 +8,5 @@ import './pages/calendar/calendar.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './pages/map/map.css'
 import './pages/method/method.css'
+import './pages/region/region.css'
 createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><AppRoutes /></BrowserRouter></StrictMode>)

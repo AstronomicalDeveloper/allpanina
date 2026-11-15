@@ -31,7 +31,7 @@ function* lineas(texto: string): Generator<string> {
 /** Sensor por la columna instrument o, si falta, por los satélites. */
 export function detectarSensor(texto: string, archivo: string): Sensor {
   const it = lineas(texto)
-  const cab = (it.next().value ?? '').split(',').map(s => s.trim())
+  const cab = (it.next().value ?? '').split(',').map((s: string) => s.trim())
   const iInst = cab.indexOf('instrument'), iSat = cab.indexOf('satellite')
   for (let k = 0; k < 50; k++) {
     const r = it.next()

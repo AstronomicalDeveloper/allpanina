@@ -17,18 +17,27 @@ export class RegionShape {
   constructor(polygons: Ring[][]) {
     const all: number[] = []
     let w = Infinity, s = Infinity, e = -Infinity, n = -Infinity, area = 0
-    for (const rings of polygons) rings.forEach((ring, k) => {
-      let a = 0
-      for (let i = 0; i < ring.length - 1; i++) {
-        const [x1, y1] = ring[i], [x2, y2] = ring[i + 1]
-        all.push(x1, y1, x2, y2)
-        w = Math.min(w, x1); e = Math.max(e, x1); s = Math.min(s, y1); n = Math.max(n, y1)
-        const [px1, py1] = forward(x1, y1), [px2, py2] = forward(x2, y2)
-        a += px1 * py2 - px2 * py1
-      }
-      area += (k === 0 ? 1 : -1) * Math.abs(a) / 2
-    })
+    for (const rings of polygons) {
+      if (!Array.isArray(rings) || !rings.length) throw new Error('Polígono vacío o inválido.')
+      rings.forEach((ring, k) => {
+        if (!Array.isArray(ring) || ring.length < 4) throw new Error('Cada anillo requiere al menos cuatro posiciones.')
+        for (const point of ring) {
+          if (!Array.isArray(point) || point.length < 2 || !Number.isFinite(point[0]) || !Number.isFinite(point[1]) || Math.abs(point[0]) > 180 || Math.abs(point[1]) > 90) throw new Error('Coordenadas inválidas: usa longitud y latitud WGS84.')
+        }
+        if (ring[0][0] !== ring.at(-1)![0] || ring[0][1] !== ring.at(-1)![1]) throw new Error('El anillo del polígono debe estar cerrado.')
+        let a = 0
+        for (let i = 0; i < ring.length - 1; i++) {
+          const [x1, y1] = ring[i], [x2, y2] = ring[i + 1]
+          all.push(x1, y1, x2, y2)
+          w = Math.min(w, x1); e = Math.max(e, x1); s = Math.min(s, y1); n = Math.max(n, y1)
+          const [px1, py1] = forward(x1, y1), [px2, py2] = forward(x2, y2)
+          a += px1 * py2 - px2 * py1
+        }
+        area += (k === 0 ? 1 : -1) * Math.abs(a) / 2
+      })
+    }
     if (!all.length) throw new Error('El polígono de la región está vacío.')
+    if (!Number.isFinite(area) || area <= 0) throw new Error('El polígono debe tener superficie positiva.')
     this.bbox = [w, s, e, n]
     this.area_km2 = area / 1e6
     this.edges = Float64Array.from(all)

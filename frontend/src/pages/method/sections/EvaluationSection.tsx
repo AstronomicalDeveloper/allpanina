@@ -9,10 +9,10 @@ export default function EvaluationSection({ method, validation, demo }: { method
   const [errorMethod, setErrorMethod] = useState<Method>('B1')
   const entries: Entry[] = []
   const valid = method?.resultados?.valid
-  if (valid) for (const name of METHODS) { const metrics = valid[name]; if (metrics) entries.push({ name, split: 'valid', metrics, months: valid.n_meses, source: 'method.json' }) }
+  if (valid && valid.reportable !== false) for (const name of METHODS) { const metrics = valid[name]; if (metrics) entries.push({ name, split: 'valid', metrics, months: valid.n_meses, source: 'method.json' }) }
   for (const name of METHODS) {
     const result = validation?.methods[name]
-    if (result) {
+    if (result && validation?.reportable !== false) {
       // Prefer the precise evaluation file if both files publish the same split.
       const index = entries.findIndex(entry => entry.name === name && entry.split === result.split)
       if (index >= 0) entries.splice(index, 1)
@@ -21,9 +21,10 @@ export default function EvaluationSection({ method, validation, demo }: { method
   }
   const visible = entries.filter(entry => entry.split === split)
   const max = Math.max(1, ...visible.map(entry => entry.metrics.wape ?? 0))
-  const errors = validation ? topTestErrors({ ...validation, methods: { [errorMethod]: validation.methods[errorMethod] } }) : []
+  const errors = validation && validation.reportable !== false ? topTestErrors({ ...validation, methods: { [errorMethod]: validation.methods[errorMethod] } }) : []
   return <section className="method-section" id="evaluacion" aria-labelledby="evaluation-title">
     <div className="method-section-heading"><h2 id="evaluation-title">Qué cambia al calibrar</h2><p>Evaluación retrospectiva frente a MODIS, en {validation?.region_id ?? method?.region_id ?? 'el ámbito todavía no disponible'}. WAPE expresa error relativo acumulado; no es precisión ni confianza para meses futuros.</p></div>
+    {validation?.reportable === false && <p role="status">La evaluación de prueba no es reportable: datos insuficientes para ofrecer métricas comparables.</p>}
     <div className="method-evaluation">
       <div className="method-results-heading"><div><h3>Error relativo acumulado · WAPE</h3><p>{split === 'test' ? method?.period_test : split === 'valid' ? method?.period_valid : method?.period_train}</p></div><div className="method-switch" role="group" aria-label="Etapa de evaluación">{(['train', 'valid', 'test'] as const).map(value => <button key={value} aria-pressed={split === value} onClick={() => setSplit(value)}>{value === 'train' ? 'Entrenamiento' : value === 'valid' ? 'Validación' : 'Prueba'}</button>)}</div></div>
       <div className="method-wape-comparison" aria-live="polite">{METHODS.map(name => {

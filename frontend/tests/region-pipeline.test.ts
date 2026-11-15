@@ -1,5 +1,5 @@
 /**
- * Mi región (algoritmo en el navegador): mismas reglas que allpanina/region.py.
+ * Mi región: reglas de scripts 02–06 y regresión del piloto publicado.
  * La paridad completa con el piloto de Ucayali tarda ~1 min: ALLPANINA_LENTO=1 npm test.
  */
 import assert from 'node:assert/strict'
@@ -9,7 +9,9 @@ import { cellBounds, cellOf } from '../src/services/region/ea6933.ts'
 import { procesarRegion, zonaPorLongitud } from '../src/services/region/pipeline.ts'
 import { pyFloat, round5 } from '../src/services/region/pyformat.ts'
 import { escribirZip, leerZip } from '../src/services/region/zip.ts'
-import { tramos } from '../src/services/region/descarga.ts'
+import { descargarFirms, tramos } from '../src/services/region/descarga.ts'
+import { RegionShape } from '../src/services/region/polygon.ts'
+import { importarResultado } from '../src/services/region/importar.ts'
 import { parseCalibratedSeries, parseMonthlySeries, validateCells, validateManifest, validateValidation } from '../src/services/data/validators.ts'
 import { validateMethodDocument } from '../src/services/data/peruValidators.ts'
 
@@ -78,14 +80,56 @@ test('rechaza NRT, NOAA-20 y región vacía', async () => {
   await assert.rejects(procesarRegion([ok], [ok], { region_id: 'X', poligono: MENDOZA, zona_horaria: 'Marte/Olympus' }), /Zona horaria/)
 })
 
-test('zip: ida y vuelta; tramos de FIRMS de 10 días', async () => {
+test('zip: ida y vuelta; tramos de FIRMS de hasta 5 días', async () => {
   const z = await leerZip(await escribirZip({ 'a.csv': 'hola,ñandú\n', 'b.json': '{}' }).arrayBuffer())
   assert.equal(new TextDecoder().decode(z['a.csv']), 'hola,ñandú\n'); assert.equal(new TextDecoder().decode(z['b.json']), '{}')
-  assert.deepEqual(tramos('2020-01-01', '2020-01-25'), [['2020-01-01', 10], ['2020-01-11', 10], ['2020-01-21', 5]])
+  assert.deepEqual(tramos('2020-01-01', '2020-01-12'), [['2020-01-01', 5], ['2020-01-06', 5], ['2020-01-11', 2]])
+})
+
+test('rechaza períodos inválidos y tamaños de pedido que no avanzan o exceden FIRMS', () => {
+  for (const n of [0, -1, 1.5, 6, NaN]) assert.throws(() => tramos('2020-01-01', '2020-01-02', n), /pedido/)
+  assert.throws(() => tramos('2020-02-30', '2020-03-01'), /Fecha/)
+  assert.throws(() => tramos('2020-02-01', '2020-01-01'), /anterior/)
+})
+
+test('descarga pide fuentes estándar en bloques válidos y explica errores de red', async () => {
+  const urls: string[] = []
+  const op = { mapKey: 'x'.repeat(32), bbox: [-70, -34, -68, -32] as [number, number, number, number], desde: '2020-01-01', hasta: '2020-01-07' }
+  const r = await descargarFirms({ ...op, fetcher: (async (url: string) => { urls.push(url); return new Response(CAB + '\n') }) as typeof fetch })
+  assert.equal(r.pedidos, 4)
+  assert.ok(urls[0].includes('/MODIS_SP/-70,-34,-68,-32/5/2020-01-01'))
+  assert.ok(urls[3].includes('/VIIRS_SNPP_SP/-70,-34,-68,-32/2/2020-01-06'))
+  await assert.rejects(descargarFirms({ ...op, fetcher: async () => { throw new TypeError('red') }, dormir: async () => {} }), /CORS/)
+})
+
+test('rechaza polígonos abiertos, coordenadas inválidas y superficie nula', () => {
+  const shape = (ring: unknown) => ({ type: 'Polygon', coordinates: [ring] })
+  for (const ring of [[[0, 0], [1, 0], [1, 1], [0, 1]], [[0, 0], [181, 0], [1, 1], [0, 0]], [[0, 0], [1, NaN], [1, 1], [0, 0]], [[0, 0], [0, 0], [0, 0], [0, 0]]]) assert.throws(() => RegionShape.fromGeoJson(shape(ring)))
+})
+
+test('mapas y series respetan el inicio dentro del año; importación valida todo antes de guardar', async () => {
+  const filas: F[] = [[DENTRO, '2020-01-10', '1500'], [DENTRO, '2020-09-10', '1500']]
+  const r = await procesarRegion([csv(filas, 'MODIS')], [csv(filas, 'VIIRS')], { region_id: 'AR-M', poligono: MENDOZA, zona_horaria: 'UTC', desde: '2020-09' })
+  const fc = validateCells(JSON.parse(r.archivos['cells_AR-M_2020.geojson']))
+  assert.ok(fc.features.length > 0); assert.ok(fc.features.every(f => f.properties.month === 9))
+  const imported = await importarResultado(escribirZip(r.archivos))
+  assert.equal(imported.region_id, 'AR-M')
+  const manifest = JSON.parse(r.archivos['manifest.json'])
+  manifest.files = manifest.files.filter((n: string) => n !== 'method.json')
+  await assert.rejects(importarResultado(escribirZip({ ...r.archivos, 'manifest.json': JSON.stringify(manifest) })), /method.json/)
+  await assert.rejects(importarResultado(escribirZip({ ...r.archivos, 'calibrated_series.csv': 'roto' })), /hash/)
+  const malformed = { ...r.archivos, 'calibrated_series.csv': 'roto' }
+  const full = JSON.parse(r.archivos['manifest.json'])
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('roto'))
+  full.hash['calibrated_series.csv'] = 'sha256:' + [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('')
+  await assert.rejects(importarResultado(escribirZip({ ...malformed, 'manifest.json': JSON.stringify(full) })), /CSV/)
+  const damaged = new Uint8Array(await escribirZip({ 'a.csv': 'hola' }).arrayBuffer())
+  damaged[35] ^= 1
+  await assert.rejects(leerZip(damaged.buffer), /CRC/)
 })
 
 test('paridad con el piloto publicado de Ucayali (serie, B0/B1 y 14 mapas byte a byte)', { skip: process.env.ALLPANINA_LENTO !== '1' || !existsSync(new URL('docs/DL_FIRE_M-C61_848370.zip', ROOT)) }, async () => {
-  const leer = async (z: string) => { const f = await leerZip(readFileSync(new URL(`docs/${z}`, ROOT)).buffer as ArrayBuffer); const k = Object.keys(f).find(n => n.startsWith('fire_archive'))!; return { nombre: k, texto: new TextDecoder().decode(f[k]) } }
+  const leer = async (z: string) => { const bytes = readFileSync(new URL(`docs/${z}`, ROOT)); const f = await leerZip(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer); const k = Object.keys(f).find(n => n.startsWith('fire_archive'))!; return { nombre: k, texto: new TextDecoder().decode(f[k]) } }
   const [m, v] = await Promise.all([leer('DL_FIRE_M-C61_848370.zip'), leer('DL_FIRE_SV-C2_848371.zip')])
   const pub = (n: string) => readFileSync(new URL(`frontend/public/data/${n}`, ROOT), 'utf8')
   const stamp = pub('monthly_series.csv').split('\n')[1].split(',').at(-1)!
