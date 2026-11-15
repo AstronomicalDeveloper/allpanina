@@ -43,7 +43,7 @@ export function detectarSensor(texto: string, archivo: string): Sensor {
     if (SATELITES.MODIS.includes(sat)) return 'MODIS'
     if (sat) return 'VIIRS'
   }
-  throw new ErrorDeEntrada(`${archivo}: no se reconoce si es MODIS o VIIRS (faltan las columnas instrument o satellite).`)
+  throw new ErrorDeEntrada(`${archivo}: cannot tell whether it is MODIS or VIIRS (the instrument and satellite columns are missing).`)
 }
 
 /**
@@ -54,11 +54,11 @@ export function detectarSensor(texto: string, archivo: string): Sensor {
 export function leerFirms(texto: string, archivo: string, sensor: Sensor, alAceptar: (f: Fila) => void): Omit<Entrada, 'sha256'> {
   const it = lineas(texto)
   const primera = it.next()
-  if (primera.done) throw new ErrorDeEntrada(`${archivo}: el archivo está vacío.`)
+  if (primera.done) throw new ErrorDeEntrada(`${archivo}: the file is empty.`)
   const cab = primera.value.split(',').map(s => s.trim())
-  if (!cab.includes('type')) throw new ErrorDeEntrada(`${archivo}: no tiene la columna 'type'. Parece un CSV NRT (casi tiempo real) de FIRMS; solo se acepta el archivo estándar (fire_archive_*.csv).`)
+  if (!cab.includes('type')) throw new ErrorDeEntrada(`${archivo}: it has no 'type' column. It looks like a FIRMS NRT (near real-time) CSV; only the standard archive file (fire_archive_*.csv) is accepted.`)
   const faltan = COLUMNAS_FIRMS.filter(c => !cab.includes(c))
-  if (faltan.length) throw new ErrorDeEntrada(`${archivo}: faltan columnas de FIRMS: ${faltan.join(', ')}.`)
+  if (faltan.length) throw new ErrorDeEntrada(`${archivo}: missing FIRMS columns: ${faltan.join(', ')}.`)
   const [iLat, iLon, iDate, iTime, iSat, iConf, iVer, iType] = COLUMNAS_FIRMS.map(c => cab.indexOf(c))
   const sats = new Set<string>(), versiones = new Set<string>()
   let filas = 0, minFecha = '', maxFecha = ''
@@ -91,10 +91,10 @@ export function leerFirms(texto: string, archivo: string, sensor: Sensor, alAcep
     if (sensor === 'MODIS' ? !(num(conf) >= MODIS_MIN_CONFIDENCE) : !VIIRS_CONFIDENCE.includes(conf)) continue
     alAceptar({ sensor, lon, lat, utcMs: utc, version: ver === '' ? null : ver })
   }
-  if (!filas) throw new ErrorDeEntrada(`${archivo}: no tiene filas.`)
+  if (!filas) throw new ErrorDeEntrada(`${archivo}: it has no rows.`)
   const vers = [...versiones].sort()
-  if (vers.some(v => v.toUpperCase().includes('NRT'))) throw new ErrorDeEntrada(`${archivo}: trae datos NRT (versión ${vers.join(', ')}); solo se acepta el archivo estándar.`)
+  if (vers.some(v => v.toUpperCase().includes('NRT'))) throw new ErrorDeEntrada(`${archivo}: it contains NRT data (version ${vers.join(', ')}); only the standard archive file is accepted.`)
   const otros = [...sats].filter(s => !SATELITES[sensor].includes(s)).sort()
-  if (otros.length) throw new ErrorDeEntrada(`${archivo}: satélite ${otros.join(', ')} no válido para ${sensor}; se espera ${sensor === 'MODIS' ? 'Terra o Aqua' : "Suomi NPP ('SNPP' o 'N')"}. Para NOAA-20 o NOAA-21 haría falta otra calibración.`)
+  if (otros.length) throw new ErrorDeEntrada(`${archivo}: satellite ${otros.join(', ')} is not valid for ${sensor}; expected ${sensor === 'MODIS' ? 'Terra or Aqua' : "Suomi NPP ('SNPP' or 'N')"}. NOAA-20 or NOAA-21 would need another calibration.`)
   return { archivo, sensor, filas, primera_fecha: minFecha || null, ultima_fecha: maxFecha || null, versiones: vers }
 }

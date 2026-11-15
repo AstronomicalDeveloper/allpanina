@@ -45,15 +45,15 @@ self.onmessage = async (ev: MessageEvent<Pedido>) => {
     let ignorados: string[] = []
     if (descarga) {
       const bbox = opciones.bbox!
-      const r = await descargarFirms({ ...descarga, bbox, progreso: (s, i, n, filas) => progreso(`Descargando ${s} de FIRMS · ${filas.toLocaleString('es')} detecciones`, (s === 'MODIS' ? 0 : 0.5) + 0.5 * i / n) })
+      const r = await descargarFirms({ ...descarga, bbox, progreso: (s, i, n, filas) => progreso(`Downloading ${s} from FIRMS · ${filas.toLocaleString('en-US')} detections`, (s === 'MODIS' ? 0 : 0.5) + 0.5 * i / n) })
       lista = [{ nombre: `firms_MODIS_SP_${descarga.desde}_${descarga.hasta}.csv`, texto: r.MODIS }, { nombre: `firms_VIIRS_SNPP_SP_${descarga.desde}_${descarga.hasta}.csv`, texto: r.VIIRS }]
     } else ({ out: lista, ignorados } = await entradas(archivos))
     const modis: ArchivoEntrada[] = [], viirs: ArchivoEntrada[] = []
     for (const a of lista) (detectarSensor(a.texto, a.nombre) === 'MODIS' ? modis : viirs).push(a)
-    if (!modis.length) throw new Error('Falta el archivo de MODIS (fire_archive_M-C61_*.csv).')
-    if (!viirs.length) throw new Error('Falta el archivo de VIIRS S-NPP (fire_archive_SV-C2_*.csv).')
+    if (!modis.length) throw new Error('The MODIS file is missing (fire_archive_M-C61_*.csv).')
+    if (!viirs.length) throw new Error('The VIIRS S-NPP file is missing (fire_archive_SV-C2_*.csv).')
     const res = await procesarRegion(modis, viirs, { ...opciones, progreso })
-    if (ignorados.length) res.resumen.advertencias.unshift(`Se ignoraron archivos NRT (casi tiempo real): ${ignorados.join(', ')}. Solo se usa el archivo estándar.`)
+    if (ignorados.length) res.resumen.advertencias.unshift(`NRT (near real-time) files were ignored: ${ignorados.join(', ')}. Only the standard archive file is used.`)
     enviar({ tipo: 'listo', ...res })
   } catch (e) {
     enviar({ tipo: 'error', mensaje: e instanceof Error ? e.message : String(e) })

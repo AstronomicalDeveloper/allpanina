@@ -11,12 +11,12 @@ export class ErrorDeDescarga extends Error { constructor(m: string) { super(m); 
 export function tramos(desde: string, hasta: string, dias = MAX_DIAS): [string, number][] {
   for (const fecha of [desde, hasta]) {
     const ms = Date.parse(`${fecha}T00:00:00Z`)
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || !Number.isFinite(ms) || new Date(ms).toISOString().slice(0, 10) !== fecha) throw new ErrorDeDescarga('Fecha inválida: usa AAAA-MM-DD.')
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || !Number.isFinite(ms) || new Date(ms).toISOString().slice(0, 10) !== fecha) throw new ErrorDeDescarga('Invalid date: use YYYY-MM-DD.')
   }
-  if (!Number.isInteger(dias) || dias < 1 || dias > MAX_DIAS) throw new ErrorDeDescarga(`Cada pedido admite de 1 a ${MAX_DIAS} días.`)
+  if (!Number.isInteger(dias) || dias < 1 || dias > MAX_DIAS) throw new ErrorDeDescarga(`Each request accepts 1 to ${MAX_DIAS} days.`)
   let d = Date.parse(`${desde}T00:00:00Z`)
   const h = Date.parse(`${hasta}T00:00:00Z`)
-  if (!(h >= d)) throw new ErrorDeDescarga('La fecha final es anterior a la inicial.')
+  if (!(h >= d)) throw new ErrorDeDescarga('The end date is before the start date.')
   const out: [string, number][] = []
   while (d <= h) {
     const n = Math.min(dias, Math.round((h - d) / 864e5) + 1)
@@ -33,9 +33,9 @@ export interface OpcionesDescarga {
 }
 
 export async function descargarFirms(op: OpcionesDescarga): Promise<{ MODIS: string; VIIRS: string; pedidos: number }> {
-  if (!/^[0-9A-Za-z]{32}$/.test(op.mapKey)) throw new ErrorDeDescarga('El MAP_KEY de FIRMS debe tener 32 caracteres. Se pide gratis en firms.modaps.eosdis.nasa.gov/api/map_key/')
+  if (!/^[0-9A-Za-z]{32}$/.test(op.mapKey)) throw new ErrorDeDescarga('The FIRMS MAP_KEY must have 32 characters. Request one for free at firms.modaps.eosdis.nasa.gov/api/map_key/')
   const [w, s, e, n] = op.bbox
-  if (!(w >= -180 && w < e && e <= 180 && s >= -90 && s < n && n <= 90)) throw new ErrorDeDescarga('Caja inválida: el orden es oeste, sur, este, norte.')
+  if (!(w >= -180 && w < e && e <= 180 && s >= -90 && s < n && n <= 90)) throw new ErrorDeDescarga('Invalid box: the order is west, south, east, north.')
   const area = op.bbox.map(v => String(Math.round(v * 1e4) / 1e4)).join(',')
   const base = (op.base ?? 'https://firms.modaps.eosdis.nasa.gov').replace(/\/$/, '')
   const pedir = op.fetcher ?? fetch, dormir = op.dormir ?? (ms => new Promise(r => setTimeout(r, ms)))
@@ -61,20 +61,20 @@ export async function descargarFirms(op: OpcionesDescarga): Promise<{ MODIS: str
         catch (err) {
           if (op.signal?.aborted) throw err
           if (intento < 2) { await dormir(5000 * (intento + 1)); continue }
-          throw new ErrorDeDescarga('El navegador no pudo conectarse con FIRMS (posible bloqueo CORS o sin red). Descarga los CSV desde FIRMS y súbelos con la opción "Tengo los archivos".')
+          throw new ErrorDeDescarga('The browser could not connect to FIRMS (possibly blocked by CORS, or no network). Download the CSV files from FIRMS and upload them with "I have the files".')
         }
         if ([429, 500, 502, 503, 504].includes(r.status) && intento < 3) { await dormir(30000 * (intento + 1)); continue }
-        if (!r.ok) throw new ErrorDeDescarga(`FIRMS respondió HTTP ${r.status}. Revisa el MAP_KEY y la región.`)
+        if (!r.ok) throw new ErrorDeDescarga(`FIRMS answered HTTP ${r.status}. Check the MAP_KEY and the region.`)
         texto = await r.text()
         const c = texto.trimStart().slice(0, 200).toLowerCase()
         if (c.startsWith('latitude')) break
         if (c.includes('limit') && intento < 3) { await dormir(VENTANA_MS); continue }
-        throw new ErrorDeDescarga(`FIRMS no devolvió datos: ${texto.trim().slice(0, 160)}`)
+        throw new ErrorDeDescarga(`FIRMS returned no data: ${texto.trim().slice(0, 160)}`)
       }
       pedidos++
       const ls = texto.split(/\r?\n/).filter(l => l.trim())
       if (cab === null) cab = ls[0]
-      else if (ls[0] !== cab) throw new ErrorDeDescarga(`${FUENTES[sensor]}: FIRMS cambió las columnas entre pedidos.`)
+      else if (ls[0] !== cab) throw new ErrorDeDescarga(`${FUENTES[sensor]}: FIRMS changed the columns between requests.`)
       for (let j = 1; j < ls.length; j++) lineas.push(ls[j])
       filas += ls.length - 1
       op.progreso?.(sensor, i + 1, partes.length, filas)
