@@ -57,3 +57,13 @@ Eso no es coherente con el método elegido:
 | 5 | Aldo ratifica o cambia este dictamen. Si cambia algo, lo hace antes de P12. | Aldo |
 
 Con las condiciones 1 a 4 cumplidas, P12 (autorización del test) puede firmarse.
+
+
+## 5. Firma y aprobación
+
+- **Estado de P11:** ✅ **APROBADA CON CONDICIONES** (condiciones de la sección 4).
+- **Firmada por:** Marco (Datos), por delegación de Aldo, que no estaba disponible. Marco dio la autorización en el chat el 15-nov-2026.
+- **Revisión realizada con:** Claude.
+- **Alcance de la firma:** aprueba la revisión científica y congela los κ de `DECISIONS.md` §12. **No** da por cumplidas las condiciones 1 a 4 (las aplica Antonella) ni la 5 (ratificación de Aldo).
+- **Efecto:** P12 (autorización del test 2025-01 a 2026-07) puede firmarse solo cuando las condiciones 1 a 4 estén cumplidas y verificadas. Hasta entonces el test sigue sin tocarse.
+- **Firma:** Marco, 15-nov-2026.
