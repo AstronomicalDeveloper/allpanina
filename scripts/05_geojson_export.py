@@ -153,7 +153,7 @@ def run_peru(cell_days_path: Path, out_dir: Path, years: list[int], departments_
     for year in years:
         collection = build_block_geojson(peru_cells(cell_days, departments, year))
         path = out_dir / f"cells_{series.NATIONAL_ID}_{year}.geojson"
-        path.write_text(json.dumps(collection, separators=(",", ":"), ensure_ascii=False) + "\n", encoding="utf-8")
+        path.write_text(json.dumps(collection, separators=(",", ":"), ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
         size_mb = path.stat().st_size / 1e6
         warning = f"  AVISO: pasa de {PERU_MAX_MB:.0f} MB" if size_mb > PERU_MAX_MB else ""
         print(f"{path}: {len(collection['features'])} features, {size_mb:.2f} MB{warning}")
@@ -168,7 +168,7 @@ def run(cell_days_path: Path, out_dir: Path, region_id: str, bbox, years: list[i
     for year in years:
         collection = build_geojson(monthly_cells(cell_days, bbox, year, polygon))
         path = out_dir / f"cells_{region_id}_{year}.geojson"
-        path.write_text(json.dumps(collection, separators=(",", ":"), ensure_ascii=False) + "\n", encoding="utf-8")
+        path.write_text(json.dumps(collection, separators=(",", ":"), ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
         print(f"{path}: {len(collection['features'])} features, {path.stat().st_size / 1e6:.2f} MB")
 
 

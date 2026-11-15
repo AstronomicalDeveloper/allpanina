@@ -39,14 +39,14 @@ cp = importlib.import_module("scripts.06_calibrate_peru")
 mf = importlib.import_module("scripts.08_manifest")
 tp = importlib.import_module("scripts.09_test_peru")
 
-VERSION = "1.0"
+VERSION = "1.1"
 PUBLICADO = ROOT / "frontend" / "public" / "data" / "peru"          # entrega aprobada (P17-P19)
 DEPARTAMENTOS = ROOT / "docs" / "region" / "departamentos_inei_2023.geojson"
 DESDE = (2013, 1)
 ULTIMO_MES_VALIDADO = "2026-07"                                        # fin del test (P14/P15)
 SPLIT_NUEVO = "sin_validar"
 COLUMNAS_FIRMS = ("latitude", "longitude", "acq_date", "acq_time", "satellite", "confidence", "version", "type")
-SATELITES = {"MODIS": {"Terra", "Aqua"}, "VIIRS": {"SNPP", "N"}}  # SNPP en el archivo estándar; N = código antiguo de FIRMS
+SATELITES = {"MODIS": {"Terra", "Aqua", "T", "A"}, "VIIRS": {"SNPP", "N"}}  # archivo estándar: Terra/Aqua y SNPP; T/A y N = códigos cortos de FIRMS
 
 
 class ErrorDeEntrada(ValueError):
@@ -223,7 +223,7 @@ def procesar_peru(modis, viirs, salida, *, actualizado: str | None = None, hasta
 
         salida.mkdir(parents=True, exist_ok=True)
         serie_csv = salida / "monthly_series.csv"
-        serie.to_csv(serie_csv, index=False)
+        serie.to_csv(serie_csv, index=False, lineterminator="\n")
         cp._write_calibrated(_calibrada(serie_csv, _kappas_congelados(publicado / "method.json")),
                              salida / "calibrated_series.csv")
         for nombre in ("validation.json", "method.json"):      # resultados congelados: no se recalculan
@@ -233,7 +233,7 @@ def procesar_peru(modis, viirs, salida, *, actualizado: str | None = None, hasta
         for year in range(DESDE[0], fin[0] + 1):
             fc = gj.build_block_geojson(_celdas_10km(cell_days, dptos, year, fin))
             (salida / f"cells_PE_{year}.geojson").write_text(
-                json.dumps(fc, separators=(",", ":"), ensure_ascii=False) + "\n", encoding="utf-8")
+                json.dumps(fc, separators=(",", ":"), ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
 
     hasta_txt = f"{fin[0]:04d}-{fin[1]:02d}"
     nuevos = sorted({f"{int(r.year):04d}-{int(r.month):02d}" for r in serie.itertuples()
@@ -252,11 +252,11 @@ def procesar_peru(modis, viirs, salida, *, actualizado: str | None = None, hasta
         "advertencias": advertencias,
     }
     (salida / "actualizacion.json").write_text(json.dumps(actualizacion, ensure_ascii=False, indent=2) + "\n",
-                                               encoding="utf-8")
+                                               encoding="utf-8", newline="\n")
     manifest = mf.build_manifest(salida, salida / "_sin_info.json", mf.PERU_REGION_ID, peru=True)
     manifest["files"].append("actualizacion.json")
     manifest["hash"]["actualizacion.json"] = "sha256:" + _sha256(salida / "actualizacion.json")
-    (salida / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (salida / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     return {"salida": str(salida), "periodo": actualizacion["periodo"], "meses_sin_validar": nuevos,
             "archivos": manifest["files"], "advertencias": advertencias}
 

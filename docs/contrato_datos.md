@@ -331,3 +331,13 @@ Agrega dos cosas a la v1.1. Todo lo demás no cambia.
 2. **`actualizacion.json`:** archivo nuevo, listado en `manifest.json`. Trae el algoritmo y su versión, las entradas (archivo, sha256, sensor, filas, fechas y versiones), el periodo, la fuente de κ (`recalibrado: false`), el periodo validado, `meses_sin_validar` y las advertencias.
 
 Los archivos publicados en `frontend/public/data/peru/` (hasta 2026-07) no tienen meses `sin_validar` ni `actualizacion.json`: siguen siendo v1.1.
+
+# v1.0-region — Salidas de `procesar_region` (cualquier región, 15-nov-2026)
+
+`procesar_region` (modo región del paquete `allpanina`, ver `docs/ALGORITMO.md`) escribe **los mismos archivos y columnas que el contrato v1.0** de una región (el piloto de Ucayali), con `region_id` elegido por el usuario (p. ej. `AR-M`). La web los lee igual que `frontend/public/data/`. Diferencias:
+
+- `manifest.json → contract_version = "1.0-region"` y un archivo más: `procedencia.json` (CSV de entrada con sha256, región, zona horaria, κ y advertencias).
+- `method.json` agrega `estado` (siempre empieza con "exploratorio"), `zona_horaria`, `celda_mapa_km`, `area_km2`, `kappa_anual_rango` y `resultados` (métricas `valid` y `test` con `reportable`). `kappa` puede ser `null`: entonces todas las filas B1 de `calibrated_series.csv` van con `status = "missing"` y la web no muestra B1.
+- `validation.json` es el bloque `test` (2025-01 a 2026-07) con `evaluacion` y `reportable`; si los datos no llegan a 2025, sus métricas son `null`.
+- `cells_<region_id>_<año>.geojson`: celdas de 1 km, o bloques de `celda_mapa_km` km si la región es grande (mismas propiedades).
+- Recomendación para la web: rotular estos resultados como **"estimación exploratoria"** y mostrar `procedencia.json → advertencias`.
