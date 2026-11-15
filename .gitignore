@@ -239,6 +239,8 @@ reports/generated/
 
 logs/
 *.log
+!docs/peru/test/corrida.log
+# evidencia de P14 (κ impresos antes de las métricas)
 *.pid
 *.pid.lock
 

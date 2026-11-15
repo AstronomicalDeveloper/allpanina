@@ -1,0 +1,190 @@
+{
+  "split": "valid",
+  "criterio": "DECISIONS.md §11.3 regla 4",
+  "alternativas": {
+    "a_estratificada": {
+      "wape_agregado": 0.20342883758588304,
+      "suma_abs_error": 6587.229189868479,
+      "suma_error": -1277.757937254995,
+      "suma_modis": 32381.0,
+      "n_region_meses": 600,
+      "informativo_PE_suma_departamentos": {
+        "mae": 164.02056799962415,
+        "wape": 0.12156800691735832,
+        "bias": -53.23991405229143
+      }
+    },
+    "b_kappa_nacional": {
+      "wape_agregado": 0.2645638504353408,
+      "suma_abs_error": 8566.84204094677,
+      "suma_error": -1309.7759207384702,
+      "suma_modis": 32381.0,
+      "n_region_meses": 600,
+      "informativo_PE_suma_departamentos": {
+        "mae": 192.62037202408922,
+        "wape": 0.14276547755097563,
+        "bias": -54.57399669743625
+      }
+    },
+    "c_kappa_ucayali": {
+      "wape_agregado": 0.2799959404230024,
+      "suma_abs_error": 9066.54854683724,
+      "suma_error": 4268.672274951367,
+      "suma_modis": 32381.0,
+      "n_region_meses": 600,
+      "informativo_PE_suma_departamentos": {
+        "mae": 253.80182112047794,
+        "wape": 0.18811166137214633,
+        "bias": 177.86134478964024
+      }
+    },
+    "B0_sin_calibrar": {
+      "wape_agregado": 2.856304623081437,
+      "suma_abs_error": 92490.0,
+      "suma_error": 92446.0,
+      "suma_modis": 32381.0,
+      "n_region_meses": 600,
+      "informativo_PE_suma_departamentos": {
+        "mae": 3851.9166666666665,
+        "wape": 2.8549458015502918,
+        "bias": 3851.9166666666665
+      }
+    }
+  },
+  "estratificada_gana_a_b_y_c": true,
+  "menor_wape_agregado": "a_estratificada",
+  "informativo_por_region": [
+    {
+      "region_id": "PE-01",
+      "wape_estratificada": 0.3088094180164896,
+      "wape_nacional": 0.47949955657358545,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-02",
+      "wape_estratificada": 0.2664557990288172,
+      "wape_nacional": 0.23050711697543927,
+      "mejora": false
+    },
+    {
+      "region_id": "PE-03",
+      "wape_estratificada": 0.35831256457513055,
+      "wape_nacional": 0.4015679707538334,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-04",
+      "wape_estratificada": 0.5913859958201634,
+      "wape_nacional": 0.6944514422866024,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-05",
+      "wape_estratificada": 0.2968607471730036,
+      "wape_nacional": 0.29838133034313846,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-06",
+      "wape_estratificada": 0.3399736668861093,
+      "wape_nacional": 0.2691471747715194,
+      "mejora": false
+    },
+    {
+      "region_id": "PE-08",
+      "wape_estratificada": 0.10857615125391223,
+      "wape_nacional": 0.11107503865226036,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-09",
+      "wape_estratificada": 0.3841632360295783,
+      "wape_nacional": 0.3214202199873722,
+      "mejora": false
+    },
+    {
+      "region_id": "PE-10",
+      "wape_estratificada": 0.17836002707259893,
+      "wape_nacional": 0.196283472867075,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-11",
+      "wape_estratificada": 0.3505973409084295,
+      "wape_nacional": 0.4456109708538086,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-12",
+      "wape_estratificada": 0.14832742934232518,
+      "wape_nacional": 0.15250785884613946,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-13",
+      "wape_estratificada": 0.2281677085849255,
+      "wape_nacional": 0.23013017893677665,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-14",
+      "wape_estratificada": 0.32420749022994133,
+      "wape_nacional": 0.3442672487971504,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-15",
+      "wape_estratificada": 0.5188559652772347,
+      "wape_nacional": 0.5666940925665434,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-16",
+      "wape_estratificada": 0.13688262524654818,
+      "wape_nacional": 0.21764583407274482,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-17",
+      "wape_estratificada": 0.15832687150657487,
+      "wape_nacional": 0.303239489686346,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-19",
+      "wape_estratificada": 0.22753223274180503,
+      "wape_nacional": 0.2158705699449865,
+      "mejora": false
+    },
+    {
+      "region_id": "PE-20",
+      "wape_estratificada": 0.3308418169551722,
+      "wape_nacional": 0.4614726621862738,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-21",
+      "wape_estratificada": 0.2318801558203483,
+      "wape_nacional": 0.247978561759911,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-22",
+      "wape_estratificada": 0.23791105529991527,
+      "wape_nacional": 0.3044772352642769,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-24",
+      "wape_estratificada": 0.3904782261109014,
+      "wape_nacional": 0.4317755151918826,
+      "mejora": true
+    },
+    {
+      "region_id": "PE-25",
+      "wape_estratificada": 0.17761969598607605,
+      "wape_nacional": 0.2750412597944767,
+      "mejora": true
+    }
+  ]
+}

@@ -237,3 +237,207 @@ gráfico que Landry construya con el signo del error — nadie la invierte por s
   Antes de mirar métricas se verifica que el script imprima κ = 0.2936…;
   si no coincide, se detiene y se revisa con Aldo.
 - Nada de lo anterior se modifica después de ver el resultado del test.
+
+## 11. Extensión Perú (versión 2)
+
+### 11.1 Alcance — P01 (aprobado por Aldo, 14-nov-2026)
+
+Plan de referencia: *AllpaNina Perú — Plan de pasos para incluir todo el Perú v2.1*.
+Esta sección se escribe **antes** de que nadie calcule métricas de validación o
+test para cualquier región que no sea Ucayali.
+
+- **Regiones (26):** Perú nacional + sus 25 departamentos, con los polígonos
+  oficiales del INEI, capa "Departamental (Actualizado al 2023)", la misma fuente
+  que el polígono de Ucayali (§1).
+- **Códigos `region_id`:**
+  - `PE`: Perú nacional.
+  - `PE-<ccdd>` por departamento, con el código INEI de 2 dígitos: `PE-01` Amazonas,
+    `PE-02` Áncash, `PE-03` Apurímac, `PE-04` Arequipa, `PE-05` Ayacucho,
+    `PE-06` Cajamarca, `PE-07` Callao, `PE-08` Cusco, `PE-09` Huancavelica,
+    `PE-10` Huánuco, `PE-11` Ica, `PE-12` Junín, `PE-13` La Libertad,
+    `PE-14` Lambayeque, `PE-15` Lima, `PE-16` Loreto, `PE-17` Madre de Dios,
+    `PE-18` Moquegua, `PE-19` Pasco, `PE-20` Piura, `PE-21` Puno, `PE-22` San Martín,
+    `PE-23` Tacna, `PE-24` Tumbes, `PE-25` Ucayali.
+  - Ucayali dentro de la extensión es `PE-25`. `PE-UCA` queda **solo** para el
+    piloto v1. Así la prueba de regresión compara `PE-25` con `PE-UCA` sin
+    ambigüedad: deben ser iguales salvo el nombre de la región.
+- **Asignación de celdas:** una celda de 1 km pertenece al departamento cuyo polígono
+  contiene su **centro** (misma regla que §1), así que cada celda cae en uno solo.
+  Las celdas cuyo centro cae fuera de los 25 polígonos se descartan. `PE` es la
+  suma de los 25 departamentos.
+- **Datos:** no hay descarga nueva. Se usan los mismos zips de FIRMS de `docs/`
+  (MODIS hasta 2026-08 y VIIRS hasta 2026-07, todo Perú), con los mismos hashes
+  de `docs/datos.md`.
+- **Reglas que no cambian:** periodo y split (§3 y §4: train 2013-01 a 2022-12,
+  valid 2023-01 a 2024-12, test 2025-01 a 2026-07), celda y malla (§5), día en hora
+  de Lima (§6), filtros (§7), `status` `ok`/`missing` (§8), fórmula de κ y
+  convención de signo del error (§10).
+- **Test reservado:** el test 2025-01 a 2026-07 queda reservado para todas las
+  regiones nuevas. El de Ucayali ya se vio en T29, así que el test nacional se
+  reporta con y sin Ucayali (detalle en 11.3).
+- **Dónde va:** todo lo de Perú va en `frontend/public/data/peru/`. Los archivos del
+  piloto Ucayali v1 en `frontend/public/data/` quedan **congelados**: no se
+  modifican. Se trabaja en la rama `feature/calibracion`.
+- **Mapa nacional:** celdas de 10 km, armadas sumando las celdas de 1 km ya
+  deduplicadas. Las series por departamento siempre usan la celda de 1 km.
+  Detalle en el contrato v1.1 (P03).
+- **No incluye:** el resto del mundo, pronóstico, calibración por celda ni trabajo
+  de frontend (Landry recibe los archivos al final, en P20).
+
+### 11.2 Estratos de κ — P02 (aprobado por Aldo, 14-nov-2026)
+
+**Regla, fijada antes de calcular cualquier métrica de validación o test fuera de Ucayali:**
+
+- Un departamento tiene **κ propio** si en train (2013-01 a 2022-12) tiene
+  **Σ VIIRS ≥ 5,000 y Σ MODIS ≥ 1,000** celdas-día. Cumplen 17.
+- Los otros 8 (Lima, Huancavelica, Arequipa, Ica, Tumbes, Moquegua, Tacna y Callao)
+  forman **un estrato agrupado** con un solo κ, calculado con la suma de los 8.
+- `PE` (nacional) tiene su propio κ con la suma de los 25. Se usa como referencia
+  en la validación (P10), no para calibrar departamentos.
+- Fórmula, la misma de §10, **solo con train**:
+  κ = Σ cell_days MODIS (train) / Σ cell_days VIIRS (train), y B1 = VIIRS × κ del estrato.
+  La validación y el test solo evalúan κ, nunca lo ajustan.
+- **La lista de estratos queda congelada** tal como está en la tabla. Si el cálculo
+  oficial de P09 diera números algo distintos, un departamento no cambia de estrato:
+  se reporta la diferencia y se revisa con Aldo.
+
+**Por qué esta regla:** con un umbral de 1,000 VIIRS pasaban Moquegua e Ica, cuyo κ
+anual va de 0.06 a 0.39. Los 8 de poca actividad tienen κ bajos (0.207 juntos); el
+κ nacional (0.249) los sobreestimaría.
+
+**Tabla de los 25 (train 2013-2022, celdas-día de 1 km dentro de cada polígono INEI):**
+
+| `region_id` | Departamento | Σ VIIRS | Σ MODIS | κ train | κ anual mín–máx | Estrato |
+| --- | --- | ---: | ---: | ---: | :---: | --- |
+| `PE-22` | San Martín | 87,753 | 18,715 | 0.213 | 0.155–0.245 | κ propio |
+| `PE-25` | Ucayali | 84,815 | 24,902 | 0.294 | 0.262–0.338 | κ propio |
+| `PE-10` | Huánuco | 61,639 | 16,634 | 0.270 | 0.218–0.323 | κ propio |
+| `PE-16` | Loreto | 52,653 | 10,524 | 0.200 | 0.159–0.237 | κ propio |
+| `PE-12` | Junín | 45,682 | 10,684 | 0.234 | 0.188–0.298 | κ propio |
+| `PE-17` | Madre de Dios | 35,838 | 12,087 | 0.337 | 0.305–0.349 | κ propio |
+| `PE-08` | Cusco | 23,796 | 6,442 | 0.271 | 0.225–0.325 | κ propio |
+| `PE-19` | Pasco | 21,019 | 5,592 | 0.266 | 0.226–0.308 | κ propio |
+| `PE-06` | Cajamarca | 15,750 | 3,025 | 0.192 | 0.134–0.273 | κ propio |
+| `PE-20` | Piura | 14,491 | 2,773 | 0.191 | 0.137–0.265 | κ propio |
+| `PE-13` | La Libertad | 13,861 | 3,466 | 0.250 | 0.215–0.303 | κ propio |
+| `PE-01` | Amazonas | 11,310 | 1,851 | 0.164 | 0.133–0.195 | κ propio |
+| `PE-21` | Puno | 10,910 | 3,163 | 0.290 | 0.195–0.381 | κ propio |
+| `PE-05` | Ayacucho | 10,536 | 2,635 | 0.250 | 0.168–0.322 | κ propio |
+| `PE-14` | Lambayeque | 8,641 | 2,350 | 0.272 | 0.213–0.347 | κ propio |
+| `PE-02` | Áncash | 8,381 | 1,897 | 0.226 | 0.206–0.265 | κ propio |
+| `PE-03` | Apurímac | 5,536 | 1,657 | 0.299 | 0.191–0.373 | κ propio |
+| `PE-15` | Lima | 4,626 | 836 | 0.181 | 0.109–0.233 | Agrupado |
+| `PE-09` | Huancavelica | 4,452 | 1,071 | 0.241 | 0.168–0.277 | Agrupado |
+| `PE-04` | Arequipa | 4,068 | 945 | 0.232 | 0.177–0.283 | Agrupado |
+| `PE-11` | Ica | 2,788 | 348 | 0.125 | 0.070–0.203 | Agrupado |
+| `PE-24` | Tumbes | 1,781 | 489 | 0.275 | 0.132–0.388 | Agrupado |
+| `PE-18` | Moquegua | 1,003 | 243 | 0.242 | 0.063–0.385 | Agrupado |
+| `PE-23` | Tacna | 480 | 71 | 0.148 | 0.073–0.353 | Agrupado |
+| `PE-07` | Callao | 101 | 0 | 0.000 | — | Agrupado |
+| — | **Estrato agrupado (8)** | **19,299** | **4,003** | **0.207** | — | — |
+| `PE` | **Perú (25 departamentos)** | **531,910** | **132,400** | **0.249** | — | Referencia |
+
+Fuente de los números: plan v2.1, calculados por Marco con `cell_days.parquet`
+(scripts 01-03, zips FIRMS de `docs/`) y los polígonos INEI 2023, solo train.
+Son **preliminares**: los κ oficiales los calcula Antonella en P09 con el pipeline
+y deben coincidir. Callao tiene Σ MODIS = 0 en train; solo entra en el estrato
+agrupado, nunca con κ propio.
+
+### 11.3 Reglas de métricas — P04 (Aldo + Antonella, 14-nov-2026)
+
+Versión unificada. Antonella había escrito su propia versión de P04 (commit `0bef9b3`),
+coincidente en todo menos el criterio del punto 4. Aldo decidió combinar las dos:
+decide el criterio por departamentos y se reporta además el de Antonella.
+
+Fijadas **antes** de calcular cualquier métrica de validación o test fuera de Ucayali.
+
+**1. Mínimo para reportar una región.**
+- Una región se reporta en un split si en ese split tiene **Σ MODIS ≥ 50 celdas-día**.
+- Se evalúa por separado en validación y en test: una región puede ser reportable en
+  una y no en la otra.
+- Si no llega al mínimo, en `validation.json` va como `reportable: false`, con
+  `motivo` y sin métricas (contrato v1.1, sección E). Sus meses sí cuentan dentro de
+  `PE` y de `PE-SIN-25`.
+
+**2. WAPE.**
+- Si Σ MODIS = 0 en el split, el WAPE no se reporta (`null`, nunca 0).
+- MAE y sesgo se reportan igual si la región es reportable.
+- Las métricas se calculan con los meses emparejados (`status = ok` en los dos
+  sensores), como en el piloto.
+
+**3. Test con y sin Ucayali.**
+- El test se reporta para `PE`, para `PE-SIN-25` (Perú sin Ucayali) y para cada
+  región reportable.
+- `PE-25` (Ucayali) se marca como "test ya visto en T29". El resultado limpio, el que
+  nadie había visto, es `PE-SIN-25`.
+
+**4. Cómo se decide en P10 si estratificar mejora** (una regla que el plan nombra pero
+no deja fija):
+- Se comparan tres alternativas, ya definidas aquí, todas con κ calculado solo en train:
+  - **(a) Estratificada**, la de §11.2.
+  - **(b) κ nacional único** (el de `PE`) para todos los departamentos.
+  - **(c) κ de Ucayali** (0.29360) para todos los departamentos.
+- **Criterio:** el WAPE agregado de los 25 departamentos en validación:
+  Σ |error| / Σ MODIS, sumando todos los departamentos y los 24 meses.
+- **Se elige la estratificada si su WAPE agregado es menor que el de (b) y el de (c).**
+  Si no lo es, en P11 se elige entre (a), (b) y (c) la de menor WAPE agregado, se
+  documenta y se congela. No se crean alternativas nuevas después de ver validación.
+- **Se reporta además** (propuesta de Antonella), sin que decida la elección:
+  - el WAPE de `PE` nacional, con la estimación nacional = suma de los B1 de los
+    departamentos, para las tres alternativas y para B0;
+  - en cuántas regiones reportables la estratificada tiene menor WAPE que (b).
+- El test no interviene en esta elección.
+
+**5. Sin cambios.** Se usan las mismas métricas del piloto (MAE, WAPE y sesgo), sin
+agregar ni quitar ninguna. Estas reglas no se cambian después de ver los resultados
+de validación ni de test.
+
+## 12. Extensión Perú: calibración congelada — P11 (15-nov-2026)
+
+Revisión: `docs/peru/REVISION_P11.md`. La hizo Marco, con Claude, por delegación de Aldo, que no estaba presente. **Aldo la ratificó sin cambios el 15-nov-2026, antes de P14** (`REVISION_P11.md`, anexo A).
+Dictamen: **aprobada con condiciones**; las condiciones 1 a 5 están cumplidas (15-nov-2026), incluida la ratificación de Aldo. Esto queda congelado **antes** de correr el test.
+
+- **Serie de entrada:** `docs/peru/ejemplo/monthly_series.csv` (P07), SHA-256
+  `b3ceeae6df820b19f7f132558cea08e51d27f6528f04b460c4c6c8b517893109`.
+- **Método:** (a) estratificado (§11.2). Se eligió con la regla 4 de §11.3: WAPE agregado de los 25 departamentos en validación de 0.203, contra 0.265 con κ nacional y 0.280 con κ de Ucayali.
+- **Fórmula:** κ = Σ MODIS (train) / Σ VIIRS (train), con train de 2013-01 a 2022-12, y B1 = VIIRS × κ del estrato de la región.
+- **`PE` y `PE-SIN-25`:** B1 = **suma de las B1 de sus departamentos** (todos para `PE`; todos menos `PE-25` para `PE-SIN-25`). Así se cumple la misma regla de la serie (`PE` = Σ departamentos). La versión VIIRS × κ nacional (0.24891429001146811) se reporta como referencia en valid y en test, como pide §11.3. Esto reemplaza lo que decía el contrato v1.1 §D.
+- **κ congelados** (si al correr el test el script imprime otros valores, se detiene):
+
+| `region_id` | Departamento | Estrato | κ |
+| --- | --- | --- | --- |
+| `PE-01` | Amazonas | propio | `0.1636604774535809` |
+| `PE-02` | Áncash | propio | `0.2263453048562224` |
+| `PE-03` | Apurímac | propio | `0.2993135838150289` |
+| `PE-04` | Arequipa | agrupado | `0.2074200735789419` |
+| `PE-05` | Ayacucho | propio | `0.25009491268033407` |
+| `PE-06` | Cajamarca | propio | `0.19206349206349208` |
+| `PE-07` | Callao | agrupado | `0.2074200735789419` |
+| `PE-08` | Cusco | propio | `0.2707177676920491` |
+| `PE-09` | Huancavelica | agrupado | `0.2074200735789419` |
+| `PE-10` | Huánuco | propio | `0.2698616135887993` |
+| `PE-11` | Ica | agrupado | `0.2074200735789419` |
+| `PE-12` | Junín | propio | `0.23387767610875182` |
+| `PE-13` | La Libertad | propio | `0.2500541086501695` |
+| `PE-14` | Lambayeque | propio | `0.27195926397407705` |
+| `PE-15` | Lima | agrupado | `0.2074200735789419` |
+| `PE-16` | Loreto | propio | `0.19987465101703605` |
+| `PE-17` | Madre de Dios | propio | `0.3372677046710196` |
+| `PE-18` | Moquegua | agrupado | `0.2074200735789419` |
+| `PE-19` | Pasco | propio | `0.2660450068985204` |
+| `PE-20` | Piura | propio | `0.19136015457870403` |
+| `PE-21` | Puno | propio | `0.28991750687442713` |
+| `PE-22` | San Martín | propio | `0.21326906202636947` |
+| `PE-23` | Tacna | agrupado | `0.2074200735789419` |
+| `PE-24` | Tumbes | agrupado | `0.2074200735789419` |
+| `PE-25` | Ucayali | propio | `0.2936037257560573` (igual al piloto, §10) |
+| `PE` | Perú (solo referencia) | nacional | `0.24891429001146811` |
+
+- **Condiciones antes de P12:** las 5 de `docs/peru/REVISION_P11.md` §4. Son:
+  1. `PE` como suma de departamentos.
+  2. Las limitaciones en `method.json`.
+  3. Las correcciones en `P09_P10.md`.
+  4. `method.json` con estado aprobado.
+  5. La ratificación de Aldo.
+
+  Estado: condiciones 1 a 4 cumplidas el 15-nov-2026 (ver `REVISION_P11.md` §4); la 5 cumplida el mismo día: Aldo ratificó sin cambios. P12 la firman Aldo, Marco y Antonella (`docs/peru/AUTORIZACION_TEST.md`).
