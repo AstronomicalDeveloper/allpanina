@@ -17,7 +17,7 @@ Verificado en un clon de trabajo limpio: `npm ci` correcto; `npm test` 185 de 18
 | 2.3 Capa «Áreas protegidas · Ucayali» | ⬜ Pendiente | Se sigue ofreciendo en el modo nacional (`CartographyPanel.tsx`). Decide Landry |
 | 2.4 Mensajes de error | ⬜ Pendiente | Se muestran textos técnicos (`String(error)`) en `GeographicSelection.tsx`, `MapPage.tsx` y `useJuanMap.ts`. Coordinar con Landry |
 | 2.5 Párrafo nacional en Método | ✅ Hecho (Landry, A5) | `NationalMethodNotes.tsx` |
-| 2.6 Menú «Acerca de» (nuevo) | ⬜ Pendiente (Marco) | `Navbar.tsx`: el enlace «Manifiesto de datos publicados» apunta al piloto (`/data/manifest.json`), no a `/data/peru/manifest.json`; el texto «Las herramientas científicas se incorporarán progresivamente» ya no es cierto |
+| 2.6 Menú «Acerca de» (nuevo) | ✅ Hecho (Marco) | `Navbar.tsx`: el enlace al manifiesto sigue al conjunto de datos activo (Perú v1.1, piloto Ucayali v1.0 o DEMO) y lo nombra; el texto de ayuda obsoleto se sustituyó por una descripción de las tres vistas. Prueba en `app-header.test.ts` |
 | 3.1 Leyenda del mapa | ⬜ Pendiente | `CartographyPanel.tsx` sigue usando `toFixed(1)` en los cortes por percentil |
 | 3.2 Escala del calendario | ⬜ Pendiente | `CalendarExplorer.tsx` sigue usando `toFixed(1)` en las marcas de la escala |
 | 3.3 Móvil del mapa | ⬜ Sin verificar | Requiere capturas con el mapa base real |
