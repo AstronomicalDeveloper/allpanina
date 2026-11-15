@@ -14,7 +14,7 @@ export function nombrePais(p: Pick<Pais, 'iso2' | 'nombre'>): string {
 async function leerJson(ruta: string, que: string, signal?: AbortSignal): Promise<unknown> {
   let r: Response
   try { r = await fetch(ruta, { signal }) }
-  catch (e) { if (signal?.aborted) throw e; throw new Error(`No se pudo conectar para leer ${que}.`) }
+  catch (e) { if (signal?.aborted) throw e; throw new Error(`No se pudo conectar para leer ${que}.`, { cause: e }) }
   if (!r.ok) throw new Error(r.status === 404 ? `${que} no se encontró en este servidor (${ruta}).` : `${que}: el servidor respondió HTTP ${r.status}.`)
   const texto = await r.text()
   try { return JSON.parse(texto) }

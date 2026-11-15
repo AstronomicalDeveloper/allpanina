@@ -1,0 +1,64 @@
+/*
+ * Tailwind v4 with the AllpaNina tokens (PLAN_REDISENO A2).
+ * Preflight is NOT imported on purpose: pages that are not redesigned yet keep their own CSS.
+ * Legacy element rules in global.css live in @layer base, so utilities always win.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme {
+  --color-night: #0B1736;
+  --color-orbit: #16264F;
+  --color-rule: #2A3B66;
+  --color-paper: #F6F7F9;
+  --color-ink: #14213D;
+  --color-muted: #55607A;
+  --color-ember: #FB9C38;
+  --color-cinder: #B23A0E;
+  --color-zero: #E3E6EC;
+  --color-fire-1: #FFF1D0; --color-fire-2: #FFDC9A; --color-fire-3: #FFC062; --color-fire-4: #FB9C38; --color-fire-5: #EF781E;
+  --color-fire-6: #D65512; --color-fire-7: #B23A0E; --color-fire-8: #86270C; --color-fire-9: #5A1909;
+  --color-glow-1: #4A1E14; --color-glow-2: #6E2812; --color-glow-3: #96350F; --color-glow-4: #BE4710; --color-glow-5: #DE6216;
+  --color-glow-6: #F3842A; --color-glow-7: #FCA548; --color-glow-8: #FFC977; --color-glow-9: #FFEBB8;
+
+  --font-sans: "IBM Plex Sans", system-ui, "Segoe UI", sans-serif;
+  --font-display: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+
+  /* Type scale, ratio 1.25. Nothing below 13 px. */
+  --text-xs: 0.8125rem;  --text-xs--line-height: 1.4;
+  --text-sm: 0.9375rem;  --text-sm--line-height: 1.5;
+  --text-base: 1rem;     --text-base--line-height: 1.6;
+  --text-lg: 1.1875rem;  --text-lg--line-height: 1.5;
+  --text-xl: 1.5rem;     --text-xl--line-height: 1.3;
+  --text-2xl: 1.875rem;  --text-2xl--line-height: 1.2;
+  --text-3xl: 2.375rem;  --text-3xl--line-height: 1.15;
+  --text-4xl: 3rem;      --text-4xl--line-height: 1.1;
+  --text-5xl: 4rem;      --text-5xl--line-height: 1.05;
+
+  --radius-cell: 3px;
+  --radius-control: 6px;
+  --radius-panel: 10px;
+  --spacing-topbar: 56px;
+}
+
+@layer base {
+  html { font-family: var(--font-sans); }
+  body { font-variant-numeric: tabular-nums; }
+}
+
+@layer components {
+  /* Data states that do not depend on color alone (A2). */
+  .state-zero { background: var(--color-zero); }
+  .state-missing { background: repeating-linear-gradient(135deg, transparent 0 4px, rgb(85 96 122 / 35%) 4px 5px); }
+  .state-unpublished { background: transparent; border: 1px dashed var(--color-muted); }
+  .on-dark .state-zero { background: var(--color-rule); }
+  .on-dark .state-missing { background: repeating-linear-gradient(135deg, transparent 0 4px, rgb(246 247 249 / 25%) 4px 5px); }
+  .on-dark .state-unpublished { border-color: rgb(246 247 249 / 45%); }
+  /* Focus: 2 px Brasa ring with a 2 px gap (A5). */
+  .focus-ring:focus-visible { outline: 2px solid var(--color-ember); outline-offset: 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-safe-only { animation: none !important; transition: none !important; }
+}
