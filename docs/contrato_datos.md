@@ -279,7 +279,15 @@ Los mismos campos de v1.0 (`indicator`, `sensors`, periodos, `calibration`, `lim
 - **Propiedades:** las mismas de v1.0: `cell_id`, `year`, `month`, `sensor_group`, `cell_days`. La celda de 10 km puede cruzar límites de departamento, así que **no lleva `region_id`**.
 - **Solo observados**, sin ningún κ aplicado.
 - **Regla de suma:** en cada mes y sensor, la suma de `cell_days` del archivo = `PE` en `monthly_series.csv`.
-- **Tamaño:** se apunta a unos 6 MB por año. Si un año pasa de eso, se avisa antes de entregarlo.
+- **Tamaño (decisión de Aldo en P08, 15-nov-2026):** hasta **8 MB sin comprimir y 1 MB
+  comprimido con gzip** por archivo. Si un año pasa de eso, se avisa antes de entregarlo.
+  - Antes la sección decía "unos 6 MB". Era una meta aproximada, no un límite técnico.
+    Con los datos reales, 4 años quedan entre 6.3 y 7.2 MB, y comprimidos pesan
+    0.3–0.5 MB (`docs/peru/P08.md`). Se descartaron dividir por semestre y pasar a 20 km,
+    porque ambas cambiaban el contrato.
+  - **Condición:** el servidor tiene que entregar los `.json` y `.geojson` comprimidos.
+    Landry lo configura y lo comprueba en Nginx antes de integrar el mapa nacional. Si no
+    se puede, el respaldo es dividir por semestre (`cells_PE_<año>_S1/S2.geojson`).
 - **Test reservado:** 2025 y 2026 se generan solo después de firmado el test (P16).
 
 ## H. `peru/manifest.json` (Marco)
