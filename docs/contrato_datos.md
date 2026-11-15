@@ -320,3 +320,14 @@ Nada mientras el equipo de datos trabaja. Cuando `peru/` esté completa (P20), i
 - Un mapa nacional distinto, a 10 km.
 
 Antes de eso tiene que tener el frontend al día con la v1.0 (`docs/t35/PRECHECK_T35.md`).
+
+---
+
+# v1.2 — Salidas del algoritmo `allpanina` (15-nov-2026)
+
+Agrega dos cosas a la v1.1. Todo lo demás no cambia.
+
+1. **`calibrated_series.csv` → `split`:** nuevo valor **`sin_validar`**, para los meses posteriores a 2026-07 que se procesen con el algoritmo (`docs/ALGORITMO.md`). B1 sale de los κ congelados; esos meses no tienen `residual` ni métricas. La web los debe mostrar distintos de `train`, `valid` y `test`.
+2. **`actualizacion.json`:** archivo nuevo, listado en `manifest.json`. Trae el algoritmo y su versión, las entradas (archivo, sha256, sensor, filas, fechas y versiones), el periodo, la fuente de κ (`recalibrado: false`), el periodo validado, `meses_sin_validar` y las advertencias.
+
+Los archivos publicados en `frontend/public/data/peru/` (hasta 2026-07) no tienen meses `sin_validar` ni `actualizacion.json`: siguen siendo v1.1.
