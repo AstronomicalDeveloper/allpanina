@@ -391,3 +391,51 @@ no deja fija):
 **5. Sin cambios.** Se usan las mismas métricas del piloto (MAE, WAPE y sesgo), sin
 agregar ni quitar ninguna. Estas reglas no se cambian después de ver los resultados
 de validación ni de test.
+
+## 12. Extensión Perú: calibración congelada — P11 (15-nov-2026)
+
+Revisión: `docs/peru/REVISION_P11.md`. La hizo Marco, con Claude, por delegación de Aldo, que no estaba disponible. Aldo puede ratificarla o cambiarla antes de P12.
+Dictamen: **aprobada con condiciones**. Esto queda congelado **antes** de correr el test.
+
+- **Serie de entrada:** `docs/peru/ejemplo/monthly_series.csv` (P07), SHA-256
+  `b3ceeae6df820b19f7f132558cea08e51d27f6528f04b460c4c6c8b517893109`.
+- **Método:** (a) estratificado (§11.2). Se eligió con la regla 4 de §11.3: WAPE agregado de los 25 departamentos en validación de 0.203, contra 0.265 con κ nacional y 0.280 con κ de Ucayali.
+- **Fórmula:** κ = Σ MODIS (train) / Σ VIIRS (train), con train de 2013-01 a 2022-12, y B1 = VIIRS × κ del estrato de la región.
+- **`PE` y `PE-SIN-25`:** B1 = **suma de las B1 de sus departamentos** (todos para `PE`; todos menos `PE-25` para `PE-SIN-25`). Así se cumple la misma regla de la serie (`PE` = Σ departamentos). La versión VIIRS × κ nacional (0.24891429001146811) se reporta como referencia en valid y en test, como pide §11.3. Esto reemplaza lo que decía el contrato v1.1 §D.
+- **κ congelados** (si al correr el test el script imprime otros valores, se detiene):
+
+| `region_id` | Departamento | Estrato | κ |
+| --- | --- | --- | --- |
+| `PE-01` | Amazonas | propio | `0.1636604774535809` |
+| `PE-02` | Áncash | propio | `0.2263453048562224` |
+| `PE-03` | Apurímac | propio | `0.2993135838150289` |
+| `PE-04` | Arequipa | agrupado | `0.2074200735789419` |
+| `PE-05` | Ayacucho | propio | `0.25009491268033407` |
+| `PE-06` | Cajamarca | propio | `0.19206349206349208` |
+| `PE-07` | Callao | agrupado | `0.2074200735789419` |
+| `PE-08` | Cusco | propio | `0.2707177676920491` |
+| `PE-09` | Huancavelica | agrupado | `0.2074200735789419` |
+| `PE-10` | Huánuco | propio | `0.2698616135887993` |
+| `PE-11` | Ica | agrupado | `0.2074200735789419` |
+| `PE-12` | Junín | propio | `0.23387767610875182` |
+| `PE-13` | La Libertad | propio | `0.2500541086501695` |
+| `PE-14` | Lambayeque | propio | `0.27195926397407705` |
+| `PE-15` | Lima | agrupado | `0.2074200735789419` |
+| `PE-16` | Loreto | propio | `0.19987465101703605` |
+| `PE-17` | Madre de Dios | propio | `0.3372677046710196` |
+| `PE-18` | Moquegua | agrupado | `0.2074200735789419` |
+| `PE-19` | Pasco | propio | `0.2660450068985204` |
+| `PE-20` | Piura | propio | `0.19136015457870403` |
+| `PE-21` | Puno | propio | `0.28991750687442713` |
+| `PE-22` | San Martín | propio | `0.21326906202636947` |
+| `PE-23` | Tacna | agrupado | `0.2074200735789419` |
+| `PE-24` | Tumbes | agrupado | `0.2074200735789419` |
+| `PE-25` | Ucayali | propio | `0.2936037257560573` (igual al piloto, §10) |
+| `PE` | Perú (solo referencia) | nacional | `0.24891429001146811` |
+
+- **Condiciones antes de P12:** las 5 de `docs/peru/REVISION_P11.md` §4. Son:
+  1. `PE` como suma de departamentos.
+  2. Las limitaciones en `method.json`.
+  3. Las correcciones en `P09_P10.md`.
+  4. `method.json` con estado aprobado.
+  5. La ratificación de Aldo.
