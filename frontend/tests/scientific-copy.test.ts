@@ -39,31 +39,31 @@ test('selección táctil de un cuadrado abre popup y conserva inspector anual de
  assert.match(host.querySelector('.map-cell-detail')!.textContent!,/Cell identifier/)
 })
 test('Descripción regional diferencia días-celda acumulados de días de una sola celda',async t=>{
- mockFiles(t);const {host}=await mount(t,'/calendario?periodYear=2025&periodMonth=12')
+ mockFiles(t);const {host}=await mount(t,'/calendar?periodYear=2025&periodMonth=12')
  const detail=host.querySelector('#calendar-detail')!
- assert.equal(detail.querySelector('h3')!.textContent,'Diciembre de 2025')
- assert.match(detail.textContent!,/Ucayali, Perú.*MODIS.*90.*días-celda acumulados/)
- assert.match(detail.textContent!,/distintas celdas.*No equivale.*incendios ni de días distintos.*Dato disponible/)
+ assert.equal(detail.querySelector('#calendar-detail-title')!.textContent,'December 2025')
+ assert.match(detail.textContent!,/Ucayali.*MODIS.*90.*cell-days/)
+ assert.match(detail.textContent!,/Observed.*each cell.*It is not a number of fires, nor a number of distinct days/)
  assert.ok(detail.querySelector('.calendar-map-action'))
  assert.equal(detail.querySelector<HTMLDetailsElement>('.calendar-technical')!.open,false)
  assert.match(detail.textContent!,/source_version.*updated_at/)
 })
 test('Descripción adapta cero, faltante y no publicado sin presentar un cero inventado',async t=>{
- mockFiles(t);const {host}=await mount(t,'/calendario?data=demo&periodYear=2024')
- await click(host,'Septiembre 2024, MODIS, 0 · válido')
- assert.match(host.querySelector('#calendar-detail')!.textContent!,/No se registraron detecciones.*cero registrado no demuestra ausencia.*cero válido/)
- await click(host,'Octubre 2024, MODIS, Sin datos')
+ mockFiles(t);const {host}=await mount(t,'/calendar?data=demo&periodYear=2024')
+ await click(host,'September 2024, MODIS: 0 cell-days (observed zero)')
+ assert.match(host.querySelector('#calendar-detail')!.textContent!,/Observed zero.*No thermal detections were recorded.*A recorded zero does not prove there was no fire/)
+ await click(host,'October 2024, MODIS: no usable data')
  assert.equal(host.querySelector('.calendar-observed-value')!.textContent,'—')
- assert.match(host.querySelector('#calendar-detail')!.textContent!,/No hay un valor utilizable.*No se sustituye por cero.*Sin dato utilizable/)
- await click(host,'Noviembre 2024, MODIS, Ausente')
- assert.match(host.querySelector('#calendar-detail')!.textContent!,/No hay registro publicado.*No equivale a cero.*No publicado/)
+ assert.match(host.querySelector('#calendar-detail')!.textContent!,/No usable data.*There is no usable value.*It is not replaced with zero/)
+ await click(host,'November 2024, MODIS: not published')
+ assert.match(host.querySelector('#calendar-detail')!.textContent!,/Not published.*No record has been published.*This is not the same as zero/)
 })
-test('ayuda reutilizable funciona como desplegable nativo en la leyenda del Calendario',async t=>{
+test('ayuda de días-celda funciona como desplegable nativo en la leyenda del Calendario',async t=>{
  mockFiles(t);const {host}=await mount(t)
- const help=host.querySelector<HTMLDetailsElement>('.calendar-legend .cell-days-help')!
+ const help=host.querySelector<HTMLDetailsElement>('.calendar-legend .calendar-cell-days-help')!
  assert.ok(help);assert.equal(help.open,false)
  await act(async()=>help.querySelector('summary')!.click());assert.equal(help.open,true)
- assert.match(help.textContent!,/tres días-celda.*Diez celdas.*diez días-celda.*No equivale a cantidad de incendios/)
+ assert.match(help.textContent!,/three cell-days.*ten cells.*ten cell-days.*not a number of fires/)
  await act(async()=>help.querySelector('summary')!.click());assert.equal(help.open,false)
 })
 test('leyenda del Mapa explica percentiles y símbolos sin cambiar su clasificación',async t=>{

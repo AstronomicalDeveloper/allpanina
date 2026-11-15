@@ -12,17 +12,17 @@ const menuButton = (host: HTMLElement) => host.querySelector<HTMLButtonElement>(
 
 test('v2 contexto publicado muestra región, fechas y productos reales junto al calendario',async t=>{
  mockFiles(t);const {host}=await mount(t)
- assert.match(host.querySelector('.calendar-heading')!.textContent!,/Ucayali, Perú/)
- assert.match(host.querySelector('.calendar-publication')!.textContent!,/2013-01.*2026-07.*MCD14ML/)
+ assert.match(host.querySelector('.calendar-heading')!.textContent!,/Ucayali · Thermal detection calendar/)
+ assert.match(host.querySelector('.calendar-publication')!.textContent!,/Jan 2013 – Jul 2026 · MCD14ML/)
 })
 test('v2 metadatos fallidos no inventan descripción ni fallback y permiten reintentar',async t=>{
  let fail=true;t.mock.method(globalThis,'fetch',async(url:string)=>new Response(fail&&url.endsWith('method.json')?'{}':files[url]))
  const {host}=await mount(t)
  assert.match(host.querySelector('.calendar-heading')!.textContent!,/PE-UCA/)
- assert.doesNotMatch(host.querySelector('.calendar-heading')!.textContent!,/Ucayali, Perú/)
- assert.match(host.querySelector('.calendar-v2 [role="alert"]')!.textContent!,/Descripción de región no disponible/)
- fail=false;await act(async()=>[...host.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent==='Reintentar archivos')!.click())
- assert.match(host.querySelector('.calendar-heading')!.textContent!,/Ucayali, Perú/)
+ assert.doesNotMatch(host.querySelector('.calendar-heading')!.textContent!,/Ucayali/)
+ assert.match(host.querySelector('.calendar-v2 [role="alert"]')!.textContent!,/The area description is not available/)
+ fail=false;await act(async()=>[...host.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent==='Retry files')!.click())
+ assert.match(host.querySelector('.calendar-heading')!.textContent!,/Ucayali/)
 })
 test('v2 no combina el nombre de otra región con el manifiesto actual',async t=>{
  const method=JSON.parse(files['/data/method.json']);method.region_id='OTRA';method.region='Otra región'

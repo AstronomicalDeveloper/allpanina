@@ -9,7 +9,7 @@ import { validateMethodDocument, validateValidationDocument } from '../src/servi
 import { loadMethodDocument, loadValidationDocument } from '../src/services/data/loaders'
 import { datasetMode } from '../src/services/data/geography'
 import type { NationalMethod, NationalValidation } from '../src/types/data'
-import { files, mockFiles, mount, choose, click, dom } from './uiHarness'
+import { files, mockFiles, mount, choose, chooseSeries, click, dom } from './uiHarness'
 const manifest=validateManifest(JSON.parse(files['/data/peru/manifest.json']))
 const method=validateMethodDocument(JSON.parse(files['/data/peru/method.json'])) as NationalMethod
 const validation=validateValidationDocument(JSON.parse(files['/data/peru/validation.json'])) as NationalValidation
@@ -69,15 +69,15 @@ test('Calendario nacional elige PE y departamentos desde metadatos y conserva ci
  mockFiles(t);const {host}=await render(t,'/calendario?periodYear=2024&periodMonth=9')
  const selector=host.querySelector<HTMLSelectElement>('[aria-label="Area"]')!
  assert.equal(selector.options.length,26);assert.equal(selector.value,'PE');assert.equal(selector.options[0].text,'Peru')
- assert.equal(host.querySelector('.calendar-observed-value')!.textContent,String(monthly.find(r=>r.region_id==='PE'&&r.year===2024&&r.month===9&&r.sensor_group==='MODIS')!.cell_days))
+ assert.equal(host.querySelector('.calendar-observed-value')!.textContent,monthly.find(r=>r.region_id==='PE'&&r.year===2024&&r.month===9&&r.sensor_group==='MODIS')!.cell_days!.toLocaleString('en-US'))
  await choose(host,'[aria-label="Area"]','PE-25')
- assert.equal(host.querySelector('.calendar-observed-value')!.textContent,'2323')
+ assert.equal(host.querySelector('.calendar-observed-value')!.textContent,'2,323')
  assert.match(host.querySelector('.calendar-heading')!.textContent!,/Ucayali/)
  assert.equal(new URLSearchParams(window.location.search).get('mapRegion'),'PE-25')
- await choose(host,'#calendar-sensor','VIIRS');assert.equal(host.querySelector('.calendar-observed-value')!.textContent,'5581')
+ await chooseSeries(host,'VIIRS');assert.equal(host.querySelector('.calendar-observed-value')!.textContent,'5,581')
  await choose(host,'[aria-label="Area"]','PE-07')
  assert.equal(host.querySelector('.calendar-observed-value')!.textContent,'0')
- assert.match(host.querySelector('#calendar-detail')!.textContent!,/cero válido/)
+ assert.match(host.querySelector('#calendar-detail')!.textContent!,/Observed zero/)
  assert.ok(host.querySelector('.calendar-estimates'))
 })
 test('URL y navegación conservan región; Mapa y Método nacionales no recurren al piloto',async t=>{
@@ -96,7 +96,7 @@ test('Calendario nacional descarga solo región/sensor seleccionado sin alterar 
  mockFiles(t);const {host}=await render(t,'/calendario?mapRegion=PE-25&periodYear=2024&periodMonth=9&calendarSeries=VIIRS')
  let blob:Blob|undefined;t.mock.method(URL,'createObjectURL',(value:Blob)=>{blob=value;return 'blob:peru'})
  t.mock.method(URL,'revokeObjectURL',()=>{});t.mock.method(dom.window.HTMLAnchorElement.prototype,'click',function(this:HTMLAnchorElement){assert.equal(this.download,'allpanina_PE-25_VIIRS.csv')})
- await click(host,'Descargar CSV');const rows=parseMonthlySeries(await blob!.text())
+ await click(host,'Download CSV');const rows=parseMonthlySeries(await blob!.text())
  assert.deepEqual(rows,monthly.filter(r=>r.region_id==='PE-25'&&r.sensor_group==='VIIRS'))
  assert.equal(rows.length,163)
 })
@@ -118,8 +118,9 @@ test('selección regional se restaura con historial y recarga; comparación cons
   window.addEventListener('popstate',()=>{clearTimeout(timeout);resolve()},{once:true});window.history.back()
  }))
  assert.equal(host.querySelector<HTMLSelectElement>('[aria-label="Area"]')!.value,'PE-25')
- assert.ok(host.querySelector('button[aria-label="Agosto 2026, MODIS, Ausente"]'))
- await click(host,'Comparar años');assert.equal(host.querySelectorAll('tbody tr').length,3)
+ assert.ok(host.querySelector('button[aria-label="August 2026, MODIS: not published"]'))
+ assert.equal(host.querySelectorAll('.calendar-matrix tbody tr').length,14)
+ assert.equal(host.querySelector('#calendar-detail-title')!.textContent!.endsWith('2026'),true)
  const saved=window.location.pathname+window.location.search
  await act(async()=>root.unmount())
  const restored=await render(t,saved)
@@ -135,8 +136,8 @@ test('fallo nacional no recurre al piloto ni a DEMO y regiones desconocidas no f
  assert.equal(host.querySelector('.calendar-observed-value'),null)
  await act(async()=>root.unmount());t.mock.restoreAll();mockFiles(t)
  const invalid=await render(t,'/calendario?mapRegion=PE-99')
- assert.match(invalid.host.querySelector('.calendar-v2 [role="alert"]')!.textContent!,/Región no válida/)
- assert.equal(invalid.host.querySelector('.calendar-annual-grid'),null)
+ assert.match(invalid.host.querySelector('.calendar-v2 [role="alert"]')!.textContent!,/not part of the publication/)
+ assert.equal(invalid.host.querySelector('.calendar-matrix'),null)
 })
 test('no reportable rechaza métricas añadidas; rangos nulos y razones publicadas se conservan',()=>{
  const invalid=JSON.parse(files['/data/peru/validation.json'])

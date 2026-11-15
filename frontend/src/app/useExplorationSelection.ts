@@ -1,8 +1,9 @@
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
-import type { ExplorationSelection, CalendarSelection, MapSelection } from '../types/selection'
+import type { CalendarSeries, ExplorationSelection, CalendarSelection, MapSelection } from '../types/selection'
 import type { Sensor } from '../types/data'
 import { ROUTES } from '../shell/routes'
 const observed = (value: string | null, fallback: Sensor): Sensor => value === 'VIIRS' || value === 'MODIS' ? value : fallback
+const calendarSeries = (value: string | null, fallback: Sensor): CalendarSeries => value === 'B1' ? 'B1' : observed(value, fallback)
 export default function useExplorationSelection() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
@@ -16,12 +17,12 @@ export default function useExplorationSelection() {
   const scope = params.get('scope')
   const selection: ExplorationSelection = {
     region: params.get('mapRegion') ?? '', year: integer('periodYear', 9999), month: integer('periodMonth', 12),
-    calendarSeries: observed(params.get('calendarSeries'), legacy), mapSensor: observed(params.get('mapSensor'), legacy),
+    calendarSeries: calendarSeries(params.get('calendarSeries'), legacy), mapSensor: observed(params.get('mapSensor'), legacy),
     scope: scope === 'year' || scope === 'month' ? scope : params.get('mapScope') === 'month' ? 'month' : 'year',
   }
   function parameters(next: ExplorationSelection) {
     const result = new URLSearchParams(params)
-    for (const [key, value] of Object.entries({ mapRegion: next.region || null, periodYear: next.year, periodMonth: next.month, calendarSeries: next.calendarSeries, mapSensor: next.mapSensor, scope: next.scope, mapScope: next.scope, sensor: next.calendarSeries })) {
+    for (const [key, value] of Object.entries({ mapRegion: next.region || null, periodYear: next.year, periodMonth: next.month, calendarSeries: next.calendarSeries, mapSensor: next.mapSensor, scope: next.scope, mapScope: next.scope, sensor: next.calendarSeries === 'B1' ? next.mapSensor : next.calendarSeries })) {
       if (value === null) result.delete(key)
       else result.set(key, String(value))
     }

@@ -19,7 +19,7 @@ export function FireLegend({ breaks, surface = 'light', unit = 'cell-days', clas
   return <figure className={cn('m-0 flex flex-col gap-1.5', className)}>
     <figcaption className={cn('text-xs', text)}>{unit}</figcaption>
     <ul className="m-0 flex list-none flex-wrap gap-x-3 gap-y-1 p-0">
-      {labels.map((label, i) => <li key={label} className={cn('flex items-center gap-1.5 text-xs tabular-nums', text)}>
+      {labels.map((label, i) => <li key={i} className={cn('flex items-center gap-1.5 text-xs tabular-nums', text)}>
         <span className="size-3 rounded-[2px]" style={{ background: ramp[steps[i]] }} aria-hidden="true" />{label}
       </li>)}
     </ul>

@@ -30,6 +30,15 @@ export async function choose(host: HTMLElement, selector: string, value: string)
  const select=host.querySelector<HTMLSelectElement>(selector)!;assert.ok(select,selector)
  await act(async()=>{select.value=value;select.dispatchEvent(new dom.window.Event('change',{bubbles:true}))})
 }
+/** Serie del Calendario (conmutador «Series»): 'MODIS', 'VIIRS' o 'Estimate (B1)'. */
+export async function chooseSeries(host: HTMLElement, label: string) {
+ const button=[...host.querySelectorAll<HTMLButtonElement>('[role="group"][aria-label="Series"] button')].find(b=>b.textContent===label)
+ assert.ok(button,`serie ${label}`); await act(async()=>button.click())
+}
+/** Serie elegida en el conmutador del Calendario. */
+export function currentSeries(host: HTMLElement) {
+ return host.querySelector('[role="group"][aria-label="Series"] button[aria-pressed="true"]')?.textContent ?? null
+}
 export async function navigate(path: string) {
  const url=new URL(path,'http://localhost');if(!url.searchParams.has('data'))url.searchParams.set('data','pilot');path=url.pathname+url.search+url.hash
  await act(async()=>{window.history.pushState(null,'',path);window.dispatchEvent(new dom.window.PopStateEvent('popstate'))})

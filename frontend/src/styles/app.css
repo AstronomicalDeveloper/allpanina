@@ -102,6 +102,10 @@
   .map-page-v2 { top: var(--height-bar); }
   .map-workspace:not(.map-workspace--fullscreen) { --map-top: 1rem; }
 
+  /* Encendido del calendario de la portada (A2): enero → diciembre en unos 600 ms, solo al cargar. */
+  .hero-cell { animation: hero-ignite 260ms ease-out both; animation-delay: calc(var(--m, 0) * 30ms); }
+  @media (prefers-reduced-motion: reduce) { .hero-cell { animation: none; } }
+
   /* Rayado para «sin dato»: no depende solo del color (A2) */
   .bg-hatch {
     background-image: repeating-linear-gradient(135deg, transparent 0 4px, rgb(85 96 122 / 0.35) 4px 5px);
@@ -109,4 +113,9 @@
   .bg-hatch-dark {
     background-image: repeating-linear-gradient(135deg, transparent 0 4px, rgb(201 209 230 / 0.35) 4px 5px);
   }
+}
+
+@keyframes hero-ignite {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: none; }
 }

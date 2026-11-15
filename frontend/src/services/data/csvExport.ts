@@ -30,7 +30,7 @@ function filenamePart(value: string): string {
 }
 
 /** Explicit DEMO suffix; production exports preserve the official observed schema. */
-export function calendarCsvFilename(region: string, sensor: Sensor, demo = false): string {
+export function calendarCsvFilename(region: string, sensor: Sensor | 'B1', demo = false): string {
   return `allpanina_${filenamePart(region)}_${filenamePart(sensor)}${demo ? '_demo' : ''}.csv`
 }
 

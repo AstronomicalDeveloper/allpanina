@@ -6,8 +6,8 @@ export interface ExplorationPeriod {
   year: number | null
   month: number | null
 }
-// Only observed series are implemented. Estimated series belong to UX-07.
-export type CalendarSeries = Sensor
+// Observed series (MODIS, VIIRS) and the regional B1 estimate (VIIRS × κ). The map only shows observations.
+export type CalendarSeries = Sensor | 'B1'
 export type ExplorationScope = 'year' | 'month'
 export interface ExplorationSelection extends ExplorationPeriod {
   calendarSeries: CalendarSeries

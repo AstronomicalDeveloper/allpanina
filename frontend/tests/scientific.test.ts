@@ -91,32 +91,21 @@ test('UI piloto explícito: escala regional, sensor, detalle B1, CSV y métricas
   assert.ok(requested.includes('/data/calibrated_series.csv'))
   assert.ok(requested.every(url => !url.includes('/demo/')))
   assert.doesNotMatch(host.textContent!, /DEMO/)
-  const september = () => host.querySelector<HTMLButtonElement>('button[aria-label^="Septiembre 2024,"]')!
-  assert.equal(september().querySelector('.calendar-cell-value')!.textContent, '2323')
-  assert.equal(host.querySelectorAll('.calendar-annual-grid button').length, 12)
-  assert.equal(host.querySelector('.calendar-table'), null)
+  const september = () => host.querySelector<HTMLButtonElement>('button[aria-label^="September 2024,"]')!
+  assert.equal(september().textContent, '2,323')
+  assert.equal(host.querySelectorAll('.calendar-matrix tbody button').length, 14 * 12)
   await act(async () => september().click())
   assert.match(host.querySelector('#calendar-detail')!.textContent!, /B1: 1,638/)
-  const sensor = host.querySelector<HTMLSelectElement>('#calendar-sensor')!
-  await act(async () => { sensor.value = 'VIIRS'; sensor.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
-  assert.equal(september().querySelector('.calendar-cell-value')!.textContent, '5581')
-  const scale = host.querySelector<HTMLInputElement>('input[type="number"]')!
-  assert.equal(Number(scale.value), 5581)
-  const originalColor = september().style.backgroundColor
-  const setter = Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, 'value')!.set!
-  await act(async () => { setter.call(scale, '10000'); scale.dispatchEvent(new dom.window.Event('input', { bubbles: true })) })
-  assert.equal(Number(scale.value), 10000)
-  assert.notEqual(september().style.backgroundColor, originalColor)
-  await act(async () => { setter.call(scale, '100'); scale.dispatchEvent(new dom.window.Event('input', { bubbles: true })) })
-  assert.equal(Number(scale.value), 100)
-  assert.equal(september().style.backgroundColor, originalColor)
-  // Only the color saturates; observations and CSV remain unchanged.
-  assert.equal(september().querySelector('.calendar-cell-value')!.textContent, '5581')
+  await act(async () => [...host.querySelectorAll<HTMLButtonElement>('[aria-label="Series"] button')].find(b => b.textContent === 'VIIRS')!.click())
+  assert.equal(september().textContent, '5,581')
+  // El color es la clase por cuantiles de PE-UCA / VIIRS: solo presentación; el valor y el CSV no cambian.
+  assert.ok(september().style.backgroundColor)
+  assert.ok(host.querySelectorAll('.calendar-legend figure li').length <= 9)
   let downloaded: Blob | undefined
   t.mock.method(URL, 'createObjectURL', (blob: Blob) => { downloaded = blob; return 'blob:real' })
   t.mock.method(URL, 'revokeObjectURL', () => {})
   t.mock.method(dom.window.HTMLAnchorElement.prototype, 'click', function (this: HTMLAnchorElement) { assert.equal(this.download, 'allpanina_PE-UCA_VIIRS.csv') })
-  await act(async () => [...host.querySelectorAll<HTMLButtonElement>('button')].find(b => b.getAttribute('aria-label') === 'Descargar CSV')!.click())
+  await act(async () => [...host.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent === 'Download CSV')!.click())
   assert.match(await downloaded!.text(), /PE-UCA,2024,9,VIIRS,5581,ok,/)
   await act(async () => root.render(createElement(BrowserRouter, null, createElement(MethodPage))))
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 80)) })
@@ -144,7 +133,7 @@ test('producción falla explícitamente sin fallback; DEMO requiere selección e
   t.mock.method(globalThis, 'fetch', async (url: string) => { urls.push(url); return new Response(await file(`demo/${url.split('/').at(-1)!}`)) })
   await act(async () => root.render(createElement(BrowserRouter, null, createElement(App))))
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 80)) })
-  assert.match(host.textContent!, /DATOS DEMO/)
+  assert.match(host.textContent!, /DEMO DATA/)
   assert.ok(urls.includes('/data/demo/monthly_series.csv'))
-  assert.ok(host.querySelector('.calendar-annual-grid'))
+  assert.ok(host.querySelector('.calendar-matrix'))
 })

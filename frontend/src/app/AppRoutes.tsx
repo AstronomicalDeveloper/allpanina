@@ -1,12 +1,12 @@
 import { lazy } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
-import LandingPage from '../pages/landing/LandingPage'
+import LandingPage from '../features/landing/LandingPage'
 import NotFoundPage from '../pages/NotFoundPage'
 import { LEGACY_ROUTES, ROUTES } from '../shell/routes'
 
 // Carga diferida por ruta (T2): la portada no descarga el calendario, el mapa, el método ni My region.
-const CalendarPage = lazy(() => import('../pages/calendar/CalendarPage'))
+const CalendarPage = lazy(() => import('../features/calendar/CalendarPage'))
 const MapPage = lazy(() => import('../pages/map/MapPage'))
 const MethodPage = lazy(() => import('../pages/method/MethodPage'))
 const RegionPage = lazy(() => import('../pages/region/RegionPage'))

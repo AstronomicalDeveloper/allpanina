@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { percentileLegend } from '../src/pages/map/sections/percentileLegend'
-import { calendarScaleTicks } from '../src/pages/calendar/sections/calendarPresentation'
+import { classLabels, quantileBreaks } from '../src/ui/fireScale'
 
 test('leyenda del mapa usa enteros y marca tramos vacíos en lugar de repetir cortes', () => {
   assert.deepEqual(percentileLegend(1, 1, 1.5).map(r => r.range), ['≤ 1', 'No values in this range', 'No values in this range', '≥ 2'])
@@ -25,8 +25,11 @@ test('cada valor entero cae en el tramo de la leyenda que corresponde a su color
   }
 })
 
-test('escala del calendario sin decimales en conteos', () => {
-  assert.deepEqual(calendarScaleTicks(75), ['0', '19', '38', '56', '75'])
-  assert.deepEqual(calendarScaleTicks(1), ['0', '0', '1', '1', '1'])
-  assert.ok(calendarScaleTicks(5581).slice(0, 4).every(tick => !/\.\d$/.test(tick)))
+test('leyenda del calendario: rangos enteros por cuantiles, sin decimales ni tramos repetidos', () => {
+  const breaks = quantileBreaks([1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 5581])
+  const labels = classLabels(breaks)
+  assert.ok(labels.length <= 9)
+  assert.ok(labels.every(label => /^[\d,]+–[\d,]+$|^≥ [\d,]+$/.test(label)), labels.join(' | '))
+  assert.equal(new Set(labels).size, labels.length)
+  assert.deepEqual(classLabels([]), ['≥ 1'])
 })

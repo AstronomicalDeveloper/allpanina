@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { JSDOM } from 'jsdom'
 import MapPage from '../src/pages/map/MapPage'
-import CalendarPage from '../src/pages/calendar/CalendarPage'
+import CalendarPage from '../src/features/calendar/CalendarPage'
 import TopBar from '../src/shell/TopBar'
 import type { MapRuntime } from '../src/pages/map/cartography/mapRuntime'
 import type { MapCells } from '../src/services/data/mapExploration'
@@ -184,7 +184,7 @@ test('Mapa v2 URL e historial: período compartido, sensores independientes y re
   await choose(host, 'Map month', '8')
   const calendar = [...host.querySelectorAll<HTMLAnchorElement>('nav a')].find(a => a.textContent === 'Calendar')!
   await act(async () => calendar.click())
-  assert.equal(host.querySelector<HTMLSelectElement>('#calendar-sensor')!.value, 'MODIS')
+  assert.equal(host.querySelector('[aria-label="Series"] button[aria-pressed="true"]')!.textContent, 'MODIS')
   assert.equal(new URLSearchParams(window.location.search).get('periodMonth'), '8')
   assert.equal(new URLSearchParams(window.location.search).get('mapSensor'), 'VIIRS')
   assert.equal(runtime.maps[0].removed, 1)
