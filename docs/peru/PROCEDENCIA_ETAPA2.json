@@ -1,0 +1,20 @@
+{
+  "source_branch": "origin/feature/calibracion",
+  "source_commit": "f885ce7a36816a1ce7e1b60f7f2760cff3717fd9",
+  "files": {
+    "frontend/public/data/peru/cells_PE_2013.geojson": "51d74a9154cb808babddebe3c9a16ac98b934e08557a9307e0ec8929ff8f9e1b",
+    "frontend/public/data/peru/cells_PE_2014.geojson": "6fcca04963e77a404453cbda0016b5c571a9b4a9d531e2957a1e6252255c285d",
+    "frontend/public/data/peru/cells_PE_2015.geojson": "15c4bc791354ea7d90df4b1fb92ea554d97d4562269669530e7c5d6e41579930",
+    "frontend/public/data/peru/cells_PE_2016.geojson": "57feab837b14d48d518b7a3995e65a0bee12120153ea848de2ad6257d32de4c2",
+    "frontend/public/data/peru/cells_PE_2017.geojson": "8f1ce4fbab801cb3bee004db01735b770e1ac6add5d55e25cde98c9f200300f5",
+    "frontend/public/data/peru/cells_PE_2018.geojson": "dfa77f38b17ef2e0314b4f7bb893f6605a39c6267ea08cf8ac10713652bb2033",
+    "frontend/public/data/peru/cells_PE_2019.geojson": "d964ef0e565e0236a93e2eca6698a1c3afcb329e81eead7856798b16746ea816",
+    "frontend/public/data/peru/cells_PE_2020.geojson": "a985bd25eb3d097531f7b7b54171975ab215de506b6d3a9890527c4bc3b6df62",
+    "frontend/public/data/peru/cells_PE_2021.geojson": "d4648c738ff179cffc28c40afa9941f1455430ec31af3e6e7b021e603c683e64",
+    "frontend/public/data/peru/cells_PE_2022.geojson": "8f79b1b3372d9de7232adaf2acc0e8c5bcc20f42eaaeeca631bac43a8023d371",
+    "frontend/public/data/peru/cells_PE_2023.geojson": "4ded0c98f6e3a49ce80ef434e445bde33566ca2be2caa70149223d43d175151b",
+    "frontend/public/data/peru/cells_PE_2024.geojson": "6429261bb0c51b87520308882117b526ef2530c1adea3637e9e3ded4bdc8a781",
+    "frontend/public/data/peru/cells_PE_2025.geojson": "7b967e0971ab06f49e8e637131b41964a8d8bba6c2d6a7d36d544d06d09bf82a",
+    "frontend/public/data/peru/cells_PE_2026.geojson": "f656f90a8a6f33878e0eb3339178df26deabe60f7654f348c2ff2e8a4a285dd1"
+  }
+}

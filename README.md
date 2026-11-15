@@ -1,3 +1,23 @@
+## Ejecutar la integración científica L5/T32
+
+Frontend: Node.js 24, `cd frontend`, `npm ci`, `npm run dev`.
+Por defecto se utilizan los resultados reales publicados en `frontend/public/data/`.
+Modo sintético explícito: `?data=demo`; sin fallback silencioso.
+
+Pruebas científicas desde la raíz (Python 3.12 en CI):
+
+```sh
+python -m venv .venv
+# Windows PowerShell:
+.venv/Scripts/python.exe -m pip install -r requirements.txt
+.venv/Scripts/python.exe -m pytest tests/ -q
+# Linux/macOS: usar .venv/bin/python en lugar de .venv/Scripts/python.exe
+```
+
+CI ejecuta `tests/` con las dependencias científicas de la raíz y las pruebas,
+lint y build del frontend. No ejecuta el pipeline ni recalibra resultados.
+[Informe T32 y procedencia](docs/t32/INTEGRACION_T32.md).
+
 ## 🤝 Git Collaboration Workflow
 
 To keep AllpaNina stable and allow multiple team members to work simultaneously, we follow a simplified **GitHub Flow**.

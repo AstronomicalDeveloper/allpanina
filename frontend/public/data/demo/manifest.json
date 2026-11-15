@@ -1,0 +1,23 @@
+{
+  "region_id": "PE-DEMO",
+  "generated_at": "2026-11-14T18:00:00Z",
+  "producto": "DEMO sintético",
+  "periodo": {
+    "desde": "2024-08",
+    "hasta": "2024-10"
+  },
+  "files": [
+    "monthly_series.csv",
+    "calibrated_series.csv",
+    "validation.json",
+    "method.json",
+    "cells_PE-DEMO_2024.geojson"
+  ],
+  "hash": {
+    "monthly_series.csv": "sha256:a2efc43244f94f81b722944b63bb35beec24483b268561106fbe7c21b5c6a1bf",
+    "calibrated_series.csv": "sha256:1a2798af6dc813158369125d72f368ec1cecea3b5204221e507de42182fb4156",
+    "validation.json": "sha256:9bfd12cbe8cfe660c82638f21896f6c3dce0f9ccd659acdd4eacb483c9a61e3a",
+    "method.json": "sha256:8db411f46a22c6b773d235a2dfe2283ffc65eb4b240fbbdcee146b944dc47a63",
+    "cells_PE-DEMO_2024.geojson": "sha256:67fd3010b6a1b6f99db7fc062e7bee375058726eeb8eb77cf6f44e3b4a9796f8"
+  }
+}

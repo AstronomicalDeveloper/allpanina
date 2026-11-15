@@ -1,10 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+import { BrowserRouter } from 'react-router-dom'
+import AppRoutes from './app/AppRoutes'
+import './styles/global.css'
+import './pages/landing/landing.css'
+import './pages/calendar/calendar.css'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import './pages/map/map.css'
+import './pages/method/method.css'
+createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><AppRoutes /></BrowserRouter></StrictMode>)
