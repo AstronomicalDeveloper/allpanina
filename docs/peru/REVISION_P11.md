@@ -1,7 +1,7 @@
 # P11 — Revisión científica de la calibración Perú (P09 y P10)
 
 - **Paso:** P11 del plan v2.1 (`DECISIONS.md` §11).
-- **Revisor:** Marco, con Claude. Aldo no estaba disponible y delegó la revisión en Marco. Aldo puede ratificarla o cambiarla mientras no se haya corrido el test.
+- **Revisor:** Aldo 15-nov-2026
 - **Autora de lo revisado:** Antonella (`docs/peru/P09_P10.md`, `docs/peru/valid/`).
 - **Fecha:** 15-nov-2026.
 - **Dictamen:** ✅ **APROBADA CON CONDICIONES** (sección 4). Los κ quedan congelados en `DECISIONS.md` §12.
@@ -48,12 +48,12 @@ Eso no es coherente con el método elegido:
 
 ## 4. Condiciones antes de P12 (autorizar el test)
 
-| # | Condición | Quién |
-|---|---|---|
-| 1 | B1 de `PE` y de `PE-SIN-25` = suma de las B1 de sus departamentos. El contrato v1.1 §D se actualiza en este mismo cambio. Ajustar `06_calibrate_peru.py`, sus pruebas y las salidas de `docs/peru/valid/`. La versión con κ nacional queda como referencia en `method.json → resultados`. | Antonella |
-| 2 | Agregar las 5 limitaciones de la sección 3 a `method.json`. | Antonella |
-| 3 | Corregir `docs/peru/P09_P10.md`: los reportables son **22** de 25 (dice 23), y P06 ya está aprobada (dice que espera revisión). | Antonella |
-| 4 | Cambiar el estado de `method.json` a "aprobado en P11" cuando se cumplan las condiciones 1 a 3. | Antonella |
-| 5 | Aldo ratifica o cambia este dictamen. Si cambia algo, lo hace antes de P12. | Aldo |
+| # | Condición | Quién | Estado |
+|---|---|---|---|
+| 1 | B1 de `PE` y de `PE-SIN-25` = suma de las B1 de sus departamentos. El contrato v1.1 §D se actualiza en este mismo cambio. Ajustar `06_calibrate_peru.py`, sus pruebas y las salidas de `docs/peru/valid/`. La versión con κ nacional queda como referencia en `method.json → resultados`. | Antonella | ✅ Ajustado el 15-nov-2026: `verificar_sumas` lo comprueba mes a mes; 104/104 pruebas |
+| 2 | Agregar las 5 limitaciones de la sección 3 a `method.json`. | Antonella | ✅ Hecho, cifras tomadas de `validation.json` |
+| 3 | Corregir `docs/peru/P09_P10.md`: los reportables son **22** de 25 (dice 23), y P06 ya está aprobada (dice que espera revisión). | Antonella | ✅ Hecho |
+| 4 | Cambiar el estado de `method.json` a "aprobado en P11" cuando se cumplan las condiciones 1 a 3. | Antonella | ✅ Hecho |
+| 5 | Aldo ratifica o cambia este dictamen. Si cambia algo, lo hace antes de P12. | Aldo | ✅ Ratificado por Aldo sin cambios, 15-nov-2026 |
 
-Con las condiciones 1 a 4 cumplidas, P12 (autorización del test) puede firmarse.
+Con las 5 condiciones cumplidas (15-nov-2026), P12 (autorización del test) puede firmarse.

@@ -5,7 +5,10 @@ Reglas (DECISIONS.md §11.2 y §11.3, contrato v1.1 secciones D, E y F):
 - 17 departamentos con kappa propio; 8 en un estrato agrupado con un solo kappa
   (suma de los 8); PE con kappa nacional (suma de los 25).
 - B0 = VIIRS. B1 = VIIRS * kappa del estrato de la region.
-- PE-SIN-25 (Peru sin Ucayali) = PE - PE-25 y usa el kappa nacional, igual que PE.
+- B1 de PE = suma de los B1 de los 25 departamentos; B1 de PE-SIN-25 = suma de los B1 de los
+  24 departamentos sin PE-25 (contrato v1.1 D). El kappa nacional solo es la alternativa (b)
+  de §11.3 y la referencia en method.json; ya no se aplica a PE ni a PE-SIN-25.
+- B0 de PE-SIN-25 = VIIRS(PE) - VIIRS(PE-25); MODIS(PE-SIN-25) = MODIS(PE) - MODIS(PE-25).
 - Una region se reporta en un split si suma(MODIS) en ese split >= 50 celdas-dia.
 - Este script no acepta meses de test (2025-01 en adelante): el test es P14 y
   necesita la autorizacion escrita de P12.
@@ -38,6 +41,8 @@ ESTRATO_PROPIO = tuple(d for d in DEPARTAMENTOS if d not in ESTRATO_AGRUPADO)
 # Alternativa (c) de §11.3: kappa congelado del piloto (DECISIONS.md §10, method.json v1.0).
 KAPPA_UCAYALI_PILOTO = 0.2936037257560573
 MIN_MODIS_REPORTE = 50  # §11.3 regla 1
+# Agregados cuya estimacion B1 es la suma de los B1 departamentales (contrato v1.1 D).
+AGREGADOS = {"PE": DEPARTAMENTOS, "PE-SIN-25": tuple(d for d in DEPARTAMENTOS if d != "PE-25")}
 
 TRAIN_END = "2022-12"
 VALID_END = "2024-12"
@@ -120,6 +125,20 @@ def add_pe_sin_25(series):
     return series
 
 
+def b1_month(series, kappas_regions, rid, month):
+    """Estimacion B1 de una region en un mes.
+
+    Departamento: VIIRS * kappa de su estrato. PE y PE-SIN-25: suma de los B1 de sus
+    departamentos; None si falta alguno (nunca se suma un faltante como 0).
+    """
+    if rid in AGREGADOS:
+        parts = [b1_month(series, kappas_regions, d, month) for d in AGREGADOS[rid]]
+        return None if any(p is None for p in parts) else sum(parts)
+    v = series[rid].get(month, {}).get("viirs")
+    k = kappas_regions[rid]["kappa"]
+    return v * k if _valid(v) and k is not None else None
+
+
 # ---------------------------------------------------------------------------
 # P09: kappa por estrato, solo train
 # ---------------------------------------------------------------------------
@@ -173,8 +192,17 @@ def fit_kappas(series):
             k, inputs = out["estratos"]["nacional"]["kappa"], nac
         out["regions"][rid] = {"estrato": est, "kappa": k, "kappa_inputs": inputs,
                                "sumas_propias_train": propios}
-    out["regions"]["PE-SIN-25"] = {"estrato": "nacional", "kappa": out["estratos"]["nacional"]["kappa"],
-                                   "kappa_inputs": nac}
+    # PE-SIN-25 no usa el kappa nacional: su B1 es la suma de 24 departamentos. Su kappa
+    # (solo informativo) es el efectivo en train: suma(B1) / suma(VIIRS) sobre los mismos meses.
+    sin = train_sums(series, ("PE-SIN-25",))
+    sb = sv = 0.0
+    for month, v in series["PE-SIN-25"].items():
+        b1 = b1_month(series, out["regions"], "PE-SIN-25", month)
+        if split_de(month) == "train" and _valid(v["viirs"]) and _valid(v["modis"]) and b1 is not None:
+            sb += b1
+            sv += v["viirs"]
+    out["regions"]["PE-SIN-25"] = {"estrato": "nacional", "kappa": sb / sv if sv else None,
+                                   "kappa_inputs": sin}
     return out
 
 
@@ -184,14 +212,13 @@ def fit_kappas(series):
 def build_calibrated(series, kappas):
     rows = []
     for rid in ("PE",) + DEPARTAMENTOS:
-        k = kappas["regions"][rid]["kappa"]
         for month in sorted(series[rid]):
             v = series[rid][month]["viirs"]
+            b1 = b1_month(series, kappas["regions"], rid, month)
             for method in ("B0", "B1"):
-                if not _valid(v) or (method == "B1" and k is None):
-                    value, status = None, "missing"
-                else:
-                    value, status = (v if method == "B0" else v * k), "ok"
+                value = v if method == "B0" else b1
+                status = "ok" if _valid(value) else "missing"
+                value = value if status == "ok" else None
                 rows.append({"region_id": rid, "year": int(month[:4]), "month": int(month[5:]),
                              "method": method, "value": value, "split": split_de(month),
                              "status": status, "residual": None})
@@ -205,11 +232,19 @@ def _months(series, rid, split):
     return [m for m in sorted(series[rid]) if split_de(m) == split]
 
 
-def region_metrics(series, rid, kappa, split="valid"):
+def region_metrics(series, rid, kappa, split="valid", kappas=None):
+    """Metricas B0/B1 de una region en un split.
+
+    Para un departamento, B1 = VIIRS * kappa. Para PE y PE-SIN-25 (rid en AGREGADOS), B1 es la
+    suma de los B1 de sus departamentos y hay que pasar `kappas` (salida de fit_kappas).
+    """
     months = _months(series, rid, split)
     modis = [series[rid][m]["modis"] for m in months]
     viirs = [series[rid][m]["viirs"] for m in months]
-    b1 = [v * kappa if _valid(v) and kappa is not None else None for v in viirs]
+    if rid in AGREGADOS:
+        b1 = [b1_month(series, kappas["regions"], rid, m) for m in months]
+    else:
+        b1 = [v * kappa if _valid(v) and kappa is not None else None for v in viirs]
     return {"months": months, "suma_modis": sum(x for x in modis if _valid(x)),
             "B0": _met.compute_metrics(modis, viirs), "B1": _met.compute_metrics(modis, b1)}
 
@@ -220,7 +255,7 @@ def build_validation(series, kappas, split="valid"):
     regions = []
     for rid in ("PE", "PE-SIN-25") + DEPARTAMENTOS:
         info = kappas["regions"][rid]
-        r = region_metrics(series, rid, info["kappa"], split)
+        r = region_metrics(series, rid, info["kappa"], split, kappas)
         entry = {"region_id": rid, "estrato": info["estrato"]}
         if r["suma_modis"] < MIN_MODIS_REPORTE:
             entry["reportable"] = False
@@ -289,10 +324,70 @@ def compare_alternatives(series, kappas, split="valid"):
             "informativo_por_region": mejora}
 
 
+def verificar_sumas(series, kappas, rows):
+    """Contrato v1.1 D: B1 de PE = suma de B1 de los 25 departamentos (mes a mes).
+
+    Tambien comprueba que PE-SIN-25 = PE - PE-25 en B1. Falla si algun mes no coincide.
+    """
+    b1 = {(r["region_id"], r["year"], r["month"]): r["value"] for r in rows if r["method"] == "B1"}
+    for month in series["PE"]:
+        y, m = int(month[:4]), int(month[5:])
+        parts = [b1[(d, y, m)] for d in DEPARTAMENTOS]
+        pe = b1[("PE", y, m)]
+        if any(p is None for p in parts):
+            if pe is not None:
+                raise AssertionError(f"PE B1 {month}: hay departamentos sin dato pero PE trae valor")
+            continue
+        if pe is None or abs(pe - sum(parts)) > 1e-6:
+            raise AssertionError(f"PE B1 {month} = {pe} no es la suma de departamentos {sum(parts)}")
+        sin = b1_month(series, kappas["regions"], "PE-SIN-25", month)
+        if sin is None or abs(sin - (pe - b1[("PE-25", y, m)])) > 1e-6:
+            raise AssertionError(f"PE-SIN-25 B1 {month} no es PE - PE-25")
+
+
 # ---------------------------------------------------------------------------
 # method.json (borrador, contrato v1.1 F)
 # ---------------------------------------------------------------------------
-def build_method(kappas, series, pilot_method, validation=None, estado="borrador P09"):
+def _limitaciones(validation, comp):
+    """Limitaciones de method.json. Las cifras de validacion salen de los resultados, no se escriben a mano."""
+    lim = [
+        "El κ cambia de un departamento a otro (de 0.164 a 0.337 entre los de κ propio, en train).",
+        "El κ también cambia de un año a otro dentro de cada región, y un κ fijo no sigue esos cambios; el rango anual de cada región está en regions[].kappa_anual_rango.",
+    ]
+    if validation is not None:
+        by = {r["region_id"]: r for r in validation["regions"]}
+
+        def w(rid):
+            return by[rid]["methods"]["B1"]["metrics"]["wape"]
+
+        def f(x):
+            return f"{x:.2f}".replace(".", ",")
+        lim.append(
+            "El estrato agrupado (8 departamentos con poca actividad) tiene error alto en validación: "
+            f"WAPE B1 de Arequipa {f(w('PE-04'))} y de Lima {f(w('PE-15'))}. Su κ propio es muy inestable año a año y se usa uno común para los 8.")
+        if comp is not None:
+            gana = [NOMBRES[x["region_id"]] for x in comp["informativo_por_region"] if not x["mejora"]]
+            lim.append(
+                f"El κ nacional único tiene menor WAPE que el κ estratificado en {len(gana)} departamentos en validación "
+                f"({', '.join(gana)}); la estratificada gana en el agregado de los 25 y en los demás departamentos reportables.")
+        sin = [NOMBRES[r["region_id"]] for r in validation["regions"] if not r["reportable"]]
+        lim.append(
+            f"{len(sin)} departamentos no llegan al mínimo de Σ MODIS ≥ 50 en validación y no tienen métricas propias "
+            f"({', '.join(sin)}); sus meses sí cuentan dentro de PE y PE-SIN-25 (DECISIONS.md §11.3).")
+    lim += [
+        "Callao tiene Σ MODIS = 0 en train: no tiene κ propio y su κ anual no está definido.",
+        "Las celdas cuyo centro cae fuera de los 25 polígonos INEI no cuentan (2,619 de 824,137 celdas-día entre 2013 y 2024, 0.3%).",
+        "B1 se valida a escala región-mes. No debe aplicarse a celdas individuales del mapa.",
+        "El indicador cuenta detecciones satelitales de anomalías térmicas, no incendios confirmados ni superficie quemada.",
+        "VIIRS S-NPP: NOAA anunció el cese de entrega de todos los productos el 1 nov 2026; NASA indica cese de datos científicos nuevos el 2 nov 2026. El archivo histórico no se ve afectado.",
+        "MODIS cambia de versión V6 a V6.1 en febrero de 2023, al inicio de validación.",
+        "FIRMS no entrega cobertura de nubes: un mes con 0 detecciones puede reflejar ausencia de fuego o falta de observación.",
+        "El test de Ucayali (PE-25) ya se vio en T29; el resultado nacional limpio es PE-SIN-25.",
+    ]
+    return lim
+
+
+def build_method(kappas, series, pilot_method, validation=None, estado="borrador P09", comp=None):
     regions = []
     for rid in ("PE",) + DEPARTAMENTOS:
         info = kappas["regions"][rid]
@@ -311,8 +406,9 @@ def build_method(kappas, series, pilot_method, validation=None, estado="borrador
         "B0 = VIIRS sin factor. B1 = B0 × κ del estrato de la región, con κ = suma(cell_days MODIS "
         "en train) / suma(cell_days VIIRS en train), calculado una sola vez con train 2013-01:2022-12. "
         "17 departamentos usan su propio κ; 8 (PE-04, PE-07, PE-09, PE-11, PE-15, PE-18, PE-23, PE-24) "
-        "usan el κ del estrato agrupado (suma de los 8); PE y PE-SIN-25 usan el κ nacional "
-        "(DECISIONS.md §11.2).")
+        "usan el κ del estrato agrupado (suma de los 8). B1 de PE es la suma de los B1 de los 25 "
+        "departamentos y B1 de PE-SIN-25 la suma de los 24 sin PE-25 (contrato v1.1 D); el κ nacional "
+        "solo es la alternativa (b) de DECISIONS.md §11.3 y una referencia en resultados.")
     m["regions"] = regions
     m["estratos"] = {k: {kk: vv for kk, vv in v.items()} for k, v in kappas["estratos"].items()}
     if validation is not None:
@@ -320,7 +416,8 @@ def build_method(kappas, series, pilot_method, validation=None, estado="borrador
         for r in validation["regions"]:
             if not r["reportable"]:
                 continue
-            rm = region_metrics(series, r["region_id"], kappas["regions"][r["region_id"]]["kappa"])
+            rm = region_metrics(series, r["region_id"], kappas["regions"][r["region_id"]]["kappa"],
+                                "valid", kappas)
             res[r["region_id"]] = {
                 "periodo": "2023-01:2024-12", "n_meses": r["methods"]["B1"]["n_months_matched"],
                 "suma_modis": int(rm["suma_modis"]),
@@ -328,20 +425,19 @@ def build_method(kappas, series, pilot_method, validation=None, estado="borrador
                               else round(r["methods"][meth]["metrics"][k], 3))
                           for k in ("mae", "wape", "bias")} for meth in ("B0", "B1")}}
         m["resultados"] = {"valid": res, "test": "pendiente (P14, con autorización P12)"}
+        # Referencia (contrato v1.1 D): PE con kappa nacional x VIIRS, solo informativa.
+        nac = kappas["estratos"]["nacional"]["kappa"]
+        months = _months(series, "PE", "valid")
+        ref = _met.compute_metrics([series["PE"][x]["modis"] for x in months],
+                                   [series["PE"][x]["viirs"] * nac if _valid(series["PE"][x]["viirs"]) else None
+                                    for x in months])
+        m["resultados"]["referencia_kappa_nacional"] = {
+            "nota": "B1 de PE calculado como VIIRS × κ nacional. Solo referencia: la estimación de PE es la suma de los B1 departamentales.",
+            "PE": {"periodo": "2023-01:2024-12", "kappa": nac,
+                   **{k: (None if ref[k] is None else round(ref[k], 3)) for k in ("mae", "wape", "bias")}}}
     else:
         m["resultados"] = {"valid": "pendiente (P10)", "test": "pendiente (P14, con autorización P12)"}
-    m["limitations"] = [
-        "El κ cambia de un departamento a otro (de 0.164 a 0.337 entre los de κ propio, en train) y de un año a otro dentro de cada departamento; el rango anual de cada región está en regions[].kappa_anual_rango.",
-        "Los 8 departamentos del estrato agrupado tienen poca actividad: su κ propio es muy inestable año a año y se usa uno común para los 8.",
-        "Callao tiene Σ MODIS = 0 en train: no tiene κ propio y su κ anual no está definido.",
-        "Las celdas cuyo centro cae fuera de los 25 polígonos INEI no cuentan (2,619 de 824,137 celdas-día entre 2013 y 2024, 0.3%).",
-        "B1 se valida a escala región-mes. No debe aplicarse a celdas individuales del mapa.",
-        "El indicador cuenta detecciones satelitales de anomalías térmicas, no incendios confirmados ni superficie quemada.",
-        "VIIRS S-NPP: NOAA anunció el cese de entrega de todos los productos el 1 nov 2026; NASA indica cese de datos científicos nuevos el 2 nov 2026. El archivo histórico no se ve afectado.",
-        "MODIS cambia de versión V6 a V6.1 en febrero de 2023, al inicio de validación.",
-        "FIRMS no entrega cobertura de nubes: un mes con 0 detecciones puede reflejar ausencia de fuego o falta de observación.",
-        "El test de Ucayali (PE-25) ya se vio en T29; el resultado nacional limpio es PE-SIN-25.",
-    ]
+    m["limitations"] = _limitaciones(validation, comp)
     return m
 
 
@@ -361,7 +457,8 @@ def _dump(obj, path):
         f.write("\n")
 
 
-def run(monthly_csv, out_dir, pilot_method_path, solo_kappa=False):
+def run(monthly_csv, out_dir, pilot_method_path, solo_kappa=False,
+        estado="borrador P10, pendiente de revisión P11"):
     series = add_pe_sin_25(load_series(monthly_csv))
     kappas = fit_kappas(series)
     with open(pilot_method_path, encoding="utf-8") as f:
@@ -372,10 +469,12 @@ def run(monthly_csv, out_dir, pilot_method_path, solo_kappa=False):
         return kappas, None, None
     validation = build_validation(series, kappas, "valid")
     comp = compare_alternatives(series, kappas, "valid")
-    _write_calibrated(build_calibrated(series, kappas), os.path.join(out_dir, "calibrated_series.csv"))
+    rows = build_calibrated(series, kappas)
+    verificar_sumas(series, kappas, rows)
+    _write_calibrated(rows, os.path.join(out_dir, "calibrated_series.csv"))
     _dump(validation, os.path.join(out_dir, "validation.json"))
     _dump(comp, os.path.join(out_dir, "comparacion_alternativas.json"))
-    _dump(build_method(kappas, series, pilot, validation, estado="borrador P10, pendiente de revisión P11"),
+    _dump(build_method(kappas, series, pilot, validation, estado=estado, comp=comp),
           os.path.join(out_dir, "method.json"))
     return kappas, validation, comp
 
@@ -388,8 +487,10 @@ def main(argv=None):
     p.add_argument("--out", default="docs/peru/valid")
     p.add_argument("--pilot-method", default="frontend/public/data/method.json")
     p.add_argument("--solo-kappa", action="store_true", help="P09: solo kappa y method.json borrador")
+    p.add_argument("--estado", default="borrador P10, pendiente de revisión P11",
+                   help='campo "estado" de method.json (p. ej. "aprobado en P11" tras la firma de Aldo)')
     a = p.parse_args(argv)
-    kappas, _, comp = run(a.monthly_csv, a.out, a.pilot_method, a.solo_kappa)
+    kappas, _, comp = run(a.monthly_csv, a.out, a.pilot_method, a.solo_kappa, a.estado)
     for rid in ("PE",) + DEPARTAMENTOS:
         r = kappas["regions"][rid]
         print(f"{rid:6s} {NOMBRES[rid]:14s} {r['estrato']:9s} kappa = {r['kappa']:.5f}")

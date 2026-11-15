@@ -394,8 +394,8 @@ de validación ni de test.
 
 ## 12. Extensión Perú: calibración congelada — P11 (15-nov-2026)
 
-Revisión: `docs/peru/REVISION_P11.md`. La hizo Marco, con Claude, por delegación de Aldo, que no estaba disponible. Aldo puede ratificarla o cambiarla antes de P12.
-Dictamen: **aprobada con condiciones**. Esto queda congelado **antes** de correr el test.
+Revisión: `docs/peru/REVISION_P11.md`. La preparó Marco, con Claude, por delegación de Aldo; **Aldo la ratificó sin cambios el 15-nov-2026**.
+Dictamen: **aprobada con condiciones**; las 5 condiciones están cumplidas (15-nov-2026). Esto queda congelado **antes** de correr el test.
 
 - **Serie de entrada:** `docs/peru/ejemplo/monthly_series.csv` (P07), SHA-256
   `b3ceeae6df820b19f7f132558cea08e51d27f6528f04b460c4c6c8b517893109`.
@@ -439,3 +439,5 @@ Dictamen: **aprobada con condiciones**. Esto queda congelado **antes** de correr
   3. Las correcciones en `P09_P10.md`.
   4. `method.json` con estado aprobado.
   5. La ratificación de Aldo.
+
+  Estado: las 5 cumplidas el 15-nov-2026 (ver `REVISION_P11.md` §4). P12 puede firmarse.

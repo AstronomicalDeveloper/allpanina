@@ -77,8 +77,8 @@ def test_b1_es_viirs_por_kappa_del_estrato(tmp_path):
     k = cp.fit_kappas(s)
     rows = cp.build_calibrated(s, k)
     for r in rows:
-        if r["method"] == "B1":
-            assert r["value"] == pytest.approx(100 * k["regions"][r["region_id"]]["kappa"]) or r["region_id"] == "PE"
+        if r["method"] == "B1" and r["region_id"] != "PE":
+            assert r["value"] == pytest.approx(100 * k["regions"][r["region_id"]]["kappa"])
         assert r["residual"] is None and r["split"] in ("train", "valid")
     assert len(rows) == 26 * 144 * 2
 
@@ -137,3 +137,91 @@ def test_run_escribe_salidas(tmp_path):
     m = json.loads((tmp_path / "out" / "method.json").read_text(encoding="utf-8"))
     assert m["contract_version"] == "1.1" and len(m["regions"]) == 26
     assert m["resultados"]["test"].startswith("pendiente")
+
+
+def _desigual(d, y, m, s):
+    """Cada departamento con su propio kappa para que suma(B1) != VIIRS(PE) x kappa nacional."""
+    if s == "VIIRS":
+        return 100
+    i = int(d[-2:])
+    return (10 + i) if y <= 2022 else (15 + i)
+
+
+def _b1(rows, rid, y, m):
+    return next(r["value"] for r in rows if (r["region_id"], r["year"], r["month"], r["method"]) == (rid, y, m, "B1"))
+
+
+def test_pe_b1_es_suma_de_departamentos(tmp_path):
+    s = cp.add_pe_sin_25(cp.load_series(_write_series(tmp_path / "s.csv", _desigual)))
+    k = cp.fit_kappas(s)
+    rows = cp.build_calibrated(s, k)
+    for y, m in ((2013, 1), (2023, 6), (2024, 12)):
+        suma = sum(_b1(rows, d, y, m) for d in cp.DEPARTAMENTOS)
+        assert _b1(rows, "PE", y, m) == pytest.approx(suma)
+    cp.verificar_sumas(s, k, rows)
+
+
+def test_pe_sin_25_es_suma_de_24_departamentos(tmp_path):
+    s = cp.add_pe_sin_25(cp.load_series(_write_series(tmp_path / "s.csv", _desigual)))
+    k = cp.fit_kappas(s)
+    rows = cp.build_calibrated(s, k)
+    for month in ("2013-01", "2023-06"):
+        y, m = int(month[:4]), int(month[5:])
+        esperado = sum(_b1(rows, d, y, m) for d in cp.DEPARTAMENTOS if d != "PE-25")
+        assert cp.b1_month(s, k["regions"], "PE-SIN-25", month) == pytest.approx(esperado)
+        assert esperado == pytest.approx(_b1(rows, "PE", y, m) - _b1(rows, "PE-25", y, m))
+    # Las metricas de validacion de PE-SIN-25 usan esa suma, no el kappa nacional.
+    v = cp.build_validation(s, k)
+    by = {r["region_id"]: r for r in v["regions"]}
+    r = cp.region_metrics(s, "PE-SIN-25", None, "valid", k)
+    assert by["PE-SIN-25"]["methods"]["B1"]["metrics"]["mae"] == pytest.approx(r["B1"]["mae"])
+    nacional = [s["PE-SIN-25"][m]["viirs"] * k["estratos"]["nacional"]["kappa"] for m in r["months"]]
+    modis = [s["PE-SIN-25"][m]["modis"] for m in r["months"]]
+    assert r["B1"]["mae"] != pytest.approx(cp._met.compute_metrics(modis, nacional)["mae"])
+
+
+def test_agregado_sin_dato_si_falta_un_departamento(tmp_path):
+    s = cp.add_pe_sin_25(cp.load_series(_write_series(tmp_path / "s.csv", _base)))
+    k = cp.fit_kappas(s)
+    s["PE-11"]["2023-03"]["viirs"] = None  # falta un departamento en un mes
+    assert cp.b1_month(s, k["regions"], "PE", "2023-03") is None
+    assert cp.b1_month(s, k["regions"], "PE-SIN-25", "2023-03") is None
+    assert cp.b1_month(s, k["regions"], "PE", "2023-04") is not None
+    rows = cp.build_calibrated(s, k)
+    pe = next(r for r in rows if (r["region_id"], r["year"], r["month"], r["method"]) == ("PE", 2023, 3, "B1"))
+    assert pe["value"] is None and pe["status"] == "missing"  # nunca se suma el faltante como 0
+
+
+def test_verificar_sumas_detecta_pe_que_no_suma(tmp_path):
+    s = cp.add_pe_sin_25(cp.load_series(_write_series(tmp_path / "s.csv", _desigual)))
+    k = cp.fit_kappas(s)
+    rows = cp.build_calibrated(s, k)
+    for r in rows:
+        if (r["region_id"], r["year"], r["month"], r["method"]) == ("PE", 2023, 6, "B1"):
+            r["value"] += 1.0
+    with pytest.raises(AssertionError, match="2023-06"):
+        cp.verificar_sumas(s, k, rows)
+
+
+def test_limitaciones_con_cifras_de_validacion(tmp_path):
+    s = cp.add_pe_sin_25(cp.load_series(_write_series(tmp_path / "s.csv", _base)))
+    k = cp.fit_kappas(s)
+    v = cp.build_validation(s, k)
+    c = cp.compare_alternatives(s, k)
+    textos = " ".join(cp._limitaciones(v, c))
+    assert "Arequipa" in textos and "Lima" in textos          # estrato agrupado con error alto
+    assert "κ nacional único" in textos                       # donde gana el nacional
+    assert "no llegan al mínimo" in textos                    # departamentos sin metricas
+    assert "0.3%" in textos and "año a otro" in textos        # frontera y variacion anual
+    assert "pendiente" not in textos
+
+
+def test_run_estado_y_referencia_nacional(tmp_path):
+    pilot = tmp_path / "pilot.json"
+    pilot.write_text(json.dumps({"indicator": "x"}), encoding="utf-8")
+    serie = _write_series(tmp_path / "s.csv", _desigual)
+    cp.run(serie, tmp_path / "out", pilot, estado="aprobado en P11")
+    m = json.loads((tmp_path / "out" / "method.json").read_text(encoding="utf-8"))
+    assert m["estado"] == "aprobado en P11"
+    assert "referencia_kappa_nacional" in m["resultados"]
+    assert "suma de los B1" in m["calibration"] and len(m["limitations"]) >= 10

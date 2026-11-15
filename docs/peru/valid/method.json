@@ -1,6 +1,6 @@
 {
   "contract_version": "1.1",
-  "estado": "borrador P10, pendiente de revisión P11",
+  "estado": "aprobado en P11",
   "region_id": "PE",
   "region": "Perú (PE) = suma de los 25 departamentos INEI 2023. Cada celda de 1 km pertenece al departamento que contiene su centro (docs/region/departamentos_inei_2023.geojson); las celdas fuera de los 25 polígonos no cuentan.",
   "indicator": "cell_days: número de pares celda-día con al menos una detección de fuego activo en la región, por mes y sensor. Celda de 1 km x 1 km en EPSG:6933; día calendario en hora de Lima (UTC-5). Terra y Aqua cuentan una sola vez por celda-día.",
@@ -16,7 +16,7 @@
   "period_test": "2025-01:2026-07",
   "error_convention": "signed_error = estimate - modis_observed (positivo = sobreestima). bias = promedio de signed_error; MAE = promedio de |signed_error|; WAPE = suma|signed_error| / suma(modis_observed), indefinido si el denominador es 0.",
   "status_rule": "ok = sensor operando ese mes, aunque cell_days sea 0. missing = (1) mes fuera de la ventana de disponibilidad del sensor (antes de su cobertura estándar o después de un cese documentado), (2) mes dentro de la ventana pero sin ninguna detección en todo Perú, que se trata como hueco de datos (DECISIONS.md §8; no se activa en 2013-2024), o (3) valor no estimable en la serie calibrada. El valor queda vacío, nunca 0.",
-  "calibration": "B0 = VIIRS sin factor. B1 = B0 × κ del estrato de la región, con κ = suma(cell_days MODIS en train) / suma(cell_days VIIRS en train), calculado una sola vez con train 2013-01:2022-12. 17 departamentos usan su propio κ; 8 (PE-04, PE-07, PE-09, PE-11, PE-15, PE-18, PE-23, PE-24) usan el κ del estrato agrupado (suma de los 8); PE y PE-SIN-25 usan el κ nacional (DECISIONS.md §11.2).",
+  "calibration": "B0 = VIIRS sin factor. B1 = B0 × κ del estrato de la región, con κ = suma(cell_days MODIS en train) / suma(cell_days VIIRS en train), calculado una sola vez con train 2013-01:2022-12. 17 departamentos usan su propio κ; 8 (PE-04, PE-07, PE-09, PE-11, PE-15, PE-18, PE-23, PE-24) usan el κ del estrato agrupado (suma de los 8). B1 de PE es la suma de los B1 de los 25 departamentos y B1 de PE-SIN-25 la suma de los 24 sin PE-25 (contrato v1.1 D); el κ nacional solo es la alternativa (b) de DECISIONS.md §11.3 y una referencia en resultados.",
   "regions": [
     {
       "region_id": "PE",
@@ -447,9 +447,9 @@
           "bias": 3851.917
         },
         "B1": {
-          "mae": 192.62,
-          "wape": 0.143,
-          "bias": -54.574
+          "mae": 164.021,
+          "wape": 0.122,
+          "bias": -53.24
         }
       },
       "PE-SIN-25": {
@@ -462,9 +462,9 @@
           "bias": 3206.0
         },
         "B1": {
-          "mae": 141.083,
-          "wape": 0.136,
-          "bias": 20.52
+          "mae": 126.058,
+          "wape": 0.122,
+          "bias": -21.046
         }
       },
       "PE-01": {
@@ -798,11 +798,24 @@
         }
       }
     },
-    "test": "pendiente (P14, con autorización P12)"
+    "test": "pendiente (P14, con autorización P12)",
+    "referencia_kappa_nacional": {
+      "nota": "B1 de PE calculado como VIIRS × κ nacional. Solo referencia: la estimación de PE es la suma de los B1 departamentales.",
+      "PE": {
+        "periodo": "2023-01:2024-12",
+        "kappa": 0.24891429001146811,
+        "mae": 192.62,
+        "wape": 0.143,
+        "bias": -54.574
+      }
+    }
   },
   "limitations": [
-    "El κ cambia de un departamento a otro (de 0.164 a 0.337 entre los de κ propio, en train) y de un año a otro dentro de cada departamento; el rango anual de cada región está en regions[].kappa_anual_rango.",
-    "Los 8 departamentos del estrato agrupado tienen poca actividad: su κ propio es muy inestable año a año y se usa uno común para los 8.",
+    "El κ cambia de un departamento a otro (de 0.164 a 0.337 entre los de κ propio, en train).",
+    "El κ también cambia de un año a otro dentro de cada región, y un κ fijo no sigue esos cambios; el rango anual de cada región está en regions[].kappa_anual_rango.",
+    "El estrato agrupado (8 departamentos con poca actividad) tiene error alto en validación: WAPE B1 de Arequipa 0,59 y de Lima 0,52. Su κ propio es muy inestable año a año y se usa uno común para los 8.",
+    "El κ nacional único tiene menor WAPE que el κ estratificado en 4 departamentos en validación (Áncash, Cajamarca, Huancavelica, Pasco); la estratificada gana en el agregado de los 25 y en los demás departamentos reportables.",
+    "3 departamentos no llegan al mínimo de Σ MODIS ≥ 50 en validación y no tienen métricas propias (Callao, Moquegua, Tacna); sus meses sí cuentan dentro de PE y PE-SIN-25 (DECISIONS.md §11.3).",
     "Callao tiene Σ MODIS = 0 en train: no tiene κ propio y su κ anual no está definido.",
     "Las celdas cuyo centro cae fuera de los 25 polígonos INEI no cuentan (2,619 de 824,137 celdas-día entre 2013 y 2024, 0.3%).",
     "B1 se valida a escala región-mes. No debe aplicarse a celdas individuales del mapa.",
