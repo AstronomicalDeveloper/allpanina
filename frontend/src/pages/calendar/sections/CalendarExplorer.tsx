@@ -63,7 +63,7 @@ export default function CalendarExplorer({ showRegionSelector = true, regionLabe
     try { downloadCsv(serializeMonthlySeries(visibleRecords), calendarCsvFilename(region,sensor,demo)) }
     catch (error) { setExportError(`No se pudo descargar el CSV: ${error instanceof Error ? error.message : 'Error desconocido'}`) }
   }
-  const detail = <CalendarDetail cell={selected} region={region} regionLabel={regionLabel} sensor={sensor} calibrated={calibrated} seriesRecords={visibleRecords} sourceUrl={sourceUrl} mapHref={mapHref} onOpenMap={onOpenMap} />
+  const detail = <CalendarDetail records={records} cell={selected} region={region} regionLabel={regionLabel} sensor={sensor} calibrated={calibrated} sourceUrl={sourceUrl} mapHref={mapHref} onOpenMap={onOpenMap} />
   return <>
     <div className="calendar-options" aria-label="Opciones del calendario">
       <header className="calendar-heading"><h1>Calendario histórico</h1><span>{regionLabel || region}</span></header>

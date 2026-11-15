@@ -32,7 +32,7 @@
 | # | Cambio | Archivos | Criterio de aceptación (verificable) |
 |---|---|---|---|
 | 1b.1 | Landry ya había añadido la explicación «¿Qué significa días-celda?» (`CellDaysHelp`) en Calendario y Mapa. C5 **no la duplica**: le añade un párrafo según la vista (para qué sirve comparar períodos / cómo leer el valor de una celda) | `components/ui/CellDaysHelp.tsx` (prop `purpose`), `components/ui/cellDaysPurpose.ts` (nuevo), `CalendarExplorer.tsx`, `CartographyPanel.tsx` | El párrafo aparece en ambas vistas (`clarity.test.ts`, `map-ui.test.ts`) |
-| 1b.2 | Contexto del mes seleccionado: cuántos meses con dato de la misma serie tienen más días-celda, y el máximo de la serie con su mes; aviso de que MODIS y VIIRS no son comparables entre sí | `components/ui/valueContext.ts` (nuevo), `CalendarDetail.tsx` | Se calcula solo con filas publicadas con `status = ok`; no aparece sin dato ni sin serie; no cambia ningún valor publicado |
+| 1b.2 | **No implementado, a propósito.** Se había previsto mostrar la posición del mes dentro de toda la serie, pero mezcla estaciones (diciembre frente a agosto) y Landry añadió después el **Análisis histórico** (mismo mes de años anteriores, mediana, mínimo de tres años), que es más riguroso | — | Se evita duplicar la función; no queda texto ni código de esta idea en el Calendario |
 | 1b.3 | Contexto de la celda seleccionada en el mapa: cuántas celdas con registro de la vista tienen más días-celda y el máximo | `ExplorationPanel.tsx` | Prueba en `map-ui.test.ts` |
 
 Los números mostrados son conteos de valores ya publicados (posición dentro de la serie o la vista), no métricas nuevas ni cifras científicas modificadas. No se tocaron lectores, validadores, contratos ni `public/data/`.
