@@ -39,14 +39,14 @@ cp = importlib.import_module("scripts.06_calibrate_peru")
 mf = importlib.import_module("scripts.08_manifest")
 tp = importlib.import_module("scripts.09_test_peru")
 
-VERSION = "1.0"
+VERSION = "1.1"
 PUBLICADO = ROOT / "frontend" / "public" / "data" / "peru"          # entrega aprobada (P17-P19)
 DEPARTAMENTOS = ROOT / "docs" / "region" / "departamentos_inei_2023.geojson"
 DESDE = (2013, 1)
 ULTIMO_MES_VALIDADO = "2026-07"                                        # fin del test (P14/P15)
 SPLIT_NUEVO = "sin_validar"
 COLUMNAS_FIRMS = ("latitude", "longitude", "acq_date", "acq_time", "satellite", "confidence", "version", "type")
-SATELITES = {"MODIS": {"Terra", "Aqua"}, "VIIRS": {"SNPP", "N"}}  # SNPP en el archivo estándar; N = código antiguo de FIRMS
+SATELITES = {"MODIS": {"Terra", "Aqua", "T", "A"}, "VIIRS": {"SNPP", "N"}}  # archivo estándar: Terra/Aqua y SNPP; T/A y N = códigos cortos de FIRMS
 
 
 class ErrorDeEntrada(ValueError):

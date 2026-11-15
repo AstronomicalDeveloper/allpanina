@@ -1,13 +1,26 @@
-"""AllpaNina: algoritmo de armonización MODIS/VIIRS para todo el Perú, empaquetado.
+"""AllpaNina: algoritmo de armonización MODIS/VIIRS (detecciones de fuego de NASA FIRMS).
 
-Uso mínimo:
+Tres entradas (ver docs/ALGORITMO.md):
 
-    from allpanina import procesar_peru
-    resumen = procesar_peru(modis=["fire_archive_M-C61.csv"], viirs=["fire_archive_SV-C2.csv"],
-                            salida="salida/")
+    from allpanina import procesar_peru      # Perú + 25 departamentos, κ congelados y validados
+    from allpanina import procesar_region    # cualquier región del mundo, κ local exploratorio
+    from allpanina import descargar_firms    # descarga automática de FIRMS (API, producto estándar)
 
-Ver docs/ALGORITMO.md.
+Las importaciones son diferidas: descargar_firms funciona sin pandas, pyproj ni shapely.
 """
-from .algoritmo import ErrorDeEntrada, procesar_peru, verificar_contra_publicado, VERSION
+VERSION = "1.1"
 
-__all__ = ["procesar_peru", "verificar_contra_publicado", "ErrorDeEntrada", "VERSION"]
+_DE = {
+    "procesar_peru": "algoritmo", "verificar_contra_publicado": "algoritmo", "ErrorDeEntrada": "algoritmo",
+    "procesar_region": "region",
+    "descargar_firms": "descarga", "ErrorDeDescarga": "descarga",
+}
+
+__all__ = sorted(_DE) + ["VERSION"]
+
+
+def __getattr__(name):
+    if name in _DE:
+        import importlib
+        return getattr(importlib.import_module(f".{_DE[name]}", __name__), name)
+    raise AttributeError(name)

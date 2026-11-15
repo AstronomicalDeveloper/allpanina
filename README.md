@@ -177,6 +177,22 @@ The stage-by-stage pipeline (scripts 01–10, including the one-time test run) i
 
 Review trail: [`REVISION_P07`](docs/peru/REVISION_P07.md) (series), [`REVISION_P11`](docs/peru/REVISION_P11.md) (calibration), [`AUTORIZACION_TEST`](docs/peru/AUTORIZACION_TEST.md) (test authorisation), [`RESULTADO_TEST`](docs/peru/RESULTADO_TEST.md) (signed test result), [`REVISION_P17`](docs/peru/REVISION_P17.md) (final files) and [`REPRODUCCION`](docs/peru/REPRODUCCION.md) (reproduction).
 
+## 🌎 Any region of the world (exploratory)
+
+The same algorithm also runs for **any region on Earth**, for example the province of Mendoza (Argentina). The user gives a free FIRMS `MAP_KEY` and the region's polygon; AllpaNina downloads MODIS and VIIRS from the FIRMS API, harmonizes them and writes the single-region files the web already reads (same format as the Ucayali pilot):
+
+```bash
+python -m allpanina region --region-id AR-M --nombre Mendoza --poligono mendoza.geojson \
+    --zona-horaria America/Argentina/Mendoza --map-key <MAP_KEY> --salida salida_mendoza/
+```
+
+- Calendar days use the region's own time zone.
+- A **local κ** is fitted on 2013–2022 only, and offered only if the region has enough training data (Σ VIIRS ≥ 5,000 and Σ MODIS ≥ 1,000 cell-days). Otherwise the web shows observed data only.
+- `B1` is evaluated automatically, out of sample, on 2023–2024 and 2025–2026-07.
+- These results are **exploratory**: unlike Ucayali and Peru, nobody on the team has reviewed them or signed a reserved test. `method.json` says so.
+
+Guide (in Spanish): [`docs/ALGORITMO.md`](docs/ALGORITMO.md#cualquier-región-el-caso-mendoza).
+
 ## 🛰️ Data sources and acknowledgements
 
 AllpaNina uses active-fire detections from NASA's Fire Information for Resource Management System (FIRMS), which is part of NASA's Land, Atmosphere Near real-time Capability for EO (LANCE) and is operated by NASA's Earth Science Data and Information System (ESDIS) project. Sensors used: MODIS (Terra and Aqua, Collection 6.1) and VIIRS (Suomi NPP, 375 m, Collection 2).
