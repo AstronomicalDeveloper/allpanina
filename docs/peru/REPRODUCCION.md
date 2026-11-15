@@ -2,7 +2,7 @@
 
 - **Paso:** P19 del plan v2.1 (Marco + Antonella). Equivalente a T38 del piloto.
 - **Fecha:** 15-nov-2026.
-- **Hecho por:** Antonella (con Claude). **Falta:** que Marco lo confirme.
+- **Hecho por:** Antonella (con Claude). **Confirmado por Marco** el 15-nov-2026 (sección 6). **Falta:** repetir la corrida de `10_final_peru.py` sobre el commit con la corrección 3.1.
 - **Commit reproducido:** `39d67c40e41da5a6d759537b2d7379490492cb97` (rama `feature/calibracion`), más la corrección 3.1. El manifest se comparó también con el regenerado por Marco en `730ad58` (sección 3.2).
 
 ## 1. Cómo se reprodujo
@@ -71,3 +71,17 @@ Los 14 mapas tienen los hashes que lista `manifest.json`.
 - `updated_at` se fijó en 2026-11-14 (serie 2013-2024) y 2026-11-15 (serie completa), como en P07 y P13.
 - La reproducción comprueba que el código da los mismos números. No valida el método: eso es P11 y P15.
 - La corrección 3.1 se aplicó después del commit reproducido. Al subirla, conviene repetir la corrida de `10_final_peru.py` sobre el commit nuevo para cerrar el paso.
+
+## 6. Confirmación de Marco (15-nov-2026)
+
+Revisé el documento contra lo publicado en `feature/calibracion` (commit b9a0eca). No volví a correr los scripts: la reproducción es de Antonella y yo comprobé lo que se puede verificar sin ejecutarlos.
+
+| Comprobación | Resultado |
+| :-- | :-- |
+| SHA-256 de los 5 archivos de la sección 4 (`monthly_series.csv`, `calibrated_series.csv`, `validation.json`, `method.json`, `manifest.json`) contra el repositorio | ✅ coinciden |
+| Hash completo de `manifest.json` (`c481e3ae…`) | ✅ coincide con el de la sección 4 |
+| Los 18 hashes de `manifest.json` contra los archivos publicados | ✅ coinciden |
+| Corrección 3.1 en `scripts/10_final_peru.py`: 2 líneas agregadas y 0 borradas (un comentario y la limitación) | ✅ el texto agregado es el de `method.json` publicado, que tiene 19 limitaciones |
+| Que el script genere `method.json` con hash `52f4cacd…` | ⏳ no verificado por mí; lo afirma Antonella y falta repetir la corrida sobre el commit nuevo (cierre de la sección 5) |
+
+Con esto la reproducción desde cero (P19) queda confirmada por Marco, salvo esa repetición. Firma: Marco, 15-nov-2026.
