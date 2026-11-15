@@ -1,7 +1,7 @@
 # P11 — Revisión científica de la calibración Perú (P09 y P10)
 
 - **Paso:** P11 del plan v2.1 (`DECISIONS.md` §11).
-- **Revisor:** Aldo 15-nov-2026
+- **Revisor:** Marco, con Claude, por delegación de Aldo, que no estaba presente. Aldo no ha ratificado el dictamen (condición 5 pendiente).
 - **Autora de lo revisado:** Antonella (`docs/peru/P09_P10.md`, `docs/peru/valid/`).
 - **Fecha:** 15-nov-2026.
 - **Dictamen:** ✅ **APROBADA CON CONDICIONES** (sección 4). Los κ quedan congelados en `DECISIONS.md` §12.
@@ -54,9 +54,9 @@ Eso no es coherente con el método elegido:
 | 2 | Agregar las 5 limitaciones de la sección 3 a `method.json`. | Antonella | ✅ Hecho, cifras tomadas de `validation.json` |
 | 3 | Corregir `docs/peru/P09_P10.md`: los reportables son **22** de 25 (dice 23), y P06 ya está aprobada (dice que espera revisión). | Antonella | ✅ Hecho |
 | 4 | Cambiar el estado de `method.json` a "aprobado en P11" cuando se cumplan las condiciones 1 a 3. | Antonella | ✅ Hecho |
-| 5 | Aldo ratifica o cambia este dictamen. Si cambia algo, lo hace antes de P12. | Aldo | ✅ Ratificado por Aldo sin cambios, 15-nov-2026 |
+| 5 | Aldo ratifica o cambia este dictamen. Si cambia algo, lo hace antes de P12. | Aldo | ⏳ Pendiente: Aldo está ausente. Marco y Antonella continúan bajo delegación (ver `AUTORIZACION_TEST.md`). Si Aldo cambia algo después, se declara. |
 
-Con las 5 condiciones cumplidas (15-nov-2026), P12 (autorización del test) puede firmarse.
+Con las condiciones 1 a 4 cumplidas (15-nov-2026) y la 5 pendiente por la ausencia de Aldo, Marco y Antonella firman P12 por delegación (`AUTORIZACION_TEST.md`).
 
 
 ## 5. Firma y aprobación
