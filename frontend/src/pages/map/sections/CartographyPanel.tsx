@@ -1,30 +1,28 @@
-import CellDaysHelp from '../../../components/ui/CellDaysHelp'
-import { PURPOSE_CELL } from '../../../components/ui/cellDaysPurpose'
 import type { MapController } from '../useJuanMap'
 import type { OverlayState } from '../cartography/juanLayers'
+import { BASEMAP_OPTIONS, paletteFor } from '../cartography/juanLayers'
 import { percentileLegend } from './percentileLegend'
+import MapCellDaysHelp from './MapCellDaysHelp'
+
 const overlays: [keyof OverlayState, string][] = [
-  ['graticule', 'Cuadrícula de coordenadas'], ['basic', 'Referencias y límites de Perú'],
-  ['detailed', 'Cartografía detallada de Perú'], ['protectedAreas', 'Áreas protegidas · Ucayali'],
+  ['graticule', 'Coordinate grid'], ['basic', 'References and boundaries of Peru'],
+  ['detailed', 'Detailed cartography of Peru'], ['protectedAreas', 'Protected natural areas · Peru'],
 ]
+
 export default function CartographyPanel({ map, national = false }: { map: MapController; national?: boolean }) {
   const { q25, q50, q75 } = map.percentileBreaks
-  // La capa de áreas protegidas viene filtrada a Ucayali: en el mapa nacional sugeriría que el resto
-  // del país no tiene áreas protegidas, así que solo se ofrece en el piloto.
-  const available = national ? overlays.filter(([key]) => key !== 'protectedAreas') : overlays
   return <div className="map-panel-content">
-    <fieldset><legend>Fondo cartográfico</legend><div className="map-segment map-basemaps">
-      <button aria-pressed={map.baseMap === 'blue-marble'} onClick={() => map.setBaseMap('blue-marble')}><span aria-hidden="true">◉</span>Satelital<small>Blue Marble · NASA</small></button>
-      <button aria-pressed={map.baseMap === 'topographic'} onClick={() => map.setBaseMap('topographic')}><span aria-hidden="true">△</span>Relieve<small>Topographic · Esri</small></button>
+    <fieldset><legend>Base map</legend><div className="map-segment map-basemaps">
+      {BASEMAP_OPTIONS.map(option => <button key={option.id} aria-pressed={map.baseMap === option.id} onClick={() => map.setBaseMap(option.id)}>{option.label}<small>{option.description}</small></button>)}
     </div></fieldset>
-    <fieldset className="map-overlays"><legend>Capas de referencia</legend>{available.map(([key, label]) => <label key={key}><input type="checkbox" checked={map.overlays[key]} onChange={event => map.setOverlays({ ...map.overlays, [key]: event.target.checked })} />{label}</label>)}</fieldset>
-    <label className="map-opacity">Opacidad de celdas <output>{Math.round(map.opacity * 100)}%</output><input aria-label="Opacidad de celdas" type="range" min="0.2" max="1" step="0.05" value={map.opacity} onChange={event => map.setOpacity(Number(event.target.value))} /></label>
-    <section className="map-legend" aria-label="Leyenda de días-celda"><p aria-live="polite">{map.representation === 'summary' ? 'Vista general · cuadrados individuales' : 'Vista local · celdas originales'}</p>
-      <h3>Intensidad observada · percentiles</h3><p>{map.representation === 'summary' ? 'Cada cuadrado localiza una celda. Su tamaño en pantalla está ampliado y no representa área ocupada ni un incendio independiente.' : 'Polígonos originales de las celdas observadas.'} Los colores representan el mismo valor observado en ambas escalas.</p><p>{national?'Días-celda de 1 km por cuadrícula de 10 km':'Días-celda por celda'} · {map.scope === 'year' ? 'acumulado anual' : 'mes seleccionado'}</p>
-      {map.stats.count === 0 ? <p>Sin celdas para calcular percentiles.</p> : <><ol>{percentileLegend(q25, q50, q75).map(({ color, range, label }) => <li key={label}><i style={{ background: color }} aria-hidden="true" /><span>{label}</span><strong>{range}</strong></li>)}</ol><p>Los percentiles ordenan los valores de las celdas del período y sensor seleccionados. Un color más intenso indica {national?'más días-celda de 1 km acumulados en cada cuadrícula':'más días con detecciones por celda'} dentro de esta clasificación; no mide gravedad, riesgo ni superficie quemada. Los umbrales se recalculan y no son una escala fija entre períodos o sensores.</p></>}
-      {national&&<details><summary>Límite territorial resaltado</summary><p>Referencia INEI 2023 simplificada para navegar. El filtro y recorte son solo cartográficos. Una celda fronteriza puede incluir observaciones de territorios vecinos; su valor original no es proporcional al fragmento visible.</p></details>}
-      <CellDaysHelp national={national} purpose={PURPOSE_CELL} />
+    <fieldset className="map-overlays"><legend>Reference layers</legend>{overlays.map(([key, label]) => <label key={key}><input type="checkbox" checked={map.overlays[key]} onChange={event => map.setOverlays({ ...map.overlays, [key]: event.target.checked })} />{label}</label>)}</fieldset>
+    <label className="map-opacity">Cell opacity <output>{Math.round(map.opacity * 100)}%</output><input aria-label="Cell opacity" type="range" min="0.2" max="1" step="0.05" value={map.opacity} onChange={event => map.setOpacity(Number(event.target.value))} /></label>
+    <section className="map-legend" aria-label="Cell-days legend"><p aria-live="polite">{map.representation === 'summary' ? 'Overview · one square per cell' : 'Close view · original cells'}</p>
+      <h3>Observed intensity · percentiles</h3><p>{map.representation === 'summary' ? 'Each square marks one cell. Its size on screen is enlarged and does not show the area covered or a separate fire.' : 'Original polygons of the observed cells.'} Colors mean the same observed value at both zoom levels.</p><p>{national ? '1 km cell-days per 10 km grid square' : 'Cell-days per cell'} · {map.scope === 'year' ? 'yearly total' : 'selected month'}</p>
+      {map.stats.count === 0 ? <p>No cells to compute percentiles.</p> : <><ol>{percentileLegend(q25, q50, q75, paletteFor(map.baseMap)).map(({ color, range, label }) => <li key={label}><i style={{ background: color }} aria-hidden="true" /><span>{label}</span><strong>{range}</strong></li>)}</ol><p>Percentiles rank the cell values of the selected period and sensor. A more intense color means {national ? 'more 1 km cell-days added up in each grid square' : 'more days with detections per cell'} within this ranking; it does not measure severity, risk or burned area. The breaks are recomputed for each view and are not a fixed scale across periods or sensors.</p></>}
+      {national && <details><summary>Highlighted boundary</summary><p>Simplified INEI 2023 boundary, for navigation. The filter and the clipping are only visual. A border cell may include observations from neighbouring territories; its original value is not split by the visible fragment.</p></details>}
+      <MapCellDaysHelp national={national} />
     </section>
-    <p className="map-fine-print">Fondos y referencias requieren internet. {national ? 'La capa de áreas protegidas solo está disponible en el piloto Ucayali, porque su fuente está filtrada a ese departamento.' : 'La capa de áreas protegidas conserva el ámbito del piloto Ucayali.'}</p>
+    <p className="map-fine-print">Base maps and reference layers need internet. If a provider fails, the map switches to another base map and keeps the observations. Reference layers from MINAM cover Peru only.</p>
   </div>
 }

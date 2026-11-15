@@ -107,12 +107,12 @@ async function history(direction: 'back' | 'forward') {
 test('Mapa v2 real: septiembre 2024, capas conservadas, percentiles, clic seguro y sensor independiente', async t => {
   mockFiles(t); const { host, runtime } = await setup(t)
   assert.equal(total(runtime), 2323)
-  assert.doesNotMatch(host.textContent!, /DATOS DEMO/)
+  assert.doesNotMatch(host.textContent!, /DEMO DATA/)
   assert.ok(host.querySelector('.topbar--map'))
   for (const id of ['basemap-firefly-layer', 'basemap-streets-layer', 'basemap-topographic-layer', 'overlay-protected-layer', 'celdas-fill']) assert.ok(runtime.maps[0].getLayer(id))
   const cell = observations(runtime).features[0].properties
   await act(async () => runtime.maps[0].emit('click:celdas-fill', { features: [{ properties: { cell_id: cell.cell_id } }] }))
-  assert.match(host.querySelector('.map-cell-detail')!.textContent!, new RegExp(`${cell.cell_days} ${cell.cell_days === 1 ? 'día' : 'días'} con detecciones`))
+  assert.match(host.querySelector('.map-cell-detail')!.textContent!, new RegExp(`${cell.cell_days} ${cell.cell_days === 1 ? 'day' : 'days'} with thermal detections`))
   await act(async () => button(host, 'VIIRS').click())
   assert.equal(total(runtime), 5581)
   assert.equal(new URLSearchParams(window.location.search).get('calendarSeries'), 'VIIRS')
@@ -123,27 +123,27 @@ test('Mapa v2 real: septiembre 2024, capas conservadas, percentiles, clic seguro
 
 test('Mapa v2 anual: suma real, desglose por celda y cobertura parcial 2026 hasta julio', async t => {
   mockFiles(t); const { host, runtime } = await setup(t, '?periodYear=2026&scope=year')
-  assert.match(host.querySelector('.map-observed')!.textContent!, /Año parcial.*7\/12/)
+  assert.match(host.querySelector('.map-observed')!.textContent!, /Partial year.*7\/12/)
   assert.match(host.querySelector('.map-observed')!.textContent!, /Agosto: no publicado/)
   const raw = JSON.parse(files['/data/cells_PE-UCA_2026.geojson']) as MapCells
   assert.equal(total(runtime), raw.features.filter(f => f.properties.sensor_group === 'MODIS').reduce((sum, f) => sum + f.properties.cell_days, 0))
-  await choose(host, 'Seleccionar celda del mapa', observations(runtime).features[0].properties.cell_id)
+  await choose(host, 'Select map cell', observations(runtime).features[0].properties.cell_id)
   assert.equal(host.querySelectorAll('.map-month-bars tbody tr').length, 12)
-  await act(async () => button(host, 'Mensual').click())
-  await choose(host, 'Mes del mapa', '8')
+  await act(async () => button(host, 'Monthly').click())
+  await choose(host, 'Map month', '8')
   assert.equal(observations(runtime).features.length, 0)
-  assert.match(host.querySelector('.map-observed')!.textContent!, /Período no publicado/)
+  assert.match(host.querySelector('.map-observed')!.textContent!, /Period not published/)
   assert.equal(host.querySelector('.map-cell-detail'), null)
 })
 
 test('Mapa v2 distingue cero válido, missing y no publicado en modo DEMO explícito', async t => {
   mockFiles(t); const { host } = await setup(t, '?data=demo&periodYear=2024&periodMonth=9&scope=month')
-  assert.match(host.textContent!, /DATOS DEMO/)
-  assert.match(host.querySelector('.map-observed')!.textContent!, /Cero válido/)
-  await choose(host, 'Mes del mapa', '10')
-  assert.match(host.querySelector('.map-observed')!.textContent!, /Sin dato utilizable/)
-  await choose(host, 'Mes del mapa', '11')
-  assert.match(host.querySelector('.map-observed')!.textContent!, /Período no publicado/)
+  assert.match(host.textContent!, /DEMO DATA/)
+  assert.match(host.querySelector('.map-observed')!.textContent!, /Valid zero/)
+  await choose(host, 'Map month', '10')
+  assert.match(host.querySelector('.map-observed')!.textContent!, /No usable data/)
+  await choose(host, 'Map month', '11')
+  assert.match(host.querySelector('.map-observed')!.textContent!, /Period not published/)
 })
 
 test('Mapa v2 oculta paneles independientemente, conserva estado y abre el panel inferior', async t => {
@@ -159,7 +159,7 @@ test('Mapa v2 oculta paneles independientemente, conserva estado y abre el panel
   const sheet = host.querySelector<HTMLButtonElement>('.map-sheet-handle')!
   await act(async () => sheet.click()); assert.equal(sheet.getAttribute('aria-expanded'), 'true')
   await act(async () => sheet.click()); assert.equal(sheet.getAttribute('aria-expanded'), 'false')
-  const relief = host.querySelector<HTMLButtonElement>('.map-basemaps button:last-child')!
+  const relief = [...host.querySelectorAll<HTMLButtonElement>('.map-basemaps button')].find(b => b.textContent!.startsWith('Topographic'))!
   await act(async () => relief.click())
   assert.equal(runtime.maps[0].layouts['basemap-topographic-layer:visibility'], 'visible')
   assert.equal(runtime.maps[0].layouts['basemap-blue-marble-layer:visibility'], 'none')
@@ -173,7 +173,7 @@ test('Mapa v2 URL e historial: período compartido, sensores independientes y re
   assert.equal(new URLSearchParams(window.location.search).get('calendarSeries'), 'MODIS')
   assert.equal(window.location.hash, '#periodo')
   assert.equal(new URLSearchParams(window.location.search).get('extra'), 'keep')
-  await act(async () => button(host, 'Copiar enlace').click())
+  await act(async () => button(host, 'Copy link').click())
   const shared = host.querySelector('.map-feedback')!.textContent!
   assert.match(shared, /\/mapa\?/)
   assert.match(shared, /calendarSeries=MODIS/)
@@ -181,7 +181,7 @@ test('Mapa v2 URL e historial: período compartido, sensores independientes y re
   assert.doesNotMatch(shared, /view=map/)
   await history('back'); assert.equal(total(runtime), 2323)
   await history('forward'); assert.equal(total(runtime), 5581)
-  await choose(host, 'Mes del mapa', '8')
+  await choose(host, 'Map month', '8')
   const calendar = [...host.querySelectorAll<HTMLAnchorElement>('nav a')].find(a => a.textContent === 'Calendar')!
   await act(async () => calendar.click())
   assert.equal(host.querySelector<HTMLSelectElement>('#calendar-sensor')!.value, 'MODIS')
@@ -199,7 +199,7 @@ test('Mapa v2 archivo no publicado conserva filtros sin mostrar un cero', async 
   mockFiles(t); const { host } = await setup(t, '?periodYear=2030')
   assert.match(host.querySelector('.map-observed')!.textContent!, /No hay GeoJSON publicado/)
   assert.equal(host.querySelector('.map-observed-value'), null)
-  await choose(host, 'Año del mapa', '2024')
+  await choose(host, 'Map year', '2024')
   assert.ok(host.querySelector('.map-observed-value'))
 })
 
@@ -209,7 +209,7 @@ test('Mapa v2 error real de archivo y reintento sin fallback DEMO', async t => {
   const { host, runtime } = await setup(t)
   assert.match(host.querySelector('[role="alert"]')!.textContent!, /No se pudieron cargar/)
   assert.equal(runtime.maps.length, 0); assert.ok(urls.every(url => !url.includes('demo')))
-  fail = false; await act(async () => button(host, 'Reintentar datos').click())
+  fail = false; await act(async () => button(host, 'Retry data').click())
   assert.equal(total(runtime), 2323)
 })
 
@@ -235,8 +235,8 @@ test('Mapa v2 aborta el año pendiente y no presenta datos antiguos ni respuesta
     return new Response(files[url] ?? '', { status: files[url] === undefined ? 404 : 200 })
   })
   const { host, runtime } = await setup(t)
-  await choose(host, 'Año del mapa', '2026')
-  assert.match(host.querySelector('[role="status"]')!.textContent!, /Cargando observaciones/)
+  await choose(host, 'Map year', '2026')
+  assert.match(host.querySelector('[role="status"]')!.textContent!, /Loading observations/)
   assert.equal(host.querySelector('.map-observed-value'), null)
   assert.equal(runtime.maps[0].removed, 1)
   assert.ok(pendingSignal)
@@ -263,7 +263,7 @@ test('Mapa v2 sin archivos anuales publicados muestra vacío sin inventar un añ
   manifest.files = manifest.files.filter((name: string) => !name.endsWith('.geojson'))
   t.mock.method(globalThis, 'fetch', async (url: string) => new Response(url.endsWith('manifest.json') ? JSON.stringify(manifest) : files[url]))
   const { host, runtime } = await setup(t, '')
-  assert.match(host.querySelector('[role="status"]')!.textContent!, /No hay años geográficos publicados/)
+  assert.match(host.querySelector('[role="status"]')!.textContent!, /has no published map years/)
   assert.equal(runtime.maps.length, 0)
   assert.equal(host.querySelector('.map-observed-value'), null)
 })
@@ -277,18 +277,18 @@ test('aviso de copia se reinicia, desaparece a los cuatro segundos y admite cier
   t.after(() => { if (descriptor) Object.defineProperty(navigator, 'clipboard', descriptor); else Reflect.deleteProperty(navigator, 'clipboard') })
   const { host } = await setup(t, '?data=demo&periodYear=2024')
   t.mock.timers.enable({ apis: ['setTimeout'] })
-  await act(async () => button(host, 'Copiar enlace').click())
+  await act(async () => button(host, 'Copy link').click())
   assert.match(host.querySelector('.map-feedback--share')!.textContent!, /copiado/)
   await act(async () => t.mock.timers.tick(3000))
-  await act(async () => button(host, 'Copiar enlace').click())
+  await act(async () => button(host, 'Copy link').click())
   await act(async () => t.mock.timers.tick(1000))
   assert.ok(host.querySelector('.map-feedback--share'))
   await act(async () => t.mock.timers.tick(3000))
   assert.equal(host.querySelector('.map-feedback--share'), null)
   fail = true
-  await act(async () => button(host, 'Copiar enlace').click())
+  await act(async () => button(host, 'Copy link').click())
   await act(async () => t.mock.timers.tick(5000))
-  assert.match(host.querySelector('.map-feedback--share')!.textContent!, /Copia este enlace/)
+  assert.match(host.querySelector('.map-feedback--share')!.textContent!, /Copy this link/)
   await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Cerrar aviso de enlace"]')!.click())
   assert.equal(host.querySelector('.map-feedback--share'), null)
 })
@@ -296,7 +296,7 @@ test('aviso de copia se reinicia, desaparece a los cuatro segundos y admite cier
 
 test('herramientas móviles abren, cierran con Escape y al ejecutar una acción', async t => {
   mockFiles(t); const { host, runtime } = await setup(t, '?data=demo&periodYear=2024')
-  const toggle = host.querySelector<HTMLButtonElement>('[aria-label="Herramientas del mapa"]')!
+  const toggle = host.querySelector<HTMLButtonElement>('[aria-label="Map tools"]')!
   assert.equal(toggle.getAttribute('aria-expanded'), 'false')
   await act(async () => toggle.click())
   assert.equal(toggle.getAttribute('aria-expanded'), 'true')
@@ -305,7 +305,7 @@ test('herramientas móviles abren, cierran con Escape y al ejecutar una acción'
   assert.equal(toggle.getAttribute('aria-expanded'), 'false')
   assert.equal(document.activeElement, toggle)
   await act(async () => toggle.click())
-  await act(async () => button(host, 'Encuadrar').click())
+  await act(async () => button(host, 'Zoom to scope').click())
   assert.ok(runtime.maps[0].fitted)
   assert.equal(toggle.getAttribute('aria-expanded'), 'false')
   assert.equal(document.activeElement, toggle)

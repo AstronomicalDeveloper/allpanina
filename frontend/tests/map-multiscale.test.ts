@@ -88,7 +88,7 @@ test('UI zoom no reconstruye fuentes y permite inspeccionar cuadrados individual
  await act(async()=>map.emit(`mousemove:${POINT_LAYER}`,{features:[{properties:{cell_id:id}}],lngLat:{lng:-74,lat:-8}}))
  assert.match(runtime.popups[0].content!.textContent!,new RegExp(id))
  await act(async()=>{map.zoom=11;map.emit('zoomend')})
- assert.match(host.querySelector('.map-legend')!.textContent!,/Vista local/)
+ assert.match(host.querySelector('.map-legend')!.textContent!,/Close view/)
  await choose(host,'[aria-label="Seleccionar celda del mapa"]',id)
  assert.match(host.querySelector('.map-cell-detail')!.textContent!,new RegExp(id))
  await click(host,'VIIRS');assert.equal(host.querySelector('.map-cell-detail'),null)
@@ -97,12 +97,12 @@ test('UI zoom no reconstruye fuentes y permite inspeccionar cuadrados individual
 })
 test('año parcial y períodos no publicados mantienen cobertura sin valores de reemplazo',async t=>{
  mockFiles(t);const runtime=fakeRuntime();const {host}=await mount(t,'/mapa?periodYear=2026&scope=year',createElement(MapPage,{runtimeLoader:runtime.loader}))
- assert.match(host.querySelector('.map-observed')!.textContent!,/Año parcial.*7\/12/)
+ assert.match(host.querySelector('.map-observed')!.textContent!,/Partial year.*7\/12/)
  const map=runtime.maps[0]
  assert.equal((map.sources[SUMMARY_SOURCE].data as typeof points).features.reduce((s,f)=>s+f.properties.cell_days,0),monthly.filter(r=>r.year===2026&&r.sensor_group==='MODIS').reduce((s,r)=>s+r.cell_days!,0))
- await click(host,'Mensual');await choose(host,'[aria-label="Mes del mapa"]','8')
+ await click(host,'Monthly');await choose(host,'[aria-label="Map month"]','8')
  assert.equal((map.sources[SUMMARY_SOURCE].data as typeof points).features.length,0)
- assert.match(host.querySelector('.map-observed')!.textContent!,/Período no publicado/)
+ assert.match(host.querySelector('.map-observed')!.textContent!,/Period not published/)
 })
 
 

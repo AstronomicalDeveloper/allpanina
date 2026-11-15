@@ -60,15 +60,15 @@ test('Callao se enfoca una vez; cámara manual y cambios de sensor/mes no fuerza
  assert.equal((map.sources[DEPARTMENT_SOURCE].data as typeof navigation).features[0].properties.region_id,'PE-07')
  const observations=map.sources['celdas-observadas'].data as CellsData
  assert.equal(host.querySelector('.map-observed-value')!.textContent,'0')
- assert.match(host.querySelector('.map-provenance')!.textContent!, /GeoJSON WGS84 · PE · cobertura nacional/)
+ assert.match(host.querySelector('.map-provenance')!.textContent!, /GeoJSON WGS84 · Peru · national coverage/)
  assert.ok(!host.textContent!.includes('Ver Perú completo'))
  const all=JSON.parse(files['/data/peru/cells_PE_2024.geojson']) as CellsData
  const period={...all,features:all.features.filter(f=>f.properties.month===9&&f.properties.sensor_group==='MODIS')}
  assert.deepEqual(observations,clipDepartmentCells(period,navigation.features.find(f=>f.properties.region_id==='PE-07')!))
  await act(async()=>{map.zoom=12;map.emit('zoomend');map.emit('moveend')})
- await click(host,'VIIRS');await choose(host,'[aria-label="Mes del mapa"]','8')
+ await click(host,'VIIRS');await choose(host,'[aria-label="Map month"]','8')
  assert.equal(map.fits.length,1)
- await click(host,'Encuadrar');assert.deepEqual(map.fitted,originalBounds('PE-07'))
+ await click(host,'Zoom to scope');assert.deepEqual(map.fitted,originalBounds('PE-07'))
  await choose(host,'[aria-label="Scope"]','PE-25')
  assert.deepEqual(map.fitted,originalBounds('PE-25'))
  assert.equal(runtime.maps.length,1)
@@ -87,12 +87,12 @@ test('Callao se enfoca una vez; cámara manual y cambios de sensor/mes no fuerza
  assert.equal((map.sources[DEPARTMENT_SQUARE_SOURCE].data as {features:unknown[]}).features.length,0)
  assert.deepEqual(map.sources['celdas-observadas'].data,viirsAugust)
  await choose(host,'[aria-label="Scope"]','PE-25')
- await choose(host,'[aria-label="Año del mapa"]','2026')
- await choose(host,'[aria-label="Mes del mapa"]','7')
+ await choose(host,'[aria-label="Map year"]','2026')
+ await choose(host,'[aria-label="Map month"]','7')
  const next=runtime.maps.at(-1)!
  const nextData=JSON.parse(files['/data/peru/cells_PE_2026.geojson']) as CellsData
  assert.deepEqual(next.sources['celdas-observadas'].data,clipDepartmentCells({...nextData,features:nextData.features.filter(f=>f.properties.month===7&&f.properties.sensor_group==='VIIRS')},ucayali))
- await click(host,'Anual')
+ await click(host,'Yearly')
  assert.deepEqual(next.sources['celdas-observadas'].data,clipDepartmentCells(buildMapYear(nextData,{region:'PE',year:2026}).annual.VIIRS,ucayali))
  assert.ok(fetch.mock.calls.every(call=>!String(call.arguments[0]).includes('/docs/region/')))
 })
