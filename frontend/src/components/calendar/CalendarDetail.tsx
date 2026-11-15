@@ -1,10 +1,11 @@
 import { MONTHS, cellLabel } from '../../services/data/calendar.ts'
 import type { CalendarCell } from '../../services/data/calendar.ts'
+import type { CalendarSelectionProps } from '../../types/selection.ts'
 import type { CalibratedRecord, Sensor } from '../../types/data.ts'
 
-interface Props { calibrated?: CalibratedRecord[]; cell: CalendarCell | null; sensor: Sensor; region: string }
+interface Props extends Pick<CalendarSelectionProps, 'mapHref' | 'onOpenMap'> { calibrated?: CalibratedRecord[]; cell: CalendarCell | null; sensor: Sensor; region: string }
 
-export default function CalendarDetail({ cell, sensor, region, calibrated = [] }: Props) {
+export default function CalendarDetail({ cell, sensor, region, calibrated = [], mapHref, onOpenMap }: Props) {
   const record = cell?.record
   return (
     <section id="calendar-detail" className="calendar-detail" aria-labelledby="calendar-detail-title" aria-live="polite">
@@ -12,6 +13,7 @@ export default function CalendarDetail({ cell, sensor, region, calibrated = [] }
       {!cell ? <p>Selecciona un mes para ver sus datos y procedencia.</p> : <>
         <p>{cellLabel(cell)}{cell.status === 'absent' ? ': no existe una fila para esta combinación.' : ''}</p>
         {record && record.status !== 'ok' && <p>El estado de calidad impide mostrar este mes como un valor válido. Los campos originales se conservan abajo.</p>}
+        {mapHref && <p><a href={mapHref({ region, year: cell.year, month: cell.month, series: sensor })} onClick={event => onOpenMap?.(event, { region, year: cell.year, month: cell.month, series: sensor })}>Ver este período en el mapa</a></p>}
         <dl>
           <div><dt>Región</dt><dd>{region}</dd></div>
           <div><dt>Año</dt><dd>{cell.year}</dd></div>

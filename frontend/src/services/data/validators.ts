@@ -113,6 +113,7 @@ export function validateMethod(value: unknown): MethodInfo {
     if (start > end) fail(key, 'período invertido')
   }
   if (row.region_id !== undefined) string(row.region_id, 'region_id')
+  if (row.region !== undefined) string(row.region, 'region')
   if (row.estado !== undefined) string(row.estado, 'estado')
   if (row.kappa !== undefined) number(row.kappa, 'kappa', 0)
   if (row.resultados !== undefined) {

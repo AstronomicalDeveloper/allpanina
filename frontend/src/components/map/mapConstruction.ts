@@ -2,8 +2,8 @@
 import type * as GeoJSON from "geojson";
 import type { MapRuntime } from "./mapRuntime.ts";
 import { percentileColorExpression } from "./juanLayers.ts";
-import type { CellsData } from "../../types/data.ts";
-export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, filteredGeoJson: CellsData, percentileBreaks: {q25:number;q50:number;q75:number}, opacity: number) {
+import type { MapCells } from "../../services/data/mapExploration.ts";
+export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, filteredGeoJson: MapCells, percentileBreaks: {q25:number;q50:number;q75:number}, opacity: number) {
     const map = new runtime.Map({
       container: container,
 

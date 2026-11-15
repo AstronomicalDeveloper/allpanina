@@ -10,6 +10,7 @@ import MethodPage from '../src/components/method/MethodPage.tsx'
 import { buildCalendar, filterCalendarRecords } from '../src/services/data/calendar.ts'
 import { serializeMonthlySeries, calendarCsvFilename } from '../src/services/data/csvExport.ts'
 import { cellsFile, filterCells } from '../src/services/data/map.ts'
+import { buildMapYear } from '../src/services/data/mapExploration.ts'
 import { loadMonthlySeries, loadCalibratedSeries, loadCells, loadManifest, loadMethod, loadValidation } from '../src/services/data/loaders.ts'
 
 const file = (name: string) => readFile(new URL(`../public/data/${name}`, import.meta.url), 'utf8')
@@ -60,6 +61,12 @@ test('entrega científica: seis formatos, 18 hashes, períodos y observaciones g
     const name = cellsFile(manifest, { region: 'PE-UCA', year })!
     const geo = await loadCells(`/data/${name}`)
     assert.ok(geo.features.length > 0)
+    const annual = buildMapYear(geo, { region: 'PE-UCA', year }, monthly)
+    for (const sensor of ['MODIS', 'VIIRS'] as const) {
+      assert.equal(annual.annual[sensor].features.reduce((sum, f) => sum + f.properties.cell_days, 0), monthly.filter(r => r.year === year && r.sensor_group === sensor).reduce((sum, r) => sum + (r.cell_days ?? 0), 0))
+      assert.equal(annual.coverage[sensor].filter(m => m.status === 'ok').length, year === 2026 ? 7 : 12)
+      if (year === 2026) assert.ok(annual.coverage[sensor].slice(7).every(m => m.status === 'unpublished'))
+    }
     for (const sensor of ['MODIS', 'VIIRS'] as const) for (let month = 1; month <= 12; month++) {
       const observed = filterCells(geo, { region: 'PE-UCA', year, month, sensor })
       const record = monthly.find(r => r.year === year && r.month === month && r.sensor_group === sensor)
@@ -70,6 +77,8 @@ test('entrega científica: seis formatos, 18 hashes, períodos y observaciones g
 })
 
 test('UI real: fuente por defecto, escala regional, sensor, detalle B1, CSV y métricas separadas sin DEMO', async t => {
+  window.history.replaceState(null, '', '/?periodYear=2024&periodMonth=9')
+  t.after(() => window.history.replaceState(null, '', '/'))
   const requested: string[] = []
   t.mock.method(globalThis, 'fetch', async (url: string) => { requested.push(url); return new Response(await file(url.split('/').at(-1)!)) })
   const host = document.createElement('div'); document.body.append(host)
@@ -82,13 +91,14 @@ test('UI real: fuente por defecto, escala regional, sensor, detalle B1, CSV y m�
   assert.ok(requested.every(url => !url.includes('/demo/')))
   assert.doesNotMatch(host.textContent!, /DEMO/)
   const september = () => host.querySelector<HTMLButtonElement>('button[aria-label^="Septiembre 2024,"]')!
-  assert.equal(september().textContent, '2323')
-  assert.equal(host.querySelectorAll('tbody tr').length, 14)
+  assert.equal(september().querySelector('.calendar-cell-value')!.textContent, '2323')
+  assert.equal(host.querySelectorAll('.calendar-annual-grid button').length, 12)
+  assert.equal(host.querySelector('.calendar-table'), null)
   await act(async () => september().click())
   assert.match(host.querySelector('#calendar-detail')!.textContent!, /B1: 1638/)
   const sensor = host.querySelector<HTMLSelectElement>('#calendar-sensor')!
   await act(async () => { sensor.value = 'VIIRS'; sensor.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
-  assert.equal(september().textContent, '5581')
+  assert.equal(september().querySelector('.calendar-cell-value')!.textContent, '5581')
   const scale = host.querySelector<HTMLInputElement>('input[type="number"]')!
   assert.equal(Number(scale.value), 5581)
   const originalColor = september().style.backgroundColor
@@ -100,7 +110,7 @@ test('UI real: fuente por defecto, escala regional, sensor, detalle B1, CSV y m�
   assert.equal(Number(scale.value), 100)
   assert.equal(september().style.backgroundColor, originalColor)
   // Only the color saturates; observations and CSV remain unchanged.
-  assert.equal(september().textContent, '5581')
+  assert.equal(september().querySelector('.calendar-cell-value')!.textContent, '5581')
   let downloaded: Blob | undefined
   t.mock.method(URL, 'createObjectURL', (blob: Blob) => { downloaded = blob; return 'blob:real' })
   t.mock.method(URL, 'revokeObjectURL', () => {})
@@ -136,5 +146,5 @@ test('producción falla explícitamente sin fallback; DEMO requiere selección e
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 80)) })
   assert.match(host.textContent!, /DATOS DEMO/)
   assert.ok(urls.includes('/data/demo/monthly_series.csv'))
-  assert.ok(host.querySelector('table'))
+  assert.ok(host.querySelector('.calendar-annual-grid'))
 })

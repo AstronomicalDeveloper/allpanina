@@ -35,6 +35,7 @@ export interface ValidationResult {
 export interface Metrics { mae: number | null; wape: number | null; bias: number | null }
 export interface MethodInfo {
   region_id?: string
+  region?: string
   estado?: string
   kappa?: number
   resultados?: { valid?: { periodo: string; n_meses: number; B0: Metrics; B1: Metrics } }

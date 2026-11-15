@@ -138,7 +138,7 @@ test('navegación cambia Calendario/Método, admite enlace directo y popstate', 
   const link = (text: string) => [...host.querySelectorAll<HTMLAnchorElement>('nav a')].find(a => a.textContent === text)!
   await act(async () => link('Calendario').click())
   assert.equal(host.querySelector('h1')!.textContent, 'Calendario histórico')
-  assert.ok(host.querySelector('.calendar-table'))
+  assert.ok(host.querySelector('.calendar-annual-grid'))
   assert.match(window.location.search, /view=calendar/)
   await act(async () => link('Método').click())
   assert.equal(host.querySelector('h1')!.textContent, 'Método y evaluación')

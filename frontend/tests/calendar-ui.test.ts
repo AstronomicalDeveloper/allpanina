@@ -40,6 +40,9 @@ async function select(host: HTMLElement, id: string, value: string) {
 }
 test('renderiza años, doce meses y etiquetas distintas para cero, insuficiente y ausente', async t => {
   const host = await mount(t, createElement(HistoricalCalendar, { demo: true, records: [...records, { ...records[0], year: 2023 }] }))
+  assert.equal(host.querySelectorAll('.calendar-annual-grid button').length, 12)
+  assert.equal(host.querySelector('table'), null)
+  await act(async () => [...host.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent === 'Comparar años')!.click())
   assert.deepEqual([...host.querySelectorAll('tbody th')].map(th => th.textContent), ['2023', '2024'])
   assert.deepEqual([...host.querySelectorAll('thead th')].slice(1).map(th => th.textContent), [...MONTHS])
   assert.equal(host.querySelectorAll('tbody button').length, 24)
@@ -47,7 +50,40 @@ test('renderiza años, doce meses y etiquetas distintas para cero, insuficiente 
   assert.equal(cell(host, 'Octubre 2024, MODIS, Sin datos').textContent, 'Sin datos')
   assert.equal(cell(host, 'Enero 2024, MODIS, Ausente').textContent, 'Ausente')
 })
-test('seleccionar celda muestra contrato completo y cambiar sensor actualiza valores y borra detalle anterior', async t => {
+
+test('anual muestra doce meses del año elegido y permite navegar años sin abrir la matriz', async t => {
+  const host = await mount(t, createElement(HistoricalCalendar, { records: [...records, { ...records[0], year: 2023 }] }))
+  assert.equal(host.querySelector<HTMLSelectElement>('[aria-label="Año del calendario"]')!.value, '2024')
+  assert.equal(host.querySelectorAll('.calendar-annual-grid button').length, 12)
+  assert.equal(host.querySelector('.calendar-table'), null)
+  assert.equal(host.querySelector('.calendar-cell[aria-pressed="true"]')!.getAttribute('aria-label'), 'Septiembre 2024, MODIS, 0 · válido')
+  await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Año anterior"]')!.click())
+  assert.equal(host.querySelector<HTMLSelectElement>('[aria-label="Año del calendario"]')!.value, '2023')
+  assert.equal(host.querySelectorAll('.calendar-annual-grid button').length, 12)
+  assert.equal(host.querySelector<HTMLButtonElement>('[aria-label="Año anterior"]')!.disabled, true)
+})
+
+test('mensual centra un mes, conserva estados y navega entre diciembre y enero', async t => {
+  const host = await mount(t, createElement(HistoricalCalendar, { records: [...records, { ...records[0], year: 2023 }] }))
+  const mode = host.querySelector<HTMLSelectElement>('[aria-label="Modalidad del calendario"]')!
+  await act(async () => { mode.value = 'month'; mode.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
+  assert.equal(host.querySelectorAll('.calendar-single-month button').length, 1)
+  assert.equal(host.querySelector('.calendar-annual-grid'), null)
+  assert.match(host.querySelector('#calendar-detail')!.textContent!, /0 · válido/)
+  await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Mes siguiente"]')!.click())
+  assert.match(host.querySelector('#calendar-detail')!.textContent!, /Sin datos.*missing/)
+  await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Mes siguiente"]')!.click())
+  assert.match(host.querySelector('#calendar-detail')!.textContent!, /Ausente/)
+  const year = host.querySelector<HTMLSelectElement>('[aria-label="Año del calendario"]')!
+  const month = host.querySelector<HTMLSelectElement>('[aria-label="Mes del calendario"]')!
+  await act(async () => { year.value = '2023'; year.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
+  await act(async () => { month.value = '12'; month.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
+  await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Mes siguiente"]')!.click())
+  assert.equal(year.value, '2024')
+  assert.equal(month.value, '1')
+  assert.match(host.querySelector('#calendar-detail')!.textContent!, /Enero \(1\)/)
+})
+test('seleccionar celda muestra contrato completo y cambiar sensor conserva el período y actualiza sus valores', async t => {
   const host = await mount(t, createElement(HistoricalCalendar, { demo: true, records }))
   const august = cell(host, 'Agosto 2024, MODIS, 3')
   await act(async () => august.click())
@@ -56,8 +92,9 @@ test('seleccionar celda muestra contrato completo y cambiar sensor actualiza val
   const fields = Object.fromEntries([...detail.querySelectorAll('dl > div')].map(item => [item.querySelector('dt')!.textContent, item.querySelector('dd')!.textContent]))
   assert.deepEqual(fields, { Región: 'PE-DEMO', Año: '2024', Mes: 'Agosto (8)', Sensor: 'MODIS', 'cell_days (días-celda)': '3', status: 'ok', source_version: 'DEMO-MODIS-v0', 'updated_at (fecha del archivo)': '2026-11-14' })
   await select(host, 'calendar-sensor', 'VIIRS')
-  assert.match(detail.textContent!, /Selecciona un mes/)
-  assert.equal(host.querySelectorAll('[aria-pressed="true"]').length, 0)
+  assert.match(detail.textContent!, /VIIRS/)
+  assert.match(detail.textContent!, /Agosto \(8\)/)
+  assert.equal(host.querySelectorAll('[aria-pressed="true"]').length, 1)
   await act(async () => cell(host, 'Agosto 2024, VIIRS, 5').click())
   assert.match(detail.textContent!, /DEMO-VIIRS-v0/)
   assert.match(detail.textContent!, /5/)
@@ -77,7 +114,7 @@ test('selector de región evita mezclar registros de regiones diferentes', async
   await act(async () => cell(host, 'Agosto 2024, MODIS, 3').click())
   await select(host, 'calendar-region', 'ZZ-OTRA')
   assert.ok(cell(host, 'Agosto 2024, MODIS, 15'))
-  assert.match(host.querySelector('#calendar-detail')!.textContent!, /Selecciona un mes/)
+  assert.match(host.querySelector('#calendar-detail')!.textContent!, /ZZ-OTRA/)
 })
 test('sin datos y sensor sin registros muestran estado vacío explícito', async t => {
   const empty = await mount(t, createElement(HistoricalCalendar, { demo: true, records: [] }))
@@ -86,7 +123,7 @@ test('sin datos y sensor sin registros muestran estado vacío explícito', async
   const host = await mount(t, createElement(HistoricalCalendar, { demo: true, records: [records[0]] }))
   await select(host, 'calendar-sensor', 'VIIRS')
   assert.match(host.querySelector('[role="status"]')!.textContent!, /No hay registros para VIIRS/)
-  assert.equal(host.querySelectorAll('tbody button.calendar-cell--absent').length, 12)
+  assert.equal(host.querySelectorAll('.calendar-annual-grid button.calendar-cell--absent').length, 12)
 })
 test('página carga CSV por loader existente y muestra loading antes de la tabla', async t => {
   let resolve!: (response: Response) => void
@@ -95,7 +132,7 @@ test('página carga CSV por loader existente y muestra loading antes de la tabla
   assert.match(host.querySelector('[role="status"]')!.textContent!, /Cargando/)
   assert.match(host.textContent!, /DATOS DEMO — NO SON OBSERVACIONES REALES/)
   await act(async () => resolve(new Response(csv)))
-  assert.ok(host.querySelector('table'))
+  assert.ok(host.querySelector('.calendar-annual-grid'))
   assert.ok(cell(host, 'Agosto 2024, MODIS, 3'))
 })
 test('HTTP y CSV incorrectos muestran error y reintentar permite recuperación', async t => {
@@ -108,7 +145,7 @@ test('HTTP y CSV incorrectos muestran error y reintentar permite recuperación',
   assert.match(host.querySelector('[role="alert"]')!.textContent!, /columna obligatoria/)
   response = new Response(csv)
   await act(async () => host.querySelector<HTMLButtonElement>('button')!.click())
-  assert.ok(host.querySelector('table'))
+  assert.ok(host.querySelector('.calendar-annual-grid'))
   assert.equal(host.querySelector('[role="alert"]'), null)
 })
 test('CSV válido sin filas muestra empty state después de cargar', async t => {

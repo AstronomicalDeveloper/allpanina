@@ -1,5 +1,6 @@
 import type { CellsData, Manifest } from '../../types/data.ts'
 import type { MapSelection } from '../../types/selection.ts'
+import type { MapCellProperties } from './mapExploration.ts'
 
 export function cellsFile(manifest: Manifest, selection: Pick<MapSelection, 'region' | 'year'>): string | null {
   if (manifest.region_id !== selection.region || selection.year === null) return null
@@ -12,9 +13,10 @@ export function filterCells(data: CellsData, selection: MapSelection): CellsData
 }
 
 /** DOM text only: GeoJSON identifiers must never be interpolated as HTML. */
-export function cellPopup(properties: CellsData['features'][number]['properties']): HTMLElement {
+export function cellPopup(properties: MapCellProperties): HTMLElement {
   const content = document.createElement('div')
-  content.textContent = `Celda: ${properties.cell_id} · ${properties.sensor_group} · ${properties.month}/${properties.year} · ${properties.cell_days} días-celda`
+  const period = properties.month === undefined ? `${properties.year}, acumulado del período anual disponible` : `${properties.month}/${properties.year}`
+  content.textContent = `Celda: ${properties.cell_id} · ${properties.sensor_group} · ${period} · ${properties.cell_days} días-celda`
   return content
 }
 

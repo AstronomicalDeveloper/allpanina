@@ -7,6 +7,9 @@ import type { MapSelection } from '../../types/selection.ts'
 import type * as MapLibre from 'maplibre-gl'
 import { MONTHS } from '../../services/data/calendar.ts'
 import { cellPopup, cellsBounds, filterCells } from '../../services/data/map.ts'
+import { buildMapYear } from '../../services/data/mapExploration.ts'
+import type { MapCellProperties, MapCells, MapYear } from '../../services/data/mapExploration.ts'
+import AnnualCellDetail from './AnnualCellDetail.tsx'
 import { loadMapRuntime } from './mapRuntime.ts'
 import type { RuntimeLoader } from './mapRuntime.ts'
 import { BASEMAP_OPTIONS, applyBasemap, applyOverlayVisibility, buildGraticuleGeoJSON, calculatePercentile, percentileColorExpression } from './juanLayers.ts'
@@ -16,15 +19,16 @@ import { createJuanMap } from './mapConstruction.ts'
 interface Props {
   demo?: boolean
   data: CellsData
+  model?: MapYear
   selection: MapSelection
   availableYears: number[]
   onSelectionChange: (selection: MapSelection) => void
   runtimeLoader?: RuntimeLoader
 }
-type Properties = CellsData['features'][number]['properties']
+type Properties = MapCellProperties
 const checkLabelStyle: CSSProperties = { display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }
 
-export function FireMapTest({ data, demo = false, selection, availableYears, onSelectionChange, runtimeLoader = loadMapRuntime }: Props) {
+export function FireMapTest({ data, model, demo = false, selection, availableYears, onSelectionChange, runtimeLoader = loadMapRuntime }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
   const mapContainer = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibre.Map | null>(null)
@@ -41,9 +45,16 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
   const [shareMessage, setShareMessage] = useState('')
   const [attempt, setAttempt] = useState(0)
   const year = selection.year ?? 0, month = selection.month ?? 1, sensor = selection.sensor
+  const scope = selection.scope ?? 'year'
+  const yearModel = useMemo(() => model ?? buildMapYear(data, { region: selection.region, year }), [model, data, selection.region, year])
   const selectionKey = JSON.stringify(selection)
-  const filteredGeoJson = useMemo(() => filterCells(data, selection), [data, selection])
-  const selectedCell = selected?.key === selectionKey && filteredGeoJson.features.some(f => f.properties === selected.properties) ? selected.properties : null
+  const filteredGeoJson: MapCells = useMemo(() => scope === 'year' ? yearModel.annual[sensor] : filterCells(data, selection), [scope, yearModel, sensor, data, selection])
+  const usableMonths = yearModel.coverage[sensor].filter(m => m.status === 'ok').length
+  const coverageKnown = yearModel.coverage[sensor].some(m => m.status !== 'unknown')
+  const periodLabel = scope === 'year' ? `Acumulado ${year} · ${coverageKnown ? `${usableMonths}/12 meses publicados utilizables` : 'cobertura no disponible'}` : `${MONTHS[month - 1]} ${year}`
+  const monthStatus = yearModel.coverage[sensor][month - 1]?.status
+  const cellsById = useMemo(() => new Map(filteredGeoJson.features.map(f => [f.properties.cell_id, f])), [filteredGeoJson])
+  const selectedCell = selected?.key === selectionKey && cellsById.get(selected.properties.cell_id)?.properties === selected.properties ? selected.properties : null
   const percentileBreaks = useMemo(() => {
     const values = filteredGeoJson.features.map(f => f.properties.cell_days)
     return { q25: calculatePercentile(values, .25), q50: calculatePercentile(values, .5), q75: calculatePercentile(values, .75) }
@@ -52,8 +63,8 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
     totalDetections: filteredGeoJson.features.reduce((sum, f) => sum + f.properties.cell_days, 0),
     maxCell: filteredGeoJson.features.reduce((max, f) => Math.max(max, f.properties.cell_days), 0),
   }), [filteredGeoJson])
-  const latest = useRef({ data, filteredGeoJson, percentileBreaks, opacity, baseMap, overlays, selectionKey })
-  useEffect(() => { latest.current = { data, filteredGeoJson, percentileBreaks, opacity, baseMap, overlays, selectionKey } }, [data, filteredGeoJson, percentileBreaks, opacity, baseMap, overlays, selectionKey])
+  const latest = useRef({ data, filteredGeoJson, percentileBreaks, opacity, baseMap, overlays, selectionKey, cellsById })
+  useEffect(() => { latest.current = { data, filteredGeoJson, percentileBreaks, opacity, baseMap, overlays, selectionKey, cellsById } }, [data, filteredGeoJson, percentileBreaks, opacity, baseMap, overlays, selectionKey, cellsById])
 
   useEffect(() => {
     let cancelled = false
@@ -72,7 +83,7 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
       popupRef.current = popup
       const pick = (event: MapLibre.MapLayerMouseEvent) => {
         const id: unknown = event.features?.[0]?.properties.cell_id
-        return latest.current.filteredGeoJson.features.find(feature => feature.properties.cell_id === id)
+        return typeof id === 'string' ? latest.current.cellsById.get(id) : undefined
       }
       map.on('mousemove', 'celdas-fill', event => {
         const feature = pick(event)
@@ -142,7 +153,7 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
   const copyLink = async () => {
     const url = new URL(window.location.href)
     url.searchParams.delete('demo')
-    for (const [key, value] of Object.entries({ view: 'map', mapRegion: selection.region, periodYear: String(year), periodMonth: String(month), sensor })) url.searchParams.set(key, value)
+    for (const [key, value] of Object.entries({ view: 'map', mapRegion: selection.region, periodYear: String(year), periodMonth: String(month), sensor, mapSensor: sensor, scope, mapScope: scope })) url.searchParams.set(key, value)
     try { await navigator.clipboard.writeText(url.toString()); setShareMessage('Enlace de región, período y sensor copiado.') }
     catch { setShareMessage(`Copia este enlace: ${url.toString()}`) }
   }
@@ -177,7 +188,8 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
             position: 'relative',
           }}
         >
-          <div
+          {isFullScreen && <div
+            className="map-identity"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -219,7 +231,7 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
                 Conteos de días-celda, no incendios confirmados
               </div>
             </div>
-          </div>
+          </div>}
 
           <div
             style={{
@@ -242,7 +254,7 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
       ================================================================ */}
 
       {!isFullScreen && (
-        <div
+        <div className="map-coordinate-status"
           style={{
             position: 'absolute',
             top: '64px',
@@ -268,7 +280,7 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
           <span>|</span>
 
           <span>
-            Periodo: {MONTHS[month - 1]} {year}
+            Periodo: {periodLabel}
           </span>
 
           <span>|</span>
@@ -607,7 +619,7 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
                   textTransform: 'uppercase',
                 }}
               >
-                1. Periodo Mensual
+                1. Período {scope === 'year' ? 'anual' : 'mensual'}
               </div>
 
               <div
@@ -617,6 +629,7 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
                   gap: '8px',
                 }}
               >
+                {isFullScreen && <label>Modalidad<select aria-label="Modalidad del mapa (pantalla completa)" value={scope} onChange={event => onSelectionChange({ ...selection, scope: event.target.value === 'month' ? 'month' : 'year' })} style={{ color: '#14213d', background: 'white' }}><option value="year">Anual</option><option value="month">Mensual</option></select></label>}
                 <select aria-label="Año del mapa"
                   value={year}
                   onChange={(event) =>
@@ -637,7 +650,7 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
                   {availableYears.map(value => <option key={value} value={value}>Año {value}</option>)}
                 </select>
 
-                <select aria-label="Mes del mapa"
+                {scope === 'month' && <select aria-label="Mes del mapa"
                   value={month}
                   onChange={(event) =>
                     handleFilterChange(
@@ -655,7 +668,7 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
                   }}
                 >
                   {MONTHS.map((name, index) => <option key={name} value={index + 1}>{name}</option>)}
-                </select>
+                </select>}
               </div>
             </div>
 
@@ -795,7 +808,7 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
                   marginBottom: '6px',
                 }}
               >
-                RESUMEN OBSERVADO ({MONTHS[month - 1]?.toUpperCase()} {year})
+                RESUMEN OBSERVADO ({periodLabel})
               </div>
 
               {stats.count === 0 ? (
@@ -806,7 +819,11 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
                     fontSize: '12px',
                   }}
                 >
-                  ⚠️ Sin registros para este período y sensor. Ausencia de filas no equivale a cero.
+                  {scope === 'year' && usableMonths > 0 ? `0 días-celda registrados en ${usableMonths} meses publicados utilizables. Los demás meses no se interpretan como cero.`
+                    : scope === 'month' && monthStatus === 'ok' ? '0 días-celda registrados: mes publicado utilizable, sin detecciones.'
+                    : scope === 'month' && monthStatus === 'missing' ? 'Sin dato utilizable para este mes y sensor.'
+                    : scope === 'month' && monthStatus === 'unpublished' ? 'Período no publicado para este mes y sensor.'
+                    : 'Sin registros para este período y sensor. Ausencia de filas no equivale a cero.'}
                 </div>
               ) : (
                 <div
@@ -976,7 +993,8 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
                   lineHeight: 1.4,
                 }}
               >
-                Los umbrales se recalculan según el conjunto de celdas del periodo y sensor seleccionados.
+                {scope === 'year' ? 'Días-celda observados acumulados en los meses disponibles del año. Percentiles de los totales anuales por celda.' : 'Días-celda observados en el mes seleccionado. Percentiles de los valores mensuales por celda.'}
+                {' '}Los umbrales se recalculan según la modalidad y el sensor; no son comparables entre modalidades.
               </p>
             </div>
 
@@ -1013,7 +1031,7 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
                   <div>
                     ID Malla: <code>{selectedCell.cell_id}</code>
                   </div>
-                  <div>Período: {selectedCell.year}-{String(selectedCell.month).padStart(2, '0')} · Sensor: {selectedCell.sensor_group}</div>
+                  <div>Período: {scope === 'year' ? selectedCell.year : `${selectedCell.year}-${String(selectedCell.month).padStart(2, '0')}`} · Sensor: {selectedCell.sensor_group}</div>
 
                   <div>
                     Región: <b>{selection.region}</b>
@@ -1021,12 +1039,12 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
                     Conteo observado según contrato
                   </div>
 
-                  <div>
+                  {scope === 'year' ? <AnnualCellDetail cell={selectedCell} model={yearModel} /> : <div>
                     Valor observado:{' '}
                     <b style={{ color: '#FFC247' }}>
                       {selectedCell.cell_days} días-celda
                     </b>
-                  </div>
+                  </div>}
                 </div>
               ) : (
                 <div
@@ -1063,7 +1081,7 @@ export function FireMapTest({ data, demo = false, selection, availableYears, onS
         <button type="button" onClick={() => void copyLink()}>Copiar enlace</button>
         <label>Celda (teclado)
           <select aria-label="Seleccionar celda del mapa" value={selectedCell?.cell_id ?? ''} onChange={event => {
-            const feature = filteredGeoJson.features.find(f => f.properties.cell_id === event.target.value)
+            const feature = cellsById.get(event.target.value)
             setSelected(feature ? { key: selectionKey, properties: feature.properties } : null)
           }}><option value="">Elegir celda</option>{filteredGeoJson.features.map(f => <option key={f.properties.cell_id} value={f.properties.cell_id}>{f.properties.cell_id}: {f.properties.cell_days} días-celda</option>)}</select>
         </label>

@@ -1,7 +1,4 @@
-.app-nav { display: flex; flex-wrap: wrap; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid #c9ced6; font: 1rem/1.5 system-ui, sans-serif; }
-.app-nav a { color: #154f9e; text-decoration: underline; padding: .25rem; }
-.app-nav a[aria-current="page"] { color: #172033; font-weight: 700; }
-.app-nav a:focus-visible, .method-page :focus-visible { outline: 3px solid #125ac5; outline-offset: 3px; }
+.method-page :focus-visible { outline: 3px solid #125ac5; outline-offset: 3px; }
 .method-page { max-width: 75rem; margin: auto; padding: 1.5rem; font: 1rem/1.5 system-ui, sans-serif; color: #172033; }
 .method-page h1 { font-size: 1.8rem; font-weight: 700; }
 .method-page h2 { font-size: 1.2rem; font-weight: 650; margin-bottom: .75rem; }
