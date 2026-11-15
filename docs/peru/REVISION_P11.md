@@ -1,7 +1,7 @@
 # P11 — Revisión científica de la calibración Perú (P09 y P10)
 
 - **Paso:** P11 del plan v2.1 (`DECISIONS.md` §11).
-- **Revisor:** Marco, con Claude, por delegación de Aldo, que no estaba presente. Aldo no ha ratificado el dictamen (condición 5 pendiente).
+- **Revisor:** Marco, con Claude, por delegación de Aldo, que no estaba presente. **Aldo ratificó el dictamen sin cambios el 15-nov-2026, antes de que se corra P14** (condición 5 ✅; ver anexo A).
 - **Autora de lo revisado:** Antonella (`docs/peru/P09_P10.md`, `docs/peru/valid/`).
 - **Fecha:** 15-nov-2026.
 - **Dictamen:** ✅ **APROBADA CON CONDICIONES** (sección 4). Los κ quedan congelados en `DECISIONS.md` §12.
@@ -54,9 +54,9 @@ Eso no es coherente con el método elegido:
 | 2 | Agregar las 5 limitaciones de la sección 3 a `method.json`. | Antonella | ✅ Hecho, cifras tomadas de `validation.json` |
 | 3 | Corregir `docs/peru/P09_P10.md`: los reportables son **22** de 25 (dice 23), y P06 ya está aprobada (dice que espera revisión). | Antonella | ✅ Hecho |
 | 4 | Cambiar el estado de `method.json` a "aprobado en P11" cuando se cumplan las condiciones 1 a 3. | Antonella | ✅ Hecho |
-| 5 | Aldo ratifica o cambia este dictamen. Si cambia algo, lo hace antes de P12. | Aldo | ⏳ Pendiente: Aldo está ausente. Marco y Antonella continúan bajo delegación (ver `AUTORIZACION_TEST.md`). Si Aldo cambia algo después, se declara. |
+| 5 | Aldo ratifica o cambia este dictamen. Si cambia algo, lo hace antes de P12. | Aldo | ✅ Aldo ratificó sin cambios el 15-nov-2026, antes de P14 (anexo A). Firmó P12 en `AUTORIZACION_TEST.md`. |
 
-Con las condiciones 1 a 4 cumplidas (15-nov-2026) y la 5 pendiente por la ausencia de Aldo, Marco y Antonella firman P12 por delegación (`AUTORIZACION_TEST.md`).
+Las condiciones 1 a 5 están cumplidas (15-nov-2026). P12 lleva las firmas de Aldo, Marco y Antonella (`AUTORIZACION_TEST.md`).
 
 
 ## 5. Firma y aprobación
@@ -68,3 +68,39 @@ Con las condiciones 1 a 4 cumplidas (15-nov-2026) y la 5 pendiente por la ausenc
 - **Efecto:** P12 (autorización del test 2025-01 a 2026-07) puede firmarse solo cuando las condiciones 1 a 4 estén cumplidas y verificadas. Hasta entonces el test sigue sin tocarse.
 - **Firma:** Marco, 15-nov-2026.
 - **Actualización (15-nov-2026):** las condiciones 1 a 4 están cumplidas (ver la columna «Estado» de la sección 4) y Aldo ratificó el dictamen sin cambios (condición 5). P12 puede firmarse.
+
+## Anexo A — Ratificación de Aldo (condición 5)
+
+- **Quién y cuándo:** Aldo, 15-nov-2026, antes de que se corra P14 (en `docs/peru/test/` solo está la serie de P13; no hay ninguna salida del test).
+- **Dictamen:** se **ratifica sin cambios**: método (a) estratificado, κ de `DECISIONS.md` §12, y `PE` y `PE-SIN-25` como suma de los B1 de sus departamentos.
+- **Revisión propia:** Aldo hizo su propia revisión de P09/P10 en paralelo a la de Marco, sin conocerla, y llegó al mismo dictamen. Es la misma decisión sobre `PE`, y los números coinciden con esta revisión en todos los decimales:
+  - los 26 κ;
+  - las métricas de validación de las 27 regiones;
+  - las 22 regiones reportables;
+  - la comparación de alternativas (0.203 / 0.265 / 0.280);
+  - `PE` (WAPE 0.122) y `PE-SIN-25` (WAPE 0.122).
+
+Esa revisión agregó dos cosas que no están en el cuerpo de este documento.
+
+### A.1 Meses de control frente a FIRMS crudo (setiembre de 2024, pico de validación)
+
+Conteo independiente desde los CSV estándar de los zips de `docs/`, por día de Lima y dentro de cada polígono INEI:
+
+| Departamento | Puntos crudos MODIS / VIIRS | Filtrados | Celdas-día, conteo propio aproximado | Serie (P06) | B1 frente a MODIS |
+|---|---|---|---|---|---|
+| San Martín (amazónico) | 962 / 3,902 | 921 / 3,625 | 878 / 2,861 | 885 / 2,863 | 611 frente a 885 (−31%) |
+| Cusco (andino) | 264 / 1,197 | 251 / 1,089 | 236 / 862 | 245 / 857 | 232 frente a 245 (−5%) |
+| Ucayali (control) | 2,645 / 8,806 | 2,524 / 8,395 | 2,346 / 5,590 | 2,323 / 5,581 | 1,639 frente a 2,323 (−29%) |
+
+- La escala coincide en los tres (diferencias de 4% o menos, porque el conteo propio ubica cada punto por su posición y no por el centro de la celda).
+- Los conteos crudos de Ucayali son idénticos a los de T27.
+
+### A.2 Limitaciones por cantidad de fuego (para `method.json` y el resultado del test)
+
+- **El error depende de la actividad.**
+  - Departamentos con más de 2,000 celdas-día MODIS en validación (Cusco, Loreto, Junín, Madre de Dios, Huánuco, Ucayali y San Martín): WAPE de B1 entre 0.11 y 0.24.
+  - Departamentos con menos de 600 (Arequipa 0.59, Lima 0.52, Tumbes 0.39, Huancavelica 0.38, Apurímac 0.36, Ica 0.35, entre otros): WAPE entre 0.30 y 0.59, aunque con sesgos de solo ±2 celdas-día por mes.
+- **En años extremos B1 subestima el pico:** setiembre de 2024 dio −31% en San Martín y −29% en Ucayali, el mismo patrón que en T27.
+- **κ fuera del rango anual de train en validación:** Arequipa (2023 y 2024), Apurímac (2023 y 2024), Lambayeque (2023), Ica, Amazonas, Áncash y Ucayali (2024). Arequipa usa el κ agrupado (0.207), aunque su propia relación en validación fue de 0.15 a 0.17.
+
+Estas limitaciones no cambian el método ni los κ congelados. Se declaran.

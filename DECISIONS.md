@@ -394,8 +394,8 @@ de validación ni de test.
 
 ## 12. Extensión Perú: calibración congelada — P11 (15-nov-2026)
 
-Revisión: `docs/peru/REVISION_P11.md`. La hizo Marco, con Claude, por delegación de Aldo, que no estaba presente. **Aldo no la ha ratificado**; puede ratificarla o cuestionarla cuando vuelva.
-Dictamen: **aprobada con condiciones**; las condiciones 1 a 4 están cumplidas (15-nov-2026) y la 5 (ratificación de Aldo) está pendiente. Esto queda congelado **antes** de correr el test.
+Revisión: `docs/peru/REVISION_P11.md`. La hizo Marco, con Claude, por delegación de Aldo, que no estaba presente. **Aldo la ratificó sin cambios el 15-nov-2026, antes de P14** (`REVISION_P11.md`, anexo A).
+Dictamen: **aprobada con condiciones**; las condiciones 1 a 5 están cumplidas (15-nov-2026), incluida la ratificación de Aldo. Esto queda congelado **antes** de correr el test.
 
 - **Serie de entrada:** `docs/peru/ejemplo/monthly_series.csv` (P07), SHA-256
   `b3ceeae6df820b19f7f132558cea08e51d27f6528f04b460c4c6c8b517893109`.
@@ -440,4 +440,4 @@ Dictamen: **aprobada con condiciones**; las condiciones 1 a 4 están cumplidas (
   4. `method.json` con estado aprobado.
   5. La ratificación de Aldo.
 
-  Estado: condiciones 1 a 4 cumplidas el 15-nov-2026 (ver `REVISION_P11.md` §4); la 5 pendiente por la ausencia de Aldo. P12 la firman Marco (por delegación) y Antonella (`docs/peru/AUTORIZACION_TEST.md`).
+  Estado: condiciones 1 a 4 cumplidas el 15-nov-2026 (ver `REVISION_P11.md` §4); la 5 cumplida el mismo día: Aldo ratificó sin cambios. P12 la firman Aldo, Marco y Antonella (`docs/peru/AUTORIZACION_TEST.md`).
