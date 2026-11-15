@@ -59,8 +59,8 @@ def _mes_txt(y, m):
 def cargar_region(poligono=None, bbox=None):
     """Devuelve (geometría shapely o None, bbox (w, s, e, n), área en km²)."""
     import shapely
+    import numpy as np
     from shapely.geometry import box
-    from shapely.ops import transform
 
     if poligono is not None:
         geom = ms.load_polygon(Path(poligono))
@@ -75,7 +75,7 @@ def cargar_region(poligono=None, bbox=None):
     if not (-180 <= w < e <= 180 and -90 <= s < n <= 90):
         raise ErrorDeEntrada(f"Caja inválida: {(w, s, e, n)}. Orden: oeste, sur, este, norte.")
     forma = geom if geom is not None else box(w, s, e, n)
-    area = transform(lambda x, y, z=None: grid._TO_GRID.transform(x, y), forma).area / 1e6
+    area = shapely.transform(forma, lambda c: np.column_stack(grid._TO_GRID.transform(c[:, 0], c[:, 1]))).area / 1e6
     shapely.prepare(forma)
     return geom, (w, s, e, n), area
 
@@ -242,7 +242,7 @@ def procesar_region(modis, viirs, salida, *, region_id: str, nombre: str | None 
         salida.mkdir(parents=True, exist_ok=True)
         for viejo in salida.glob(f"cells_{region_id}_*.geojson"):
             viejo.unlink()
-        serie.to_csv(salida / "monthly_series.csv", index=False)
+        serie.to_csv(salida / "monthly_series.csv", index=False, lineterminator="\n")
         cp._write_calibrated(calibrada, salida / "calibrated_series.csv")
 
         resultados, evaluacion = {}, {}
@@ -257,7 +257,7 @@ def procesar_region(modis, viirs, salida, *, region_id: str, nombre: str | None 
         bloque, reportable, suma, n = evaluacion["test"]
         validation = dict(bloque, evaluacion="automática fuera de muestra (modo región, exploratorio)",
                           reportable=reportable)
-        (salida / "validation.json").write_text(json.dumps(validation, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        (salida / "validation.json").write_text(json.dumps(validation, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
         tamanos = {}
         en_region = ms.filter_region(cell_days, caja, geom)
@@ -265,7 +265,7 @@ def procesar_region(modis, viirs, salida, *, region_id: str, nombre: str | None 
             cells = _celdas(en_region, year, fin, km)
             fc = gj.build_geojson(cells) if km == 1 else gj.build_block_geojson(cells, km)
             p = salida / f"cells_{region_id}_{year}.geojson"
-            p.write_text(json.dumps(fc, separators=(",", ":"), ensure_ascii=False) + "\n", encoding="utf-8")
+            p.write_text(json.dumps(fc, separators=(",", ":"), ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
             tamanos[year] = p.stat().st_size / 1e6
         grandes = [y for y, mb in tamanos.items() if mb > MAPA_MB_AVISO]
         if grandes:
@@ -304,7 +304,7 @@ def procesar_region(modis, viirs, salida, *, region_id: str, nombre: str | None 
             "Un error retrospectivo de B1 no es un porcentaje de confianza para meses futuros.",
         ] + ([f"La región no tiene datos suficientes para B1: {motivo}."] if motivo else []),
     }
-    (salida / "method.json").write_text(json.dumps(method, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (salida / "method.json").write_text(json.dumps(method, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     procedencia = {
         "algoritmo": "allpanina.procesar_region", "version": VERSION,
         "generado": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -315,13 +315,13 @@ def procesar_region(modis, viirs, salida, *, region_id: str, nombre: str | None 
         "kappa": {"valor": kappa, "recalibrado_automaticamente": True, "revisado_por_el_equipo": False},
         "advertencias": advertencias,
     }
-    (salida / "procedencia.json").write_text(json.dumps(procedencia, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (salida / "procedencia.json").write_text(json.dumps(procedencia, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     manifest = mf.build_manifest(salida, salida / "_sin_info.json", region_id)
     manifest["contract_version"] = "1.0-region"
     manifest["sources"] = entradas
     manifest["files"].append("procedencia.json")
     manifest["hash"]["procedencia.json"] = "sha256:" + _sha256(salida / "procedencia.json")
-    (salida / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (salida / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     return {"salida": str(salida), "region_id": region_id, "periodo": periodo_txt, "kappa": kappa,
             "b1_disponible": kappa is not None, "celda_mapa_km": km, "zona_horaria": zona_horaria,
             "archivos": manifest["files"], "advertencias": advertencias}
