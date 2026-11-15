@@ -1,3 +1,155 @@
+## Publicación v2 sin dependencia de legacy
+
+`frontend/src/legacy/` queda excluido por `.gitignore` y se conserva únicamente en el disco local. Una copia limpia utiliza exclusivamente la arquitectura v2. El frontend anterior permanece recuperable en el commit `26a7a7745694339cfd66352ab5c51f4cf8da230d` (historial Git), sin necesitar incluir su copia local en esta versión.
+
+Los módulos cartográficos de Juan utilizados en producción están ahora en `src/pages/map/cartography/`: construcción MapLibre, proveedores/capas/percentiles, runtime/worker e inspector anual. Sus fuentes y lógica se conservan; las páginas y los tests ya no importan legacy.
+
+Las suites históricas `app-header`, `calendar-ui`, `map-ui`, `method-ui` y `scientific` se adaptaron a las rutas y componentes v2. `uiHarness.ts` aporta montaje y runtime cartográfico simulado. Las suites de contratos, validadores, CSV, agregación y los 18 hashes científicos permanecen activas. Las suites `*-v2` conservan navegación/historial, sensores independientes, estados y cancelación.
+
+El total pasa de 147 a 125 pruebas al consolidar comprobaciones duplicadas y reemplazar expectativas de interfaz retiradas. No hay tests omitidos ni desactivados: la antigua vista mensual del Calendario, el inspector L3 `?demo=1`, la cabecera con metadatos duplicados y su cálculo de altura ya no forman parte de v2; sus requisitos vigentes se verifican en el detalle del calendario, `?data=demo`, metadatos de publicación y navbar compartido. Se conservan las pruebas de errores de datos, ceros/null, sumas, residuos, filtros, CSV, popups seguros, WebGL, fullscreen, limpieza StrictMode, respuestas tardías y coherencia regional.
+
+Las secciones históricas que siguen documentan etapas anteriores; las referencias a rutas legacy describen el estado previo a esta publicación.
+
+## Método v2 — explicación y evaluación científica
+
+La página completa está en `/metodo`; `?data=demo` activa exclusivamente los fixtures de prueba. Se ejecuta con los mismos comandos de la aplicación (`npm ci`, `npm run dev`, `npm test`, `npm run lint`, `npm run build`, desde `frontend/`). No hay dependencias ni pasos nuevos.
+
+- `src/pages/method/MethodPage.tsx` carga `method.json`, `validation.json` y `manifest.json` con los loaders/validadores existentes, en paralelo y con cancelación. Permite resultados parciales y reintento. Los filtros de exploración no afectan Método; una discrepancia de `region_id` bloquea la combinación de métricas.
+- `sections/ProcessingSection.tsx` explica FIRMS, sensores, agregación y la definición de días-celda, el alcance regional de B1 y los períodos train/valid/test. Las reglas específicas del piloto se muestran solo para PE-UCA en modo real, según `method.json`, `docs/datos.md` y T27.
+- `sections/EvaluationSection.tsx` compara B0/B1 con barras proporcionales al WAPE, selecciona la etapa y conserva todas las métricas en una tabla. Validación procede de `method.resultados.valid`; la evaluación precisa procede de `validation.json` y conserva su split declarado. No se inventan métricas de entrenamiento. Las proporciones WAPE se multiplican por 100 solo para mostrarlas. Los valores completos permanecen en los títulos y en los productos enlazados. Los residuos de prueba se consultan por método con `topTestErrors`, sin recalcularlos.
+- `sections/SourcesSection.tsx` presenta ceros/faltantes/no publicados, todas las limitaciones recibidas, enlaces a los productos y hashes del manifiesto. Mostrar hashes no equivale a verificarlos en tiempo de ejecución.
+- `method.css` utiliza una composición editorial responsive y detalles HTML nativos. El navbar y las otras vistas no cambian; legacy permanece disponible como referencia.
+
+**Ámbito de la evidencia:** el manifiesto vigente contiene PE-UCA, 2013-01 a 2026-07. No hay un producto nacional aprobado integrado. Las cifras de prueba B0 WAPE 321.6%, B1 WAPE 30.8%/MAE 29.7, la validación B1 WAPE 17.8% y κ 0.2936037257560573 proceden de los archivos publicados. Las revisiones T27, T29 e integración T32 documentan la metodología; los documentos históricos se interpretan según su fecha (T27 precede a la prueba T29). No se cambiaron productos científicos, contratos ni fórmulas. La CI existente ya ejecuta frontend y pruebas Python científicas en trabajos independientes; no requirió cambios para esta página.
+
+**Verificación y límites:** pruebas de Método v2 cubren cifras reales, etapas, residuos, null/cero, ausencia de métodos, lectura parcial/reintento, discrepancias regionales, DEMO y cancelación. La revisión visual corresponde a Landry; no se utilizó navegador ni Computer Use. La expansión nacional requiere nuevos productos y evidencia científica del equipo antes de atribuirle estas métricas.
+
+## Mapa v2 — exploración geográfica
+
+La ruta `/mapa` ya utiliza MapLibre y los productos científicos publicados. Ejemplo reproducible:
+`/mapa?periodYear=2024&periodMonth=9&scope=month&calendarSeries=VIIRS&mapSensor=MODIS`.
+Ejecutar `npm ci`, `npm run dev` desde `frontend/`; comprobar con `npm test`, `npm run lint`, `npm run build`.
+
+- `src/pages/map/MapPage.tsx` carga y valida manifiesto, serie mensual y GeoJSON anual. Aborta solicitudes al cambiar de archivo; un archivo ausente no se convierte en cero. No hay fallback DEMO. El modo de prueba requiere `?data=demo`.
+- `useJuanMap.ts` extrae el ciclo de vida de `legacy/FireMapTest`: inicialización diferida, actualización de fuentes, popups seguros, selección, encuadre por geometrías, observación de tamaño, fullscreen y limpieza. Reutiliza sus módulos conservados en `pages/map/cartography/`. Legacy sigue siendo recuperable.
+- Las secciones `MapWorkspace`, `CartographyPanel` y `ExplorationPanel` organizan la interfaz: paneles independientes en escritorio y un panel inferior expandible en móvil. El navbar existente adopta únicamente una variante translúcida en `/mapa`.
+- La URL comparte región, año, mes y modalidad con Calendario; `mapSensor` permanece independiente de `calendarSeries`. Los cambios del mapa agregan entradas al historial. Copiar enlace utiliza `/mapa`, no `?view=map`.
+- La agregación anual y el desglose mensual reutilizan `mapExploration.ts`, que comprueba coherencia con los totales regionales. 2026 muestra siete meses utilizables. No se aplica B1 geográfico ni se infieren meses faltantes como cero.
+- Se conservan los proveedores NASA GIBS, Esri y MINAM, sus atribuciones y overlays. El panel principal ofrece Blue Marble y Topographic; Firefly y Streets siguen en los módulos originales. Los percentiles y colores conservan la expresión de Juan y se recalculan por período/sensor.
+
+**Disponibilidad y límites:** el manifiesto vigente publica solamente PE-UCA, sin producto nacional aprobado integrado. El encuadre usa las geometrías disponibles; la capa MINAM de áreas protegidas conserva su filtro explícito Ucayali y deberá revisarse al ampliar el ámbito. La cobertura mensual describe disponibilidad publicada, no nubes. Los fondos externos necesitan internet y WebGL; los errores se muestran sin reemplazar observaciones. La lectura sigue siendo de un GeoJSON por año; entregas nacionales mucho mayores requerirán medir rendimiento antes de elegir otra estrategia. No se añadieron dependencias ni configuración de servidor.
+
+**Verificación:** pruebas automatizadas con datos reales y un runtime MapLibre simulado cubren filtros, sumas, estados, inspector, capas, paneles, enlaces, historial, abortos, coherencia y limpieza. No equivalen a una revisión visual ni a una verificación de disponibilidad de los proveedores externos; ambas quedan pendientes. No se utilizó navegador ni Computer Use.
+
+# Nueva base frontend
+
+## Calendario v2 — segunda iteración UI/UX (vigente)
+
+`/calendario` ya utiliza observaciones reales y los servicios L3 compartidos. El
+navbar, Mapa y Método no se modifican en esta etapa. La distribución vigente
+sustituye las descripciones históricas posteriores de esta documentación.
+
+- Barra única con título/región derivados de metadatos, instrumento, Un año /
+  Comparar años, navegación anual cuando corresponde y descarga CSV con icono
+  etiquetado. La información de publicación queda en un desplegable inferior y
+  el ajuste de escala está junto a la leyenda.
+- Un año muestra doce meses, 6×2 en escritorio ancho, 4×3 intermedio y 3×4 móvil,
+  con tarjetas compactas. Descripción lateral en escritorio y debajo en pequeño.
+- Comparar años permite combinaciones no consecutivas, todos o ninguno. La
+  selección inicial editable son los últimos tres años disponibles; no constituye
+  una recomendación científica. Las selecciones se conservan por región en
+  sessionStorage durante la sesión y al alternar las vistas. Si el almacenamiento
+  no está disponible, funcionan mientras la vista permanezca montada.
+- Los años parciales se identifican por meses con observaciones válidas. La matriz
+  mantiene doce columnas y la columna de años fija, con scroll horizontal interno.
+  Descripción horizontal precede a la matriz, también en el orden del DOM.
+- Descripción prioriza observación, instrumento, estado y enlace al Mapa. B0/B1,
+  split, residual y procedencia están en un desplegable. Los decimales se muestran
+  con un máximo de dos cifras; el valor original de cada estimación se conserva en
+  su atributo title, sin modificar el archivo ni el cálculo científico.
+- Calendario presenta solo Un año y Comparar años. Los enlaces entrantes Mensual
+  siguen recuperando el período y su detalle; el botón contextual abre /mapa con
+  scope=month y mapScope=month. Se conservan parámetros, hash y los sensores
+  independientes. El estado de exploración se deriva de la URL mediante
+  app/useExplorationSelection.ts, sin router adicional.
+- Cero válido, missing y no publicado siguen diferenciados. La intensidad usa el
+  máximo regional de todos los sensores/años cargados; filtrar los años comparados
+  no cambia el dominio. El ajuste manual solo satura colores. CSV mantiene todos
+  los registros cargados de región/instrumento, su contrato y protecciones.
+
+La lógica científica y de descarga se reutiliza desde services/data, sin importar
+la pantalla legacy. La presentación reside íntegramente en pages/calendar y sus
+sections. Se retiró la sección preliminar del Calendario.
+
+Verificación: 126 pruebas frontend aprobadas (incluye selección múltiple,
+Todos los años, selección vacía, persistencia, orden de Descripción, datos reales,
+CSV y enlaces/historial), lint y build. Comandos desde la raíz:
+`npm.cmd test --prefix frontend`, `npm.cmd run lint --prefix frontend`,
+`npm.cmd run build --prefix frontend`.
+
+No se usó Computer Use, navegador ni revisión visual manual. La revisión de aspecto
+y responsive queda a cargo de Landry. Mapa y Método siguen pendientes de migración;
+el enlace contextual ya conserva el período para la futura cartografía. Sin nuevas
+bibliotecas, cambios en artefactos científicos, commits ni pushes.
+
+
+Rama: `refactor/frontend-v2`. Estado previo limpio y recuperable en el commit
+`26a7a7745694339cfd66352ab5c51f4cf8da230d`; respaldo local adicional en
+`.cache/frontend-v2/before-migration.zip` (no versionado).
+
+Estructura: `src/app/` contiene rutas y layout; `pages/<vista>/sections/` las
+secciones preliminares; `components/layout/` el navbar; `components/ui/` piezas
+comunes; `styles/` tokens y estilos. `services/` y `types/` se conservan compartidos.
+
+Se trasladaron `App.tsx`, `main.tsx`, `index.css` y todo el antiguo `components/`
+a `src/legacy/`. Las importaciones de sus pruebas apuntan ahora a legacy; siguen
+incluidos en TypeScript, lint y pruebas, pero no en el bundle de la nueva interfaz.
+Para recuperar la interfaz anterior localmente, cambiar temporalmente la entrada
+de `index.html` a `/src/legacy/main.tsx`. No hay una segunda aplicación desplegada.
+
+Rutas BrowserRouter: `/` redirige con replace a `/calendario`, conservando query y
+hash; `/calendario`, `/mapa`, `/metodo` y 404 para cualquier otra ruta.
+NavLink mantiene filtros y estado activo. El navbar ocupa todo el ancho, no tiene
+subtítulo y ofrece fuentes y ayuda reales en un desplegable. El mapa es preliminar:
+la superposición translúcida se incorporará con la cartografía real.
+
+Pendiente de migrar: Calendario, CSV, selección compartida, Mapa de Juan, capas,
+inspectores, Método y métricas. La interfaz nueva no presenta observaciones ficticias.
+Los datos y algoritmos permanecen intactos. No se usaron navegadores ni Computer Use.
+
+## Servidor propio
+
+`npm ci` y `npm run build` desde frontend generan `dist/`. Servir ese directorio
+con Nginx o Apache; no se necesita backend Node. No se añade configuración Vercel.
+Ejemplo dentro de un server Nginx, ajustando root al directorio publicado:
+
+```nginx
+root /srv/allpanina/frontend/dist;
+location /data/ { try_files $uri =404; }
+location /assets/ { try_files $uri =404; }
+location / { try_files $uri $uri/ /index.html; }
+```
+
+Alternativa Apache (.htaccess en dist, con mod_rewrite y AllowOverride habilitados):
+
+```apache
+Options -MultiViews
+RewriteEngine On
+RewriteRule ^(?:data|assets)(?:/|$) - [END]
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [END]
+RewriteRule ^ index.html [END]
+```
+
+Los archivos inexistentes de datos/assets deben devolver 404, nunca index.html.
+Una ruta desconocida de la SPA recibe index.html y muestra la página 404 cliente
+(con HTTP 200 por el fallback estático). Verificar en el servidor definitivo:
+`curl -I https://HOST/mapa`, `/metodo` (200 HTML) y `/data/no-existe.csv` (404).
+La configuración del servidor no se ha ejecutado en este entorno.
+
+La documentación histórica sigue abajo como referencia de funcionalidades legacy.
+
 # AllpaNina frontend
 
 ## Wireframes: etapa 1, estructura global y navegación

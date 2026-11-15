@@ -5,8 +5,9 @@ import { test } from 'node:test'
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { JSDOM } from 'jsdom'
-import App from '../src/App.tsx'
-import MethodPage from '../src/components/method/MethodPage.tsx'
+import App from '../src/app/AppRoutes.tsx'
+import { BrowserRouter } from 'react-router-dom'
+import MethodPage from '../src/pages/method/MethodPage.tsx'
 import { buildCalendar, filterCalendarRecords } from '../src/services/data/calendar.ts'
 import { serializeMonthlySeries, calendarCsvFilename } from '../src/services/data/csvExport.ts'
 import { cellsFile, filterCells } from '../src/services/data/map.ts'
@@ -84,7 +85,7 @@ test('UI real: fuente por defecto, escala regional, sensor, detalle B1, CSV y m�
   const host = document.createElement('div'); document.body.append(host)
   const root = createRoot(host)
   t.after(async () => { await act(async () => root.unmount()); host.remove() })
-  await act(async () => root.render(createElement(App)))
+  await act(async () => root.render(createElement(BrowserRouter, null, createElement(App))))
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 80)) })
   assert.ok(requested.includes('/data/monthly_series.csv'))
   assert.ok(requested.includes('/data/calibrated_series.csv'))
@@ -95,7 +96,7 @@ test('UI real: fuente por defecto, escala regional, sensor, detalle B1, CSV y m�
   assert.equal(host.querySelectorAll('.calendar-annual-grid button').length, 12)
   assert.equal(host.querySelector('.calendar-table'), null)
   await act(async () => september().click())
-  assert.match(host.querySelector('#calendar-detail')!.textContent!, /B1: 1638/)
+  assert.match(host.querySelector('#calendar-detail')!.textContent!, /B1: 1,638/)
   const sensor = host.querySelector<HTMLSelectElement>('#calendar-sensor')!
   await act(async () => { sensor.value = 'VIIRS'; sensor.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
   assert.equal(september().querySelector('.calendar-cell-value')!.textContent, '5581')
@@ -115,15 +116,14 @@ test('UI real: fuente por defecto, escala regional, sensor, detalle B1, CSV y m�
   t.mock.method(URL, 'createObjectURL', (blob: Blob) => { downloaded = blob; return 'blob:real' })
   t.mock.method(URL, 'revokeObjectURL', () => {})
   t.mock.method(dom.window.HTMLAnchorElement.prototype, 'click', function (this: HTMLAnchorElement) { assert.equal(this.download, 'allpanina_PE-UCA_VIIRS.csv') })
-  await act(async () => [...host.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent === 'Descargar CSV')!.click())
+  await act(async () => [...host.querySelectorAll<HTMLButtonElement>('button')].find(b => b.getAttribute('aria-label') === 'Descargar CSV')!.click())
   assert.match(await downloaded!.text(), /PE-UCA,2024,9,VIIRS,5581,ok,/)
-  await act(async () => root.render(createElement(MethodPage, { dataRoot: '/data' })))
+  await act(async () => root.render(createElement(BrowserRouter, null, createElement(MethodPage))))
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 80)) })
-  const valid = host.querySelector('section[aria-label="Métricas Validación"]')!
-  const test = host.querySelector('section[aria-label="Métricas Test"]')!
-  assert.match(valid.querySelector('[aria-label="Métricas B1"]')!.textContent!, /17.8%/)
-  assert.match(test.querySelector('[aria-label="Métricas B1"]')!.textContent!, /30.8%/)
-  assert.match(host.textContent!, /0.2936037257560573/)
+  assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'30.8%')
+  await act(async()=>[...host.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent==='Validación')!.click())
+  assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'17.8%')
+  assert.equal(host.querySelector('.method-formula strong')!.getAttribute('title'),'0.2936037257560573')
   assert.doesNotMatch(host.textContent!, /DEMO/)
   assert.equal(host.querySelector('[role="alert"]'), null)
 })
@@ -134,7 +134,7 @@ test('producción falla explícitamente sin fallback; DEMO requiere selección e
   const host = document.createElement('div'); document.body.append(host)
   const root = createRoot(host)
   t.after(async () => { await act(async () => root.unmount()); host.remove(); window.history.replaceState(null, '', '/') })
-  await act(async () => root.render(createElement(App)))
+  await act(async () => root.render(createElement(BrowserRouter, null, createElement(App))))
   assert.match(host.querySelector('[role="alert"]')!.textContent!, /HTTP 404/)
   assert.ok(urls.every(url => url.startsWith('/data/') && !url.includes('/demo/')))
   assert.doesNotMatch(host.textContent!, /DEMO/)
@@ -142,7 +142,7 @@ test('producción falla explícitamente sin fallback; DEMO requiere selección e
   window.history.replaceState(null, '', '/?data=demo')
   t.mock.restoreAll()
   t.mock.method(globalThis, 'fetch', async (url: string) => { urls.push(url); return new Response(await file(`demo/${url.split('/').at(-1)!}`)) })
-  await act(async () => root.render(createElement(App)))
+  await act(async () => root.render(createElement(BrowserRouter, null, createElement(App))))
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 80)) })
   assert.match(host.textContent!, /DATOS DEMO/)
   assert.ok(urls.includes('/data/demo/monthly_series.csv'))

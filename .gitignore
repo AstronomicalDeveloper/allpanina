@@ -324,3 +324,6 @@ crash.log
 /docs/t32/*
 !/docs/t32/INTEGRACION_T32.md
 !/docs/t32/PROCEDENCIA_T32.json
+
+# Local frontend reference; v2 and regression tests must not depend on it.
+/frontend/src/legacy/

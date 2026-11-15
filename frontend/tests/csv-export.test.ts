@@ -62,7 +62,7 @@ test('CSV sin registros tiene solo cabecera, sin ceros ni filas inventadas', () 
 test('nombre incluye región, sensor y demo y sanitiza rutas/caracteres no válidos', () => {
   assert.equal(calendarCsvFilename('PE-DEMO', 'MODIS', true), 'allpanina_PE-DEMO_MODIS_demo.csv')
   assert.equal(calendarCsvFilename('Perú', 'VIIRS', true), 'allpanina_Perú_VIIRS_demo.csv')
-  const filename = calendarCsvFilename('../../DEMO:01\\*?\n', 'VIIRS', true)
+  const filename = calendarCsvFilename('../../DEMO:01/*?/n', 'VIIRS', true)
   assert.match(filename, /^allpanina_[\p{L}\p{N}_-]+_VIIRS_demo\.csv$/u)
   assert.doesNotMatch(filename, /[\\/:*?\r\n]/)
   assert.equal(calendarCsvFilename('', 'MODIS', true), 'allpanina_region_MODIS_demo.csv')

@@ -1,178 +1,52 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { test } from 'node:test'
-import type { TestContext } from 'node:test'
 import { act, createElement } from 'react'
-import { createRoot } from 'react-dom/client'
-import { JSDOM } from 'jsdom'
-import AppHeader from '../src/components/AppHeader.tsx'
-import App from '../src/App.tsx'
+import Navbar from '../src/components/layout/Navbar'
+import { dom, files, mockFiles, mount, navigate } from './uiHarness'
 
-const dom = new JSDOM('<!doctype html><body></body>', { url: 'http://localhost/' })
-Object.defineProperties(globalThis, {
-  window: { value: dom.window, configurable: true },
-  document: { value: dom.window.document, configurable: true },
-  IS_REACT_ACT_ENVIRONMENT: { value: true, configurable: true },
+test('v2 contexto publicado muestra región, fechas y productos reales junto al calendario',async t=>{
+ mockFiles(t);const {host}=await mount(t)
+ assert.match(host.querySelector('.calendar-heading')!.textContent!,/Ucayali, Perú/)
+ assert.match(host.querySelector('.calendar-publication')!.textContent!,/2013-01.*2026-07.*MCD14ML/)
 })
-const file = (name: string) => readFile(new URL(`../public/data/${name}`, import.meta.url), 'utf8')
-const manifest = JSON.parse(await file('manifest.json'))
-const method = JSON.parse(await file('method.json'))
-
-async function mount(t: TestContext, element: ReturnType<typeof createElement>) {
-  const host = document.createElement('div'); document.body.append(host)
-  const root = createRoot(host)
-  await act(async () => root.render(element))
-  t.after(async () => { await act(async () => root.unmount()); host.remove() })
-  return { host, root }
-}
-
-test('cabecera: nombre, período, producto y generación proceden de los archivos reales', async t => {
-  t.mock.method(globalThis, 'fetch', async (url: string) => new Response(JSON.stringify(url.endsWith('method.json') ? method : manifest)))
-  const { host } = await mount(t, createElement(AppHeader, { dataRoot: '/data', children: null }))
-  assert.match(host.textContent!, /Departamento de Ucayali, Perú \(PE-UCA\)/)
-  assert.match(host.textContent!, /2013-01 — 2026-07/)
-  assert.ok(host.textContent!.includes(manifest.producto))
-  assert.ok(host.textContent!.includes(manifest.generated_at))
-  assert.equal(host.querySelector('details summary')!.textContent, 'Acerca de / Fuentes')
-  assert.equal(host.querySelector('a[href="/data/manifest.json"]')!.textContent, 'manifest.json')
-  assert.doesNotMatch(host.textContent!, /DEMO|Región piloto por confirmar/)
-  assert.equal(host.querySelector('select'), null)
+test('v2 metadatos fallidos no inventan descripción ni fallback y permiten reintentar',async t=>{
+ let fail=true;t.mock.method(globalThis,'fetch',async(url:string)=>new Response(fail&&url.endsWith('method.json')?'{}':files[url]))
+ const {host}=await mount(t)
+ assert.match(host.querySelector('.calendar-heading')!.textContent!,/PE-UCA/)
+ assert.doesNotMatch(host.querySelector('.calendar-heading')!.textContent!,/Ucayali, Perú/)
+ assert.match(host.querySelector('[role="alert"]')!.textContent!,/Descripción de región no disponible/)
+ fail=false;await act(async()=>[...host.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent==='Reintentar archivos')!.click())
+ assert.match(host.querySelector('.calendar-heading')!.textContent!,/Ucayali, Perú/)
 })
-
-test('metadatos fallidos no inventan región, período ni fallback; reintento recupera el contexto', async t => {
-  let fail = true
-  const urls: string[] = []
-  t.mock.method(globalThis, 'fetch', async (url: string) => {
-    urls.push(url)
-    return fail ? new Response('inaccesible', { status: 404 }) : new Response(JSON.stringify(url.endsWith('method.json') ? method : manifest))
-  })
-  const { host } = await mount(t, createElement(AppHeader, { dataRoot: '/data', children: null }))
-  assert.match(host.textContent!, /Contexto de región y período no disponible/)
-  assert.doesNotMatch(host.textContent!, /Ucayali|2026-07|DEMO/)
-  assert.ok(urls.every(url => url.startsWith('/data/') && !url.includes('/demo/')))
-  fail = false
-  await act(async () => host.querySelector<HTMLButtonElement>('button')!.click())
-  assert.match(host.textContent!, /Ucayali/)
-  assert.equal(host.querySelector('button'), null)
+test('v2 no combina el nombre de otra región con el manifiesto actual',async t=>{
+ const method=JSON.parse(files['/data/method.json']);method.region_id='OTRA';method.region='Otra región'
+ mockFiles(t,{'/data/method.json':JSON.stringify(method)});const {host}=await mount(t)
+ assert.match(host.querySelector('.calendar-heading')!.textContent!,/PE-UCA/)
+ assert.doesNotMatch(host.querySelector('.calendar-heading')!.textContent!,/Otra región/)
 })
-
-test('el nombre descriptivo de otra región nunca se combina con el manifest actual', async t => {
-  t.mock.method(globalThis, 'fetch', async (url: string) => new Response(JSON.stringify(url.endsWith('method.json') ? { ...method, region_id: 'OTRA', region: 'Región ajena' } : manifest)))
-  const { host } = await mount(t, createElement(AppHeader, { dataRoot: '/data', children: null }))
-  assert.match(host.querySelector('.app-region-context')!.textContent!, /PE-UCA/)
-  assert.doesNotMatch(host.textContent!, /Región ajena|Ucayali/)
+test('v2 navegación conserva URL, hash, enlaces reales y estado activo sin roles de pestañas',async t=>{
+ const {host}=await mount(t,'/calendario?scope=month&periodYear=2024#detalle',createElement(Navbar))
+ for(const link of host.querySelectorAll<HTMLAnchorElement>('nav a')) { assert.ok(link.href.includes('periodYear=2024')); assert.equal(new URL(link.href).hash,'#detalle') }
+ assert.equal(host.querySelector('[role="tab"]'),null)
+ await act(async()=>[...host.querySelectorAll<HTMLAnchorElement>('nav a')].find(a=>a.textContent==='Método')!.click())
+ assert.equal(window.location.pathname,'/metodo');assert.equal(host.querySelector('[aria-current="page"]')!.textContent,'Método')
+ await navigate('/mapa?periodYear=2024');assert.ok(host.querySelector('.navbar--map'))
+ await navigate('/calendario');assert.equal(host.querySelector('.navbar--map'),null)
 })
-
-test('navegación común conserva enlaces, parámetros, hash e historial sin roles de pestañas', async t => {
-  const names = ['manifest.json', 'method.json', 'validation.json', 'monthly_series.csv', 'calibrated_series.csv']
-  const files = Object.fromEntries(await Promise.all(names.map(async name => [name, await file(name)])))
-  t.mock.method(globalThis, 'fetch', async (url: string) => new Response(files[url.split('/').at(-1)!]))
-  window.history.replaceState(null, '', '/?view=calendar&mapRegion=PE-UCA&periodYear=2024&periodMonth=9&sensor=VIIRS#detalle')
-  t.after(() => window.history.replaceState(null, '', '/'))
-  const { host } = await mount(t, createElement(App))
-  const header = host.querySelector('.app-header')!
-  assert.ok(header.classList.contains('app-header--solid'))
-  const links = [...header.querySelectorAll<HTMLAnchorElement>('nav a')]
-  assert.deepEqual(links.map(a => a.textContent), ['Calendario', 'Mapa', 'Método'])
-  for (const a of links) {
-    const url = new URL(a.href)
-    assert.equal(url.searchParams.get('periodYear'), '2024')
-    assert.equal(url.searchParams.get('periodMonth'), '9')
-    assert.equal(url.searchParams.get('sensor'), 'VIIRS')
-    assert.equal(url.hash, '#detalle')
-    assert.equal(a.getAttribute('role'), null)
-  }
-  assert.equal(header.querySelector('[role="tablist"]'), null)
-  assert.equal(host.querySelector('.app-skip-link')!.getAttribute('href'), '#app-content')
-  // Modified clicks retain the browser's open-in-new-tab behavior.
-  const modified = new dom.window.MouseEvent('click', { button: 0, ctrlKey: true, bubbles: true, cancelable: true })
-  links[1].dispatchEvent(modified)
-  assert.equal(modified.defaultPrevented, false)
-  assert.match(window.location.search, /view=calendar/)
-  const sources = header.querySelector<HTMLDetailsElement>('.app-sources')!
-  await act(async () => header.querySelector<HTMLElement>('.app-sources summary')!.click())
-  assert.equal(sources.open, true)
-  await act(async () => links[2].click())
-  assert.equal(host.querySelector('.app-header'), header)
-  assert.equal(sources.open, false)
-  assert.equal(header.querySelector('[aria-current="page"]')!.textContent, 'Método')
-  assert.equal(host.querySelector('h1')!.textContent, 'Método y evaluación')
-  await act(async () => {
-    window.history.replaceState(null, '', '/?view=calendar&mapRegion=PE-UCA&periodYear=2024&periodMonth=9&sensor=VIIRS')
-    window.dispatchEvent(new dom.window.PopStateEvent('popstate'))
-  })
-  assert.equal(header.querySelector('[aria-current="page"]')!.textContent, 'Calendario')
-  assert.equal(host.querySelector<HTMLSelectElement>('#calendar-sensor')!.value, 'VIIRS')
-  assert.equal(host.querySelector('button[aria-label="Septiembre 2024, VIIRS, 5581"]')!.getAttribute('aria-pressed'), 'true')
+test('v2 menú de información muestra fuentes, cierra con Escape y devuelve foco',async t=>{
+ const {host}=await mount(t,'/calendario',createElement(Navbar));const details=host.querySelector('details')!,summary=details.querySelector('summary')!
+ await act(async()=>summary.click());assert.ok(details.open)
+ assert.ok(details.querySelector('a[href="/data/manifest.json"]'))
+ await act(async()=>details.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true})))
+ assert.equal(details.open,false);assert.equal(document.activeElement,summary)
+ await act(async()=>summary.click());await navigate('/metodo');assert.equal(host.querySelector('details')!.open,false)
 })
-
-test('menú secundario abre fuentes reales, cierra con Escape y devuelve foco; admite cierre exterior', async t => {
-  t.mock.method(globalThis, 'fetch', async (url: string) => new Response(JSON.stringify(url.endsWith('method.json') ? method : manifest)))
-  const { host } = await mount(t, createElement(AppHeader, { dataRoot: '/data', children: null }))
-  const menu = host.querySelector<HTMLDetailsElement>('.app-sources')!
-  const summary = menu.querySelector('summary')!
-  const source = menu.querySelector<HTMLAnchorElement>('a[href="/data/manifest.json"]')!
-  assert.equal(menu.open, false)
-  await act(async () => summary.click())
-  assert.equal(menu.open, true)
-  source.focus()
-  source.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
-  assert.equal(menu.open, false)
-  assert.equal(document.activeElement, summary)
-  await act(async () => summary.click())
-  source.dispatchEvent(new dom.window.Event('pointerdown', { bubbles: true }))
-  assert.equal(menu.open, true)
-  document.body.dispatchEvent(new dom.window.Event('pointerdown', { bubbles: true }))
-  assert.equal(menu.open, false)
-  assert.equal(host.querySelector('[role="menu"]'), null)
-})
-
-test('la reserva de espacio del mapa sigue la altura real de cabecera y libera su observador', async t => {
-  t.mock.method(globalThis, 'fetch', async (url: string) => new Response(JSON.stringify(url.endsWith('method.json') ? method : manifest)))
-  const previous = Object.getOwnPropertyDescriptor(globalThis, 'ResizeObserver')
-  let resize!: () => void
-  let observed: Element | null = null
-  let disconnected = false
-  Object.defineProperty(globalThis, 'ResizeObserver', { configurable: true, value: class {
-    constructor(callback: () => void) { resize = callback }
-    observe(element: Element) { observed = element }
-    disconnect() { disconnected = true }
-  } })
-  t.after(() => {
-    if (previous) Object.defineProperty(globalThis, 'ResizeObserver', previous)
-    else Reflect.deleteProperty(globalThis, 'ResizeObserver')
-  })
-  const { host, root } = await mount(t, createElement(AppHeader, { dataRoot: '/data', view: 'map', children: null }))
-  const header = host.querySelector<HTMLElement>('.app-header')!
-  assert.equal(observed, header)
-  Object.defineProperty(header, 'offsetHeight', { configurable: true, value: 180 })
-  resize()
-  assert.equal(host.style.getPropertyValue('--app-header-height'), '180px')
-  Object.defineProperty(header, 'offsetHeight', { configurable: true, value: 240 })
-  resize()
-  assert.equal(host.style.getPropertyValue('--app-header-height'), '240px')
-  await act(async () => root.unmount())
-  assert.equal(disconnected, true)
-  assert.equal(host.style.getPropertyValue('--app-header-height'), '')
-})
-
-test('los colores de texto, navegación y superficies comunes cumplen contraste AA', async () => {
-  const css = await readFile(new URL('../src/index.css', import.meta.url), 'utf8')
-  const token = (name: string) => css.match(new RegExp(`--${name}: (#[0-9A-Fa-f]{6})`))![1]
-  function luminance(hex: string) {
-    const rgb = hex.slice(1).match(/../g)!.map(n => parseInt(n, 16) / 255).map(c => c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4)
-    return rgb[0] * .2126 + rgb[1] * .7152 + rgb[2] * .0722
-  }
-  for (const [foreground, background] of [
-    [token('text-primary'), token('surface-page')],
-    [token('text-primary'), token('surface-soft')],
-    [token('brand-forest'), token('surface-page')],
-    ['#FFFFFF', token('brand-forest')],
-    ['#FFC397', '#2C554C'],
-    [token('surface-page'), '#2C554C'],
-    [token('surface-soft'), '#294B45'],
-  ]) {
-    const [a, b] = [luminance(foreground), luminance(background)].sort((a, b) => b - a)
-    assert.ok((a + .05) / (b + .05) >= 4.5, `${foreground} sobre ${background}`)
-  }
+test('v2 tokens de texto y navegación conservan contraste AA',async()=>{
+ const css=await readFile(new URL('../src/styles/tokens.css',import.meta.url),'utf8')
+ const token=(name:string)=>css.match(new RegExp(`--${name}:\\s*(#[0-9A-Fa-f]{6})`))![1]
+ const luminance=(hex:string)=>{const c=hex.slice(1).match(/../g)!.map(n=>parseInt(n,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return c[0]*.2126+c[1]*.7152+c[2]*.0722}
+ for(const [fg,bg] of [[token('ink'),token('page')],[token('ink'),token('soft')],[token('page'),token('forest')],['#FFD0AD',token('forest')]]) {
+ const [a,b]=[luminance(fg),luminance(bg)].sort((a,b)=>b-a);assert.ok((a+.05)/(b+.05)>=4.5,`${fg} sobre ${bg}`)
+ }
 })
