@@ -85,3 +85,55 @@ def test_months_after_series_end_are_dropped():
     )
     cells = gj.monthly_cells(grid.dedupe_cell_days(pts), gj.series.REGION_BBOX, 2026)
     assert cells["month"].tolist() == [7]
+
+
+# --- P08: mapa nacional a 10 km (extension Peru, contrato v1.1 seccion G) ----------------
+
+def _peru_points():
+    # Dos puntos en la misma celda de 10 km de Pucallpa (a ~1-2 km), uno en Lima, uno en Brasil (Manaos).
+    return pd.DataFrame(
+        {
+            "sensor_group": ["MODIS", "MODIS", "MODIS", "MODIS", "VIIRS"],
+            "satellite": ["Terra"] * 5,
+            "latitude": [-8.380, -8.385, -12.05, -3.10, -8.380],
+            "longitude": [-74.550, -74.535, -77.03, -60.02, -74.550],
+            "local_date": pd.to_datetime(["2024-08-10"] * 5),
+            "version": ["61.03", "61.03", "61.03", "61.03", "2"],
+        }
+    )
+
+
+def test_peru_blocks_sum_1km_cells_and_drop_cells_outside_peru():
+    departments = gj.series.load_departments(gj.series.DEPARTMENTS_POLYGONS)
+    cells = gj.peru_cells(grid.dedupe_cell_days(_peru_points()), departments, 2024)
+    modis = cells[cells["sensor_group"] == "MODIS"]
+    assert modis["cell_days"].sum() == 3          # Pucallpa (2 celdas de 1 km) + Lima; Manaos no cuenta
+    assert set(modis["cell_days"]) == {1, 2}      # las 2 celdas de Pucallpa caen en un solo bloque de 10 km
+    assert all(x % 10 == 0 and y % 10 == 0 for x, y in zip(cells["x_km"], cells["y_km"]))
+    assert all(cid == f"{x}_{y}" for cid, x, y in zip(cells["cell_id"], cells["x_km"], cells["y_km"]))
+
+
+def test_peru_block_geometry_is_10_km_and_has_no_region_id():
+    departments = gj.series.load_departments(gj.series.DEPARTMENTS_POLYGONS)
+    collection = gj.build_block_geojson(gj.peru_cells(grid.dedupe_cell_days(_peru_points()), departments, 2024))
+    assert "crs" not in collection
+    for feature in collection["features"]:
+        assert set(feature["properties"]) == {"cell_id", "year", "month", "sensor_group", "cell_days"}
+        ring = feature["geometry"]["coordinates"][0]
+        width = ring[1][0] - ring[0][0]
+        assert 0.09 < width < 0.11               # 10 km en EPSG:6933 son ~0.104 grados de longitud
+        assert ring[0] == ring[-1]
+
+
+def test_peru_map_sum_matches_pe_in_the_series():
+    departments = gj.series.load_departments(gj.series.DEPARTMENTS_POLYGONS)
+    cell_days = grid.dedupe_cell_days(_peru_points())
+    cells = gj.peru_cells(cell_days, departments, 2024)
+    peru = gj.series.build_peru_series(cell_days, departments, first_month=(2024, 8), last_month=(2024, 8), updated_at="2026-11-14")
+    for sensor in ("MODIS", "VIIRS"):
+        pe = peru[(peru["region_id"] == "PE") & (peru["sensor_group"] == sensor)]["cell_days"].iloc[0]
+        assert cells[cells["sensor_group"] == sensor]["cell_days"].sum() == pe
+
+
+def test_peru_test_years_are_reserved_by_default():
+    assert gj.main(["--peru", "--years", "2025"]) == 1
