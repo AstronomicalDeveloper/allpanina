@@ -183,7 +183,7 @@ test('conjunto local alimenta Calendario, análisis histórico, Mapa y Método s
 test('Método oculta métricas y residuos de una evaluación no reportable', async t => {
   const validation = { ...JSON.parse(files['/data/validation.json']), reportable: false } as ValidationResult
   const { host } = await mount(t, '/metodo', createElement(EvaluationSection, { method: null, validation, demo: false }))
-  assert.match(host.textContent!, /no es reportable/)
-  assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent, 'No disponible')
+  assert.match(host.textContent!, /is not reportable/)
+  assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent, 'Not available')
   assert.equal(host.querySelector('tbody')!.children.length, 0)
 })

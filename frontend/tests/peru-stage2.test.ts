@@ -109,12 +109,12 @@ test('Método PE distingue PE-SIN-25 y muestra serie calibrada recibida sin reca
  mockFiles(t);const {host}=await setup(t,'/method?mapRegion=PE')
  assert.equal(host.querySelector('.method-scope > strong')!.textContent,'PE')
  assert.equal(host.querySelector('.method-formula .method-equation'),null)
- assert.match(host.querySelector('[aria-label="Contexto científico regional"]')!.textContent!,/suma.*25 departamentos/)
+ assert.match(host.querySelector('[aria-label="Regional scientific context"]')!.textContent!,/adding.*25 departments/)
  const clean=validation.regions.find(r=>r.region_id==='PE-SIN-25')!
  assert.ok(clean.reportable)
- assert.match(host.querySelector('[aria-label="Prueba PE-SIN-25"]')!.textContent!,new RegExp((clean.methods.B1!.metrics.wape!*100).toFixed(1)))
+ assert.match(host.querySelector('[aria-label="Test PE-SIN-25"]')!.textContent!,new RegExp((clean.methods.B1!.metrics.wape!*100).toFixed(1)))
  assert.equal(host.querySelector('[aria-label="Scope"] option[value="PE-SIN-25"]'),null)
- const rows=host.querySelector('[aria-label="Serie calibrada regional"]')!
+ const rows=host.querySelector('[aria-label="Regional calibrated series"]')!
  assert.equal(rows.querySelectorAll('tbody tr').length,24)
  const value=calibrated.filter(r=>r.region_id==='PE').sort((a,b)=>a.year-b.year||a.month-b.month||a.method.localeCompare(b.method)).at(-1)!.value
  assert.ok(rows.querySelector(`[title="${value}"]`))
@@ -125,8 +125,8 @@ test('Método regional reportable, no reportable, cambio de etapa y observacione
  await click(host,'Validación');assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'17.8%')
  await choose(host,'[aria-label="Scope"]','PE-07')
  assert.match(host.querySelector('.method-scope')!.textContent!,/Callao/)
- assert.match(host.querySelector('[aria-label="Contexto científico regional"]')!.textContent!,/Prueba no reportable.*Σ MODIS en test = 0/)
- assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'No disponible')
+ assert.match(host.querySelector('[aria-label="Regional scientific context"]')!.textContent!,/Test not reportable.*Σ MODIS en test = 0/)
+ assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'Not available')
  assert.ok(host.querySelector('nav a[href*="calendar"]'))
 })
 test('popup nacional nunca traduce cell_days a días distintos de una celda de 10 km',()=>{
@@ -145,7 +145,7 @@ test('respuesta tardía de Método no cambia la región actual ni sus resultados
   return Promise.resolve(new Response(files[url]))
  })
  const {host}=await mount(t,'/metodo?mapRegion=PE-25',createElement(MethodPage),'peru')
- assert.ok(release);assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'No disponible')
+ assert.ok(release);assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'Not available')
  await act(async()=>{window.history.pushState(null,'','/metodo?mapRegion=PE-01');window.dispatchEvent(new dom.window.PopStateEvent('popstate'))})
  assert.equal(signal?.aborted,true)
  const row=validation.regions.find(r=>r.region_id==='PE-01')!;assert.ok(row.reportable)
@@ -175,7 +175,7 @@ test('métricas regionales null y serie calibrada no disponible conservan el res
  changed.regions.find((r:{region_id:string})=>r.region_id==='PE-01').methods.B1.metrics.wape=null
  mockFiles(t,{'/data/peru/validation.json':JSON.stringify(changed),'/data/peru/calibrated_series.csv':'invalid'})
  const {host}=await setup(t,'/method?mapRegion=PE-01')
- assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'No disponible')
+ assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'Not available')
  assert.match(host.querySelector('[role="alert"]')!.textContent!,/calibrated_series.csv/)
  assert.ok(host.querySelector('.method-definition'))
  await click(host,'Validación')
