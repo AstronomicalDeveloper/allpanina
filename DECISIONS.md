@@ -343,7 +343,11 @@ Son **preliminares**: los κ oficiales los calcula Antonella en P09 con el pipel
 y deben coincidir. Callao tiene Σ MODIS = 0 en train; solo entra en el estrato
 agrupado, nunca con κ propio.
 
-### 11.3 Reglas de métricas — P04 (Aldo, 14-nov-2026; confirmación de Antonella pendiente)
+### 11.3 Reglas de métricas — P04 (Aldo + Antonella, 14-nov-2026)
+
+Versión unificada. Antonella había escrito su propia versión de P04 (commit `0bef9b3`),
+coincidente en todo menos el criterio del punto 4. Aldo decidió combinar las dos:
+decide el criterio por departamentos y se reporta además el de Antonella.
 
 Fijadas **antes** de calcular cualquier métrica de validación o test fuera de Ucayali.
 
@@ -378,19 +382,12 @@ no deja fija):
 - **Se elige la estratificada si su WAPE agregado es menor que el de (b) y el de (c).**
   Si no lo es, en P11 se elige entre (a), (b) y (c) la de menor WAPE agregado, se
   documenta y se congela. No se crean alternativas nuevas después de ver validación.
+- **Se reporta además** (propuesta de Antonella), sin que decida la elección:
+  - el WAPE de `PE` nacional, con la estimación nacional = suma de los B1 de los
+    departamentos, para las tres alternativas y para B0;
+  - en cuántas regiones reportables la estratificada tiene menor WAPE que (b).
 - El test no interviene en esta elección.
-### P04 — Reglas de métricas (fijadas antes de ver valid y test)
-Fecha: 2026-11-15 · Acordado por: Aldo + Antonella
 
-1. Mínimo para reportar una región en un split: Σ MODIS ≥ 50 celdas-día en ese split
-   (valid 2023-01..2024-12 o test 2025-01..2026-07). Si no lo cumple, la región
-   no se reporta sola; solo cuenta dentro del agregado PE.
-2. WAPE = Σ|B − MODIS| / Σ MODIS. No se reporta si Σ MODIS = 0.
-3. Se usan las mismas métricas del piloto de Ucayali, sin agregar ni quitar ninguna.
-4. Validación (P10): se compara B1 estratificado contra B0, κ nacional único (0.249)
-   y κ de Ucayali (0.294).
-   "Estratificar mejora" si el WAPE nacional de B1 estratificado es menor que el del
-   κ nacional único. Además se reporta en cuántas regiones reportables mejora.
-5. Test (P14): se reporta para PE, PE sin Ucayali (PE − PE-25) y cada región que
-   cumpla la regla 1. Advertencia: el test de Ucayali ya se vio en T29.
-6. Estas reglas no se cambian después de ver los resultados de valid ni de test.
+**5. Sin cambios.** Se usan las mismas métricas del piloto (MAE, WAPE y sesgo), sin
+agregar ni quitar ninguna. Estas reglas no se cambian después de ver los resultados
+de validación ni de test.

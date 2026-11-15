@@ -2,7 +2,7 @@
 
 - **Pasos revisados:** P05 (polígonos), P06 (serie multirregión) y P07 (muestra). Los hizo Marco.
 - **Revisa:** Aldo, 14-nov-2026.
-- **Estado:** ⏳ **Dictamen propuesto: aprobada.** Falta la confirmación de Aldo.
+- **Estado:** ✅ **APROBADA** por Aldo, 14-nov-2026. Marco puede seguir con P08 y Antonella con P09.
 - **Validación y test:** no se calcularon métricas de validación ni de test. Solo se revisó estructura, sumas y train.
 
 ## Qué se verificó (de forma independiente, sin los scripts del equipo)
