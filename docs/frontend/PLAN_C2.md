@@ -1,8 +1,30 @@
 # AllpaNina · C2 — Plan de refactorización del frontend
 
 **Fecha:** 15-nov-2026 · **Responsable:** Marco (con Claude) · **Base:** `AUDITORIA_C1.md` (misma carpeta)
-**Rama de trabajo:** `refactor/frontend-experience`, creada desde `feat/peru-integration` (`a4c59f2`, Landry) e integrada con los cambios de la Fase 1 (publicados antes en `refactor/frontend-v2`, `6555baf`). Fase 1 y C5 se hicieron primero sobre `refactor/frontend-v2` (`0526391`) y se unieron después a la integración nacional de Landry.
-**Estado:** plan escrito. **Fase 1** ejecutada (`6555baf`). **C5** (claridad científica en la interfaz, ver Fase 1b) ejecutada después. Las fases 2 y 3 **no** están hechas.
+**Rama de trabajo:** `refactor/frontend-fase2` (al 15-nov apunta al mismo commit que `main`, `384654f`). El nombre `refactor/frontend-experience` que figuraba en versiones anteriores de este plan no existe en el repositorio remoto. Fase 1 y C5 se hicieron primero sobre `refactor/frontend-v2` (`0526391`, `6555baf`) y se unieron después a la integración nacional de Landry (`feat/peru-integration`, fusionada en `main` por el PR #8).
+**Estado:** plan escrito. **Fase 1** y **Fase 1b (C5)** ejecutadas y en `main`. **Fase 2** parcial: parte la resolvió Landry durante la integración nacional. **Fase 3** pendiente. El detalle está en la sección 0.
+
+## 0. Estado verificado (15-nov-2026, sobre `main` `384654f`)
+
+Verificado en un clon de trabajo limpio: `npm ci` correcto; `npm test` 185 de 185; `npm run lint` sin errores; `npm run build` correcto (solo un aviso de tamaño por `maplibre-gl`, que se carga únicamente en `/mapa`). **No verificado todavía:** capturas a 390 y 1440 px, navegación con teclado, contraste ni lector de pantalla (todo eso es C6).
+
+| # | Estado | Evidencia o pendiente |
+|---|---|---|
+| 1.1–1.6 | ✅ Hecho | `index.html` con `lang="es"` y título propio; `public/favicon.svg`; `useDocumentTitle.ts`; landing en `/`; `/?…` redirige a `/calendario`; `router.test.ts` y `landing.test.ts` |
+| 1b.1, 1b.3 | ✅ Hecho | `CellDaysHelp` con `purpose`; contexto de la celda en `ExplorationPanel.tsx`; `clarity.test.ts` y `map-ui.test.ts` |
+| 2.1 Nombres de región | ✅ Hecho (Landry, A3) | `GeographicSelection.tsx` y `CalendarPage.tsx` toman el `nombre` de `peru/method.json` |
+| 2.2 Textos del mapa nacional | 🟡 Parcial | Los textos de 10 km ya existen (`CartographyPanel`, `ExplorationPanel`, `AnnualCellDetail`, `MapWorkspace`). Falta: el título «Inspector de celda» no cambia en el modo nacional |
+| 2.3 Capa «Áreas protegidas · Ucayali» | ⬜ Pendiente | Se sigue ofreciendo en el modo nacional (`CartographyPanel.tsx`). Decide Landry |
+| 2.4 Mensajes de error | ⬜ Pendiente | Se muestran textos técnicos (`String(error)`) en `GeographicSelection.tsx`, `MapPage.tsx` y `useJuanMap.ts`. Coordinar con Landry |
+| 2.5 Párrafo nacional en Método | ✅ Hecho (Landry, A5) | `NationalMethodNotes.tsx` |
+| 2.6 Menú «Acerca de» (nuevo) | ⬜ Pendiente (Marco) | `Navbar.tsx`: el enlace «Manifiesto de datos publicados» apunta al piloto (`/data/manifest.json`), no a `/data/peru/manifest.json`; el texto «Las herramientas científicas se incorporarán progresivamente» ya no es cierto |
+| 3.1 Leyenda del mapa | ⬜ Pendiente | `CartographyPanel.tsx` sigue usando `toFixed(1)` en los cortes por percentil |
+| 3.2 Escala del calendario | ⬜ Pendiente | `CalendarExplorer.tsx` sigue usando `toFixed(1)` en las marcas de la escala |
+| 3.3 Móvil del mapa | ⬜ Sin verificar | Requiere capturas con el mapa base real |
+| 3.4 Tokens y orden del código | ⬜ Pendiente | `tokens.css` sin ampliar; `juanLayers.ts` sin renombrar |
+| 3.5 Contexto comparativo | ✅ Cubierto (Landry) | `HistoricalAnalysis.tsx`: mismo mes en años anteriores |
+
+**Para revisar con Landry (C5):** según `frontend/README.md`, al elegir un departamento el mapa «oculta las celdas exteriores y recorta visualmente las fronterizas». La interfaz aclara que el recorte es solo cartográfico, pero conviene confirmar juntos que no se lea como un mapa departamental exacto (precaución A7).
 
 ## 1. Reglas que este plan respeta
 
