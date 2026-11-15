@@ -4,50 +4,38 @@ import { parseCalibratedSeries, parseMonthlySeries, validateCells, validateManif
 
 export type LoadResult<T> = { ok: true; data: T } | { ok: false; error: string }
 
+/**
+ * Caché de archivos publicados ya leídos y validados, por URL, para no volver a descargarlos al pasar
+ * de una página a otra. Un texto solo entra después de que su validador lo acepta, así «Reintentar»
+ * nunca recibe un archivo malo guardado. No guarda peticiones en curso (cada página conserva y
+ * cancela la suya), no se aplica a `local:` (Mi región cambia al procesar otra región) y se vacía
+ * si cambia `fetch` (por ejemplo, en las pruebas).
+ */
+const textCache = new Map<string, string>()
+let cachedFetch: typeof fetch | undefined
+export function clearDataCache() { textCache.clear() }
+function cachedText(url: string): string | undefined {
+  if (cachedFetch !== globalThis.fetch) { textCache.clear(); cachedFetch = globalThis.fetch }
+  return textCache.get(url)
+}
+
 async function readText(url: string, signal?: AbortSignal): Promise<string> {
   if (url.startsWith('local:')) return leerArchivoLocal(decodeURIComponent(url.slice('local:'.length).replace(/^\/+/, '')))
   const response = await fetch(url, { signal })
   if (!response.ok) throw new Error(`HTTP ${response.status}`)
   return response.text()
 }
-/**
- * Cache of published files (PLAN_REDISENO T5): moving between Calendar, Map and Method does not download
- * the same file again. Only the text of files that parsed and validated is kept, so "Retry" after an
- * error always fetches again; each use re-parses, so no page can alter another page's data.
- * Local results (local:) are never cached: they change when the user imports a new result.
- */
-const MAX_CACHE_CHARS = 40_000_000
-const textCache = new Map<string, string>()
-let cachedChars = 0
-function remember(url: string, text: string) {
-  forget(url)
-  if (text.length > MAX_CACHE_CHARS) return
-  textCache.set(url, text); cachedChars += text.length
-  for (const [oldest, value] of textCache) {
-    if (cachedChars <= MAX_CACHE_CHARS) break
-    textCache.delete(oldest); cachedChars -= value.length
-  }
-}
-function forget(url: string) {
-  const old = textCache.get(url)
-  if (old !== undefined) { textCache.delete(url); cachedChars -= old.length }
-}
-/** Empties the cache (tests, or after publishing new files). */
-export function clearDataCache() { textCache.clear(); cachedChars = 0 }
-
 async function load<T>(url: string, parse: (text: string) => T, signal?: AbortSignal): Promise<T> {
-  const local = url.startsWith('local:')
   try {
-    const cached = local ? undefined : textCache.get(url)
-    if (cached !== undefined) { textCache.delete(url); textCache.set(url, cached) }   // most recently used last
-    const text = cached ?? await readText(url, signal)
-    const value = parse(text)
-    if (!local && cached === undefined) remember(url, text)
-    return value
-  } catch (error) {
-    forget(url)
-    throw new Error(`${url}: ${error instanceof Error ? error.message : 'Error de lectura'}`, { cause: error })
+    const cacheable = !url.startsWith('local:')
+    const cached = cacheable ? cachedText(url) : undefined
+    if (cached !== undefined) return parse(cached)
+    const text = await readText(url, signal)
+    const parsed = parse(text)
+    if (cacheable) textCache.set(url, text)
+    return parsed
   }
+  catch (error) { throw new Error(`${url}: ${error instanceof Error ? error.message : 'Error de lectura'}`, { cause: error }) }
 }
 export function loadJson<T>(url: string, validate: (value: unknown) => T, signal?: AbortSignal): Promise<T> {
   return load(url, text => {

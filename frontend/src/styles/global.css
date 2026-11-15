@@ -1,13 +1,9 @@
 @import './tokens.css';
-/* Element defaults live in a layer so Tailwind utilities (app.css) always win over them. */
-@layer base {
-  * { box-sizing: border-box; }
-  body { margin: 0; }
-  a { color: inherit; }
-  p { line-height: 1.7; max-width: 65ch; }
-  :focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
-}
-.page{max-width:1200px;margin:auto;padding:clamp(2rem,6vw,5rem) clamp(1rem,4vw,3rem)}.page h1{font-size:clamp(2.2rem,5vw,4rem);line-height:1.08;letter-spacing:-.045em;font-weight:650;margin:0 0 3rem;color:var(--forest)}.preview{padding:2rem 0;border-top:1px solid #a5bcb1}.preview h2{font-size:1.3rem;font-weight:600}.status{display:inline-block;margin-top:2rem;font-size:.85rem;padding:.5rem .75rem;background:var(--soft);border-radius:.25rem}.skip{position:absolute;top:0;left:1rem;transform:translateY(-150%);z-index:30;padding:1rem;background:var(--page)}.skip:focus{transform:none}
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--fire); outline-offset: 4px; }
+.page{max-width:1200px;margin:auto;padding:clamp(2rem,6vw,5rem) clamp(1rem,4vw,3rem)}.page h1{font-size:clamp(2.2rem,5vw,4rem);line-height:1.08;letter-spacing:-.045em;font-weight:650;margin:0 0 3rem;color:var(--forest)}p{line-height:1.7;max-width:65ch}.preview{padding:2rem 0;border-top:1px solid #a5bcb1}.preview h2{font-size:1.3rem;font-weight:600}.status{display:inline-block;margin-top:2rem;font-size:.85rem;padding:.5rem .75rem;background:var(--soft);border-radius:.25rem}
 
 
 .cell-days-help { font-size: .75rem; }
@@ -23,6 +19,3 @@
 .technical-detail > summary { cursor: pointer; min-height: 24px; color: inherit; opacity: .85; }
 .technical-detail code { display: block; margin-top: .25rem; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .75rem; }
 
-/* Shell (F1): the map sits below the fixed 56 px top bar instead of under a floating one. */
-body .map-page-v2 { top: var(--topbar-h); }
-body .map-workspace:not(.map-workspace--fullscreen) { --map-top: 1rem; }

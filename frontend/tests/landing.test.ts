@@ -24,7 +24,7 @@ test('la raíz muestra la página de inicio y enlaza a las tres vistas',async t=
   assert.match(host.querySelector('h1')!.textContent!,/detecciones térmicas/i)
   const hrefs=[...host.querySelectorAll<HTMLAnchorElement>('main a')].map(a=>new URL(a.href).pathname)
   for(const ruta of ['/calendario','/mapa','/metodo'])assert.ok(hrefs.includes(ruta),`falta enlace a ${ruta}`)
-  assert.equal(host.querySelector('nav [aria-current="page"]')!.textContent,'Home')
+  assert.equal(host.querySelector('nav [aria-current="page"]')?.textContent,'Home')
 })
 
 test('la página de inicio explica los límites y no promete lo que no demuestra',async t=>{
@@ -35,8 +35,8 @@ test('la página de inicio explica los límites y no promete lo que no demuestra
 })
 
 test('la marca de la barra lleva al inicio',async t=>{
-  const host=await open(t,'/calendario')
-  const brand=host.querySelector<HTMLAnchorElement>('a.brand')!
+  const host=await open(t,'/calendar')
+  const brand=host.querySelector<HTMLAnchorElement>('header a[aria-label="AllpaNina, go to home"]')!
   assert.ok(brand)
   assert.equal(new URL(brand.href).pathname,'/')
 })
@@ -50,7 +50,7 @@ test('un enlace antiguo con parámetros en la raíz sigue llegando al Calendario
 })
 
 test('cada ruta tiene su propio título de pestaña',async t=>{
-  for(const [ruta,esperado] of [['/',/Satellite fire detections/],['/calendar',/^Calendar/],['/map',/^Map/],['/method',/^Method/],['/my-region',/^My region/],['/about',/^About/],['/calendario',/^Calendar/],['/no-existe',/^Page not found/]] as const){
+  for(const [ruta,esperado] of [['/',/Satellite thermal detections/],['/calendar',/^Calendar · AllpaNina/],['/map',/^Map · AllpaNina/],['/method',/^Method · AllpaNina/],['/my-region',/^My region · AllpaNina/],['/about',/^About · AllpaNina/],['/calendario',/^Calendar · AllpaNina/],['/no-such-page',/^Page not found/]] as const){
     await open(t,ruta)
     assert.match(document.title,esperado,ruta)
   }

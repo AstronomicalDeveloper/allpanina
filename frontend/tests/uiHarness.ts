@@ -6,7 +6,6 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { JSDOM } from 'jsdom'
 import AppRoutes from '../src/app/AppRoutes'
-import { clearDataCache } from '../src/services/data/loaders'
 import type { MapRuntime } from '../src/pages/map/cartography/mapRuntime'
 export const dom = new JSDOM('<body></body>', { url: 'http://localhost/calendario' })
 Object.defineProperties(globalThis, { window: { value: dom.window, configurable: true }, document: { value: dom.window.document, configurable: true }, IS_REACT_ACT_ENVIRONMENT: { value: true, configurable: true } })
@@ -14,9 +13,8 @@ export const files: Record<string, string> = {}
 for (const prefix of ['', 'demo/']) for (const name of ['method.json', 'validation.json', 'manifest.json', 'monthly_series.csv', 'calibrated_series.csv', ...(prefix ? ['cells_PE-DEMO_2024.geojson'] : ['cells_PE-UCA_2024.geojson','cells_PE-UCA_2026.geojson'])]) files[`/data/${prefix}${name}`] = await readFile(new URL(`../public/data/${prefix}${name}`, import.meta.url), 'utf8')
 for (const name of ['manifest.json','method.json','monthly_series.csv','calibrated_series.csv','validation.json']) files[`/data/peru/${name}`] = await readFile(new URL(`../public/data/peru/${name}`, import.meta.url), 'utf8')
 files['/cartography/departamentos_inei_2023.navigation.geojson']=await readFile(new URL('../public/cartography/departamentos_inei_2023.navigation.geojson',import.meta.url),'utf8')
-export function mockFiles(t: TestContext, overrides: Record<string, string> = {}) { clearDataCache(); return t.mock.method(globalThis, 'fetch', async (url: string) => new Response(overrides[url] ?? files[url] ?? '', { status: files[url] === undefined && overrides[url] === undefined ? 404 : 200 })) }
+export function mockFiles(t: TestContext, overrides: Record<string, string> = {}) { return t.mock.method(globalThis, 'fetch', async (url: string) => new Response(overrides[url] ?? files[url] ?? '', { status: files[url] === undefined && overrides[url] === undefined ? 404 : 200 })) }
 export async function mount(t: TestContext, url = '/calendario', element = createElement(AppRoutes), mode: 'pilot'|'peru' = 'pilot') {
- clearDataCache()
  const pilotUrl=new URL(url,'http://localhost');if(mode==='pilot'&&!pilotUrl.searchParams.has('data'))pilotUrl.searchParams.set('data','pilot')
  window.history.replaceState(null,'',pilotUrl.pathname+pilotUrl.search+pilotUrl.hash)
  const host=document.createElement('div');document.body.append(host);const root=createRoot(host)

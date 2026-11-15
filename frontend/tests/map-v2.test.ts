@@ -11,7 +11,7 @@ import CalendarPage from '../src/pages/calendar/CalendarPage'
 import TopBar from '../src/shell/TopBar'
 import type { MapRuntime } from '../src/pages/map/cartography/mapRuntime'
 import type { MapCells } from '../src/services/data/mapExploration'
-const dom = new JSDOM('<body></body>', { url: 'http://localhost/mapa' })
+const dom = new JSDOM('<body></body>', { url: 'http://localhost/map' })
 Object.defineProperties(globalThis, { window: { value: dom.window, configurable: true }, document: { value: dom.window.document, configurable: true }, IS_REACT_ACT_ENVIRONMENT: { value: true, configurable: true } })
 const files: Record<string, string> = {}
 for (const prefix of ['', 'demo/']) for (const name of ['manifest.json', 'monthly_series.csv', 'method.json', 'calibrated_series.csv', ...(prefix ? ['cells_PE-DEMO_2024.geojson'] : ['cells_PE-UCA_2024.geojson','cells_PE-UCA_2026.geojson'])]) files[`/data/${prefix}${name}`] = await readFile(new URL(`../public/data/${prefix}${name}`, import.meta.url), 'utf8')
@@ -108,7 +108,7 @@ test('Mapa v2 real: septiembre 2024, capas conservadas, percentiles, clic seguro
   mockFiles(t); const { host, runtime } = await setup(t)
   assert.equal(total(runtime), 2323)
   assert.doesNotMatch(host.textContent!, /DATOS DEMO/)
-  assert.ok(host.querySelector('.topbar--map'))
+  assert.equal(host.querySelector('header nav [aria-current="page"]')!.textContent, 'Map')
   for (const id of ['basemap-firefly-layer', 'basemap-streets-layer', 'basemap-topographic-layer', 'overlay-protected-layer', 'celdas-fill']) assert.ok(runtime.maps[0].getLayer(id))
   const cell = observations(runtime).features[0].properties
   await act(async () => runtime.maps[0].emit('click:celdas-fill', { features: [{ properties: { cell_id: cell.cell_id } }] }))
@@ -207,7 +207,7 @@ test('Mapa v2 error real de archivo y reintento sin fallback DEMO', async t => {
   let fail = true; const urls: string[] = []
   t.mock.method(globalThis, 'fetch', async (url: string) => { urls.push(url); return new Response(fail && url.endsWith('.geojson') ? 'missing' : files[url], { status: fail && url.endsWith('.geojson') ? 404 : 200 }) })
   const { host, runtime } = await setup(t)
-  assert.match(host.querySelector('[role="alert"]')!.textContent!, /No se pudieron cargar/)
+  assert.match(host.querySelector('.map-page-v2 [role="alert"]')!.textContent!, /No se pudieron cargar/)
   assert.equal(runtime.maps.length, 0); assert.ok(urls.every(url => !url.includes('demo')))
   fail = false; await act(async () => button(host, 'Reintentar datos').click())
   assert.equal(total(runtime), 2323)
@@ -216,7 +216,7 @@ test('Mapa v2 error real de archivo y reintento sin fallback DEMO', async t => {
 test('Mapa v2 error de proveedor no sustituye observaciones y limpia recursos al desmontar', async t => {
   mockFiles(t); const { host, root, runtime } = await setup(t)
   await act(async () => runtime.maps[0].emit('error', { error: new Error('Proveedor sin conexión') }))
-  assert.match(host.querySelector('[role="alert"]')!.textContent!, /Proveedor sin conexión/)
+  assert.match(host.querySelector('.map-page-v2 [role="alert"]')!.textContent!, /Proveedor sin conexión/)
   assert.equal(total(runtime), 2323)
   await act(async () => root.render(null))
   assert.equal(runtime.maps[0].removed, 1)
@@ -253,7 +253,7 @@ test('Mapa v2 detecta discrepancias entre GeoJSON y serie regional antes de dibu
   inconsistent.features[0].properties.cell_days += 1
   t.mock.method(globalThis, 'fetch', async (url: string) => new Response(url.endsWith('.geojson') ? JSON.stringify(inconsistent) : files[url]))
   const { host, runtime } = await setup(t)
-  assert.match(host.querySelector('[role="alert"]')!.textContent!, /no coinciden/)
+  assert.match(host.querySelector('.map-page-v2 [role="alert"]')!.textContent!, /no coinciden/)
   assert.equal(runtime.maps.length, 0)
 })
 

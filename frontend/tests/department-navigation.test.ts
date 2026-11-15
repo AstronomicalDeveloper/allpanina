@@ -53,7 +53,7 @@ test('límite territorial discreto; PE elimina el resaltado',()=>{
 })
 test('Callao se enfoca una vez; cámara manual y cambios de sensor/mes no fuerzan otro encuadre',async t=>{
  const fetch=mockFiles(t),runtime=fakeRuntime()
- const {host}=await mount(t,'/map?mapRegion=PE-07&periodYear=2024&periodMonth=9&scope=month',createElement('div',null,createElement(ScopePicker),createElement(MapPage,{runtimeLoader:runtime.loader})),'peru')
+ const {host}=await mount(t,'/mapa?mapRegion=PE-07&periodYear=2024&periodMonth=9&scope=month',createElement('div',null,createElement(ScopePicker),createElement(MapPage,{runtimeLoader:runtime.loader})),'peru')
  const map=runtime.maps[0]
  assert.deepEqual(map.fitted,originalBounds('PE-07'))
  assert.equal(map.fits.length,1)
@@ -69,7 +69,7 @@ test('Callao se enfoca una vez; cámara manual y cambios de sensor/mes no fuerza
  await click(host,'VIIRS');await choose(host,'[aria-label="Mes del mapa"]','8')
  assert.equal(map.fits.length,1)
  await click(host,'Encuadrar');assert.deepEqual(map.fitted,originalBounds('PE-07'))
- await choose(host,'[aria-label="Scope"]','PE-25')
+ await choose(host,'[aria-label="Area"]','PE-25')
  assert.deepEqual(map.fitted,originalBounds('PE-25'))
  assert.equal(runtime.maps.length,1)
  const ucayali=navigation.features.find(f=>f.properties.region_id==='PE-25')!
@@ -80,13 +80,13 @@ test('Callao se enfoca una vez; cámara manual y cambios de sensor/mes no fuerza
  assert.deepEqual(map.sources['celdas-observadas'].data,visible)
  assert.ok((map.sources[DEPARTMENT_SQUARE_SOURCE].data as CellsData).features.length>0)
  assert.equal((map.sources[DEPARTMENT_SOURCE].data as typeof navigation).features[0].properties.region_id,'PE-25')
- await choose(host,'[aria-label="Scope"]','PE-16')
+ await choose(host,'[aria-label="Area"]','PE-16')
  assert.deepEqual(map.fitted,originalBounds('PE-16'))
- await choose(host,'[aria-label="Scope"]','PE')
+ await choose(host,'[aria-label="Area"]','PE')
  assert.deepEqual(map.fitted,originalBounds('PE'))
  assert.equal((map.sources[DEPARTMENT_SQUARE_SOURCE].data as {features:unknown[]}).features.length,0)
  assert.deepEqual(map.sources['celdas-observadas'].data,viirsAugust)
- await choose(host,'[aria-label="Scope"]','PE-25')
+ await choose(host,'[aria-label="Area"]','PE-25')
  await choose(host,'[aria-label="Año del mapa"]','2026')
  await choose(host,'[aria-label="Mes del mapa"]','7')
  const next=runtime.maps.at(-1)!

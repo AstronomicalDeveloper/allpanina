@@ -1,0 +1,12 @@
+/*
+ * CSS anterior al rediseño, en su orden original (antes se importaba desde main.tsx).
+ * Vive en la capa `legacy`, de menor prioridad que Tailwind: las páginas sin rediseñar se ven
+ * igual, y cualquier clase nueva gana. Cada fase quita de aquí la hoja de la página que rediseña.
+ */
+@import "./global.css";
+@import "../pages/landing/landing.css";
+@import "../pages/calendar/calendar.css";
+@import "maplibre-gl/dist/maplibre-gl.css";
+@import "../pages/map/map.css";
+@import "../pages/method/method.css";
+@import "../pages/region/region.css";

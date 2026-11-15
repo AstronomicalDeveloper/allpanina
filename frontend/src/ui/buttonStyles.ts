@@ -1,20 +1,27 @@
-import { cx } from './cx'
+import { cn } from './cn'
 
-export type ButtonVariant = 'primary' | 'primary-dark' | 'secondary' | 'secondary-dark' | 'ghost'
-export type ButtonSize = 'sm' | 'md'
+/**
+ * primary  Ascua con texto blanco, para fondos claros (6,0:1).
+ * glow     Brasa con texto Tinta, para fondos oscuros (Noche).
+ * secondary borde fino, fondo transparente; se adapta al color del texto que lo rodea.
+ * ghost    solo texto, para acciones menores.
+ */
+export type ButtonVariant = 'primary' | 'glow' | 'secondary' | 'ghost'
+export type ButtonSize = 'sm' | 'md' | 'lg'
 
-const base = 'focus-ring inline-flex items-center justify-center gap-2 rounded-control font-sans font-semibold no-underline transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50'
-const sizes: Record<ButtonSize, string> = { sm: 'min-h-9 px-3 text-sm', md: 'min-h-11 px-5 text-base' }
+const base = 'inline-flex items-center justify-center gap-2 rounded-control font-sans font-medium whitespace-nowrap no-underline cursor-pointer transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50'
 const variants: Record<ButtonVariant, string> = {
-  /** On light surfaces: Ascua with white text (6.0:1). */
-  primary: 'border border-cinder bg-cinder text-white hover:bg-fire-8 hover:border-fire-8',
-  /** On dark surfaces: Brasa with ink text (8.3:1 against Noche). */
-  'primary-dark': 'border border-ember bg-ember text-ink hover:bg-glow-8 hover:border-glow-8',
-  secondary: 'border border-ink/25 bg-white text-ink hover:border-ink/50',
-  'secondary-dark': 'border border-paper/30 bg-transparent text-paper hover:border-paper/60',
-  ghost: 'border border-transparent bg-transparent text-cinder underline underline-offset-4 hover:text-fire-8',
+  primary: 'border-0 bg-cinder text-white hover:bg-fire-8',
+  glow: 'border-0 bg-ember text-ink hover:bg-glow-8',
+  secondary: 'border border-current bg-transparent text-inherit hover:bg-ink/5',
+  ghost: 'border-0 bg-transparent text-inherit underline underline-offset-4 hover:decoration-2',
+}
+const sizes: Record<ButtonSize, string> = {
+  sm: 'min-h-9 px-3 text-sm',
+  md: 'min-h-11 px-4 text-base',
+  lg: 'min-h-12 px-5 text-lg',
 }
 
-export function buttonClasses(variant: ButtonVariant = 'primary', size: ButtonSize = 'md', className?: string): string {
-  return cx(base, sizes[size], variants[variant], className)
+export function buttonClasses(variant: ButtonVariant = 'primary', size: ButtonSize = 'md', className?: string) {
+  return cn(base, variants[variant], sizes[size], className)
 }

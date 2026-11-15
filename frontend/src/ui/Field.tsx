@@ -1,33 +1,38 @@
 import { useId } from 'react'
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react'
-import { cx } from './cx'
+import { cn } from './cn'
 
-const control = 'focus-ring w-full min-h-11 rounded-control border border-ink/25 bg-white px-3 text-base text-ink disabled:cursor-not-allowed disabled:bg-zero disabled:text-muted aria-[invalid=true]:border-cinder'
-const controlDark = 'focus-ring w-full min-h-11 rounded-control border border-rule bg-orbit px-3 text-base text-paper disabled:cursor-not-allowed disabled:opacity-60'
+export type Surface = 'light' | 'dark'
 
-type FieldShell = { label: ReactNode; hint?: ReactNode; error?: ReactNode; dark?: boolean; className?: string }
+const control = (surface: Surface) => cn(
+  'w-full min-h-11 rounded-control border px-3 font-sans text-base',
+  surface === 'light' ? 'border-hairline bg-white text-ink' : 'border-rule bg-orbit text-white',
+  'disabled:opacity-60',
+)
 
-function Shell({ id, label, hint, error, dark, className, children }: FieldShell & { id: string; children: ReactNode }) {
-  return <div className={cx('grid gap-1.5', className)}>
-    <label htmlFor={id} className={cx('text-sm font-medium', dark ? 'text-paper' : 'text-ink')}>{label}</label>
-    {children}
-    {error ? <p id={`${id}-error`} className="m-0 text-xs font-medium text-cinder">{error}</p>
-      : hint ? <p id={`${id}-hint`} className={cx('m-0 text-xs', dark ? 'text-paper/70' : 'text-muted')}>{hint}</p> : null}
+/** Etiqueta, control, ayuda y error, enlazados por id para lectores de pantalla. */
+export function Field({ label, hint, error, children, surface = 'light', className }: {
+  label: ReactNode; hint?: ReactNode; error?: ReactNode; surface?: Surface; className?: string
+  children: (ids: { id: string; describedBy?: string; invalid: boolean }) => ReactNode
+}) {
+  const id = useId(), hintId = `${id}-hint`, errorId = `${id}-error`
+  const describedBy = [hint && hintId, error && errorId].filter(Boolean).join(' ') || undefined
+  return <div className={cn('flex flex-col gap-1.5', className)}>
+    <label htmlFor={id} className={cn('text-sm font-medium', surface === 'light' ? 'text-ink' : 'text-white')}>{label}</label>
+    {children({ id, describedBy, invalid: Boolean(error) })}
+    {hint && <p id={hintId} className={cn('m-0 text-xs', surface === 'light' ? 'text-muted' : 'text-mist')}>{hint}</p>}
+    {error && <p id={errorId} className="m-0 text-xs font-medium text-cinder">{error}</p>}
   </div>
 }
 
-type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & FieldShell
-export function Select({ label, hint, error, dark, className, id, children, ...props }: SelectProps) {
-  const auto = useId(), fieldId = id ?? auto
-  return <Shell id={fieldId} label={label} hint={hint} error={error} dark={dark} className={className}>
-    <select id={fieldId} aria-invalid={error ? true : undefined} aria-describedby={error ? `${fieldId}-error` : hint ? `${fieldId}-hint` : undefined} className={dark ? controlDark : control} {...props}>{children}</select>
-  </Shell>
+/** Select nativo con flecha propia: accesible y sin librerías. */
+export function Select({ surface = 'light', className, children, ...props }: { surface?: Surface } & SelectHTMLAttributes<HTMLSelectElement>) {
+  return <div className="relative">
+    <select className={cn(control(surface), 'appearance-none pr-9', className)} {...props}>{children}</select>
+    <svg className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 opacity-70" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+  </div>
 }
 
-type InputProps = InputHTMLAttributes<HTMLInputElement> & FieldShell
-export function TextInput({ label, hint, error, dark, className, id, ...props }: InputProps) {
-  const auto = useId(), fieldId = id ?? auto
-  return <Shell id={fieldId} label={label} hint={hint} error={error} dark={dark} className={className}>
-    <input id={fieldId} aria-invalid={error ? true : undefined} aria-describedby={error ? `${fieldId}-error` : hint ? `${fieldId}-hint` : undefined} className={dark ? controlDark : control} {...props} />
-  </Shell>
+export function TextInput({ surface = 'light', className, ...props }: { surface?: Surface } & InputHTMLAttributes<HTMLInputElement>) {
+  return <input className={cn(control(surface), className)} {...props} />
 }

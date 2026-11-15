@@ -77,7 +77,7 @@ test('v2 URL: series independientes, período explícito, hash y parámetros con
  assert.equal(window.location.hash,'#detalle')
  const href=host.querySelector<HTMLAnchorElement>('.calendar-map-action')!
  const url=new URL(href.href)
- assert.equal(url.pathname,'/mapa');assert.equal(url.searchParams.get('scope'),'month');assert.equal(url.searchParams.get('mapScope'),'month')
+ assert.equal(url.pathname,'/map');assert.equal(url.searchParams.get('scope'),'month');assert.equal(url.searchParams.get('mapScope'),'month')
  assert.equal(url.searchParams.get('mapSensor'),'MODIS');assert.equal(url.searchParams.get('calendarSeries'),'VIIRS');assert.equal(url.searchParams.get('periodMonth'),'9');assert.equal(url.searchParams.get('extra'),'keep')
  await act(async()=>href.click())
  assert.equal(host.querySelector('h1')!.textContent,'Mapa de observaciones')
@@ -130,7 +130,7 @@ test('v2 carga, cancelación y datos vacíos mantienen Descripción sin fabricar
  const signals:AbortSignal[]=[];const resolve:(()=>void)[]=[]
  t.mock.method(globalThis,'fetch',(url:string,options?:RequestInit)=>{signals.push(options!.signal as AbortSignal);return new Promise<Response>(done=>resolve.push(()=>done(new Response(url.endsWith('monthly_series.csv')?'region_id,year,month,sensor_group,cell_days,status,source_version,updated_at':files[url]))))})
  const {host,root}=await mount(t)
- assert.match(host.querySelector('[role="status"]')!.textContent!,/Cargando/)
+ assert.ok([...host.querySelectorAll('[role="status"]')].some(node=>/Cargando/.test(node.textContent!)))
  assert.equal(host.querySelector('#calendar-detail-title')!.textContent,'Selecciona un mes')
  await act(async()=>resolve.forEach(done=>done()))
  assert.match(host.textContent!,/No hay datos disponibles/)

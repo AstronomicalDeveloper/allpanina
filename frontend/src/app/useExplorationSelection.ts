@@ -1,7 +1,7 @@
-import { PATHS } from './routes'
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import type { ExplorationSelection, CalendarSelection, MapSelection } from '../types/selection'
 import type { Sensor } from '../types/data'
+import { ROUTES } from '../shell/routes'
 const observed = (value: string | null, fallback: Sensor): Sensor => value === 'VIIRS' || value === 'MODIS' ? value : fallback
 export default function useExplorationSelection() {
   const [params] = useSearchParams()
@@ -39,7 +39,7 @@ export default function useExplorationSelection() {
     const result = parameters({ ...selection, region: period.region, year: period.year, month: period.month, scope: 'month' })
     result.set('sensor', selection.mapSensor)
     result.delete('view')
-    return `${PATHS.map}?${result}${hash}`
+    return `${ROUTES.map}?${result}${hash}`
   }
   return { selection, changeCalendar, changeMap, mapHref }
 }

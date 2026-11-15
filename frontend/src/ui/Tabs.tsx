@@ -1,44 +1,53 @@
-import { useId, useRef } from 'react'
+import { useRef } from 'react'
 import type { KeyboardEvent, ReactNode } from 'react'
-import { cx } from './cx'
+import { cn } from './cn'
+import type { Surface } from './Field'
 
-export type TabItem<T extends string> = { id: T; label: ReactNode; disabled?: boolean }
+export type Option<T extends string> = { value: T; label: ReactNode; disabled?: boolean }
 
 /**
- * Accessible tabs (WAI-ARIA): arrow keys, Home and End move between tabs; only the active tab is in the
- * tab order. The caller renders the panel with <TabPanel>.
+ * Pestañas accesibles (patrón ARIA tablist): flechas, Inicio y Fin mueven el foco y activan.
+ * El contenido de cada panel lo pinta quien la usa, con id `${id}-panel-${value}`.
  */
-export function Tabs<T extends string>({ items, value, onChange, label, dark = false, className }: {
-  items: TabItem<T>[]; value: T; onChange: (id: T) => void; label: string; dark?: boolean; className?: string
+export function Tabs<T extends string>({ id, label, options, value, onChange, surface = 'light', className }: {
+  id: string; label: string; options: Option<T>[]; value: T; onChange: (value: T) => void; surface?: Surface; className?: string
 }) {
-  const refs = useRef<(HTMLButtonElement | null)[]>([])
-  const base = useId()
-  const enabled = items.map((item, i) => (item.disabled ? -1 : i)).filter(i => i >= 0)
-  function move(event: KeyboardEvent<HTMLDivElement>) {
-    const current = items.findIndex(item => item.id === value)
-    const pos = enabled.indexOf(current)
-    const next = event.key === 'ArrowRight' ? enabled[(pos + 1) % enabled.length]
-      : event.key === 'ArrowLeft' ? enabled[(pos - 1 + enabled.length) % enabled.length]
-      : event.key === 'Home' ? enabled[0] : event.key === 'End' ? enabled[enabled.length - 1] : undefined
-    if (next === undefined) return
-    event.preventDefault(); onChange(items[next].id); refs.current[next]?.focus()
+  const refs = useRef<Array<HTMLButtonElement | null>>([])
+  const enabled = options.filter(option => !option.disabled)
+  function onKeyDown(event: KeyboardEvent) {
+    const index = enabled.findIndex(option => option.value === value)
+    const next = event.key === 'ArrowRight' ? index + 1 : event.key === 'ArrowLeft' ? index - 1 : event.key === 'Home' ? 0 : event.key === 'End' ? enabled.length - 1 : null
+    if (next === null) return
+    event.preventDefault()
+    const target = enabled[(next + enabled.length) % enabled.length]
+    onChange(target.value)
+    refs.current[options.indexOf(target)]?.focus()
   }
-  return <div role="tablist" aria-label={label} onKeyDown={move}
-    className={cx('inline-flex gap-1 rounded-control p-1', dark ? 'bg-orbit' : 'bg-zero', className)}>
-    {items.map((item, i) => {
-      const selected = item.id === value
-      return <button key={item.id} ref={el => { refs.current[i] = el }} type="button" role="tab" id={`${base}-${item.id}-tab`}
-        aria-selected={selected} tabIndex={selected ? 0 : -1} disabled={item.disabled}
-        onClick={() => onChange(item.id)}
-        className={cx('focus-ring min-h-9 rounded-[4px] border-0 px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-          selected ? (dark ? 'bg-night text-paper shadow-sm' : 'bg-white text-ink shadow-sm') : (dark ? 'bg-transparent text-paper/75 hover:text-paper' : 'bg-transparent text-muted hover:text-ink'))}>
-        {item.label}
-      </button>
+  return <div role="tablist" aria-label={label} onKeyDown={onKeyDown} className={cn('flex gap-1 border-b', surface === 'light' ? 'border-hairline' : 'border-rule', className)}>
+    {options.map((option, i) => {
+      const selected = option.value === value
+      return <button key={option.value} ref={el => { refs.current[i] = el }} role="tab" type="button" id={`${id}-tab-${option.value}`}
+        aria-selected={selected} aria-controls={`${id}-panel-${option.value}`} tabIndex={selected ? 0 : -1} disabled={option.disabled}
+        onClick={() => onChange(option.value)}
+        className={cn('-mb-px min-h-11 cursor-pointer border-0 border-b-2 bg-transparent px-3 font-sans text-sm font-medium',
+          selected ? 'border-ember' : 'border-transparent',
+          surface === 'light' ? (selected ? 'text-ink' : 'text-muted hover:text-ink') : (selected ? 'text-white' : 'text-mist hover:text-white'),
+          'disabled:cursor-not-allowed disabled:opacity-50')}>{option.label}</button>
     })}
   </div>
 }
 
-/** Panel for the active tab, named with the same label as the selected tab. */
-export function TabPanel({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
-  return <div role="tabpanel" aria-label={label} tabIndex={0} className={cx('focus-ring', className)}>{children}</div>
+/** Conmutador de opciones excluyentes (sensor, período). Botones con aria-pressed. */
+export function Segmented<T extends string>({ label, options, value, onChange, surface = 'light', className }: {
+  label: string; options: Option<T>[]; value: T; onChange: (value: T) => void; surface?: Surface; className?: string
+}) {
+  return <div role="group" aria-label={label} className={cn('inline-flex rounded-control p-0.5', surface === 'light' ? 'bg-hairline/70' : 'bg-orbit', className)}>
+    {options.map(option => {
+      const pressed = option.value === value
+      return <button key={option.value} type="button" aria-pressed={pressed} disabled={option.disabled} onClick={() => onChange(option.value)}
+        className={cn('min-h-9 cursor-pointer rounded-[5px] border-0 px-3 font-sans text-sm font-medium',
+          pressed ? (surface === 'light' ? 'bg-white text-ink shadow-sm' : 'bg-night text-white') : (surface === 'light' ? 'bg-transparent text-muted hover:text-ink' : 'bg-transparent text-mist hover:text-white'),
+          'disabled:cursor-not-allowed disabled:opacity-50')}>{option.label}</button>
+    })}
+  </div>
 }

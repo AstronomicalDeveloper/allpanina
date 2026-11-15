@@ -18,7 +18,6 @@ import {SUMMARY_SOURCE,POINT_LAYER} from '../src/pages/map/cartography/multiscal
 import MapPage from '../src/pages/map/MapPage'
 import MethodPage from '../src/pages/method/MethodPage'
 import TopBar from '../src/shell/TopBar'
-import ScopePicker from '../src/shell/ScopePicker'
 import {files,mockFiles,mount,fakeRuntime,choose,click,dom} from './uiHarness'
 const manifest=validateManifest(JSON.parse(files['/data/peru/manifest.json']))
 const method=validateMethodDocument(JSON.parse(files['/data/peru/method.json'])) as NationalMethod
@@ -75,7 +74,7 @@ test('departamento mantiene capa PE sin reparto por centroide; resumen toma el C
  assert.ok(observed.features.length>0)
  assert.equal(host.querySelector('.map-observed-value')!.textContent,'2,323')
  assert.match(host.querySelector('.map-geographic-context')!.textContent!,/capa de Perú.*no es una desagregación exacta/)
- await choose(host,'[aria-label="Scope"]','PE-01')
+ await choose(host,'[aria-label="Area"]','PE-01')
  assert.equal(runtime.maps.length,1)
  assert.notDeepEqual((map.sources['celdas-observadas'].data as CellsData),observed)
  assert.equal(host.querySelector('.map-observed-value')!.textContent,monthly.find(r=>r.region_id==='PE-01'&&r.year===2024&&r.month===9&&r.sensor_group==='MODIS')!.cell_days!.toLocaleString('es-PE'))
@@ -92,7 +91,7 @@ test('año nacional parcial, navegación de año/mes/sensor, no publicado y cero
  await choose(host,'[aria-label="Año del mapa"]','2024')
  assert.equal(fetch.mock.calls.filter(call=>String(call.arguments[0]).includes('/data/peru/cells_')).length,2)
  assert.equal(runtime.maps[0].removed,1)
- await choose(host,'[aria-label="Scope"]','PE-07');await choose(host,'[aria-label="Mes del mapa"]','9')
+ await choose(host,'[aria-label="Area"]','PE-07');await choose(host,'[aria-label="Mes del mapa"]','9')
  assert.equal(host.querySelector('.map-observed-value')!.textContent,'0')
  assert.match(host.querySelector('.map-observed')!.textContent!,/Cero válido/)
 })
@@ -113,7 +112,7 @@ test('Método PE distingue PE-SIN-25 y muestra serie calibrada recibida sin reca
  const clean=validation.regions.find(r=>r.region_id==='PE-SIN-25')!
  assert.ok(clean.reportable)
  assert.match(host.querySelector('[aria-label="Prueba PE-SIN-25"]')!.textContent!,new RegExp((clean.methods.B1!.metrics.wape!*100).toFixed(1)))
- assert.equal(host.querySelector('[aria-label="Scope"] option[value="PE-SIN-25"]'),null)
+ assert.equal(host.querySelector('[aria-label="Area"] option[value="PE-SIN-25"]'),null)
  const rows=host.querySelector('[aria-label="Serie calibrada regional"]')!
  assert.equal(rows.querySelectorAll('tbody tr').length,24)
  const value=calibrated.filter(r=>r.region_id==='PE').sort((a,b)=>a.year-b.year||a.month-b.month||a.method.localeCompare(b.method)).at(-1)!.value
@@ -123,7 +122,7 @@ test('Método regional reportable, no reportable, cambio de etapa y observacione
  mockFiles(t);const {host}=await setup(t,'/method?mapRegion=PE-25')
  assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'30.8%')
  await click(host,'Validación');assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'17.8%')
- await choose(host,'[aria-label="Scope"]','PE-07')
+ await choose(host,'[aria-label="Area"]','PE-07')
  assert.match(host.querySelector('.method-scope')!.textContent!,/Callao/)
  assert.match(host.querySelector('[aria-label="Contexto científico regional"]')!.textContent!,/Prueba no reportable.*Σ MODIS en test = 0/)
  assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'No disponible')

@@ -67,15 +67,15 @@ test('lectores v1.0/v1.1 preservan métricas null, reportable y motivos sin inve
 })
 test('Calendario nacional elige PE y departamentos desde metadatos y conserva cifras publicadas',async t=>{
  mockFiles(t);const {host}=await render(t,'/calendario?periodYear=2024&periodMonth=9')
- const selector=host.querySelector<HTMLSelectElement>('[aria-label="Scope"]')!
+ const selector=host.querySelector<HTMLSelectElement>('[aria-label="Area"]')!
  assert.equal(selector.options.length,26);assert.equal(selector.value,'PE');assert.equal(selector.options[0].text,'Peru')
  assert.equal(host.querySelector('.calendar-observed-value')!.textContent,String(monthly.find(r=>r.region_id==='PE'&&r.year===2024&&r.month===9&&r.sensor_group==='MODIS')!.cell_days))
- await choose(host,'[aria-label="Scope"]','PE-25')
+ await choose(host,'[aria-label="Area"]','PE-25')
  assert.equal(host.querySelector('.calendar-observed-value')!.textContent,'2323')
  assert.match(host.querySelector('.calendar-heading')!.textContent!,/Ucayali/)
  assert.equal(new URLSearchParams(window.location.search).get('mapRegion'),'PE-25')
  await choose(host,'#calendar-sensor','VIIRS');assert.equal(host.querySelector('.calendar-observed-value')!.textContent,'5581')
- await choose(host,'[aria-label="Scope"]','PE-07')
+ await choose(host,'[aria-label="Area"]','PE-07')
  assert.equal(host.querySelector('.calendar-observed-value')!.textContent,'0')
  assert.match(host.querySelector('#calendar-detail')!.textContent!,/cero válido/)
  assert.ok(host.querySelector('.calendar-estimates'))
@@ -111,19 +111,19 @@ test('URL conserva piloto, DEMO separado y precedencia de una región nacional e
 
 test('selección regional se restaura con historial y recarga; comparación conserva años y publicación parcial',async t=>{
  mockFiles(t);const {host,root}=await render(t,'/calendario?periodYear=2026')
- await choose(host,'[aria-label="Scope"]','PE-25')
- await choose(host,'[aria-label="Scope"]','PE-01')
+ await choose(host,'[aria-label="Area"]','PE-25')
+ await choose(host,'[aria-label="Area"]','PE-01')
  await act(async()=>new Promise<void>((resolve,reject)=>{
   const timeout=setTimeout(()=>reject(new Error('No llegó popstate')),1500)
   window.addEventListener('popstate',()=>{clearTimeout(timeout);resolve()},{once:true});window.history.back()
  }))
- assert.equal(host.querySelector<HTMLSelectElement>('[aria-label="Scope"]')!.value,'PE-25')
+ assert.equal(host.querySelector<HTMLSelectElement>('[aria-label="Area"]')!.value,'PE-25')
  assert.ok(host.querySelector('button[aria-label="Agosto 2026, MODIS, Ausente"]'))
  await click(host,'Comparar años');assert.equal(host.querySelectorAll('tbody tr').length,3)
  const saved=window.location.pathname+window.location.search
  await act(async()=>root.unmount())
  const restored=await render(t,saved)
- assert.equal(restored.host.querySelector<HTMLSelectElement>('[aria-label="Scope"]')!.value,'PE-25')
+ assert.equal(restored.host.querySelector<HTMLSelectElement>('[aria-label="Area"]')!.value,'PE-25')
  assert.match(restored.host.querySelector('.calendar-heading')!.textContent!,/Ucayali/)
 })
 test('fallo nacional no recurre al piloto ni a DEMO y regiones desconocidas no filtran otro departamento',async t=>{

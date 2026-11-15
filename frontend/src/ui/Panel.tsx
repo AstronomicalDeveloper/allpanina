@@ -1,34 +1,40 @@
 import type { HTMLAttributes, ReactNode } from 'react'
-import { cx } from './cx'
+import { cn } from './cn'
+import type { Surface } from './Field'
 
-/** Surface with a 1 px border. Shadow only when it floats over the map (A2). */
-export function Panel({ dark = false, floating = false, className, ...props }: HTMLAttributes<HTMLDivElement> & { dark?: boolean; floating?: boolean }) {
-  return <div className={cx('rounded-panel border p-5',
-    dark ? 'on-dark border-rule bg-orbit text-paper' : 'border-ink/10 bg-white text-ink',
-    floating && 'shadow-[0_8px_24px_rgb(11_23_54_/_28%)]', className)} {...props} />
+/** Superficie de contenido. `floating` solo para lo que flota sobre el mapa (lleva sombra). */
+export function Panel({ surface = 'light', floating = false, className, ...props }: { surface?: Surface; floating?: boolean } & HTMLAttributes<HTMLElement>) {
+  return <section className={cn('rounded-panel border p-5',
+    surface === 'light' ? 'border-hairline bg-white text-ink' : 'border-rule bg-orbit text-white',
+    floating && 'shadow-float', className)} {...props} />
 }
 
-/** Page heading: optional eyebrow, title (Plex Condensed) and lead paragraph. */
-export function PageHeader({ eyebrow, title, lead, actions, dark = false, className }: {
-  eyebrow?: ReactNode; title: ReactNode; lead?: ReactNode; actions?: ReactNode; dark?: boolean; className?: string
-}) {
-  return <header className={cx('grid gap-3', className)}>
-    {eyebrow && <p className={cx('m-0 text-xs font-semibold uppercase tracking-[0.08em]', dark ? 'text-ember' : 'text-cinder')}>{eyebrow}</p>}
-    <h1 className={cx('m-0 font-display text-3xl font-semibold tracking-[-0.01em] md:text-4xl', dark ? 'text-paper' : 'text-ink')}>{title}</h1>
-    {lead && <p className={cx('m-0 max-w-[65ch] text-lg', dark ? 'text-paper/80' : 'text-muted')}>{lead}</p>}
-    {actions && <div className="mt-2 flex flex-wrap items-center gap-3">{actions}</div>}
+/** Encabezado de página: título en Plex Condensed, bajada opcional y acciones a la derecha. */
+export function PageHeader({ title, description, actions, className }: { title: ReactNode; description?: ReactNode; actions?: ReactNode; className?: string }) {
+  return <header className={cn('flex flex-wrap items-end justify-between gap-x-8 gap-y-4', className)}>
+    <div className="max-w-[60ch]">
+      <h1 className="m-0 font-display text-3xl font-semibold text-ink sm:text-4xl">{title}</h1>
+      {description && <p className="mb-0 mt-3 text-lg text-muted">{description}</p>}
+    </div>
+    {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
   </header>
 }
 
-/** Page section with an h2. Lines of 60-75 characters. */
-export function Section({ title, id, children, className }: { title: ReactNode; id?: string; children: ReactNode; className?: string }) {
-  return <section id={id} aria-labelledby={id ? `${id}-title` : undefined} className={cx('grid gap-4 border-t border-ink/10 py-10', className)}>
-    <h2 id={id ? `${id}-title` : undefined} className="m-0 font-display text-2xl font-semibold text-ink">{title}</h2>
-    {children}
-  </section>
+/** Cifra destacada con su etiqueta. Cifras tabulares. */
+export function Stat({ value, label, surface = 'light', className }: { value: ReactNode; label: ReactNode; surface?: Surface; className?: string }) {
+  return <div className={cn('flex flex-col gap-1', className)}>
+    <span className={cn('font-display text-3xl font-semibold tabular-nums', surface === 'light' ? 'text-ink' : 'text-white')}>{value}</span>
+    <span className={cn('text-sm', surface === 'light' ? 'text-muted' : 'text-mist')}>{label}</span>
+  </div>
 }
 
-/** Page container: 40 px side margins on desktop, 16 px on mobile. */
-export function Container({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cx('mx-auto w-full max-w-[1280px] px-4 md:px-10', className)} {...props} />
+/** Plegable nativo (details/summary): «Technical detail», ayudas, metodología extensa. */
+export function Disclosure({ summary, children, surface = 'light', className, defaultOpen }: { summary: ReactNode; children: ReactNode; surface?: Surface; className?: string; defaultOpen?: boolean }) {
+  return <details open={defaultOpen} className={cn('group rounded-control border', surface === 'light' ? 'border-hairline bg-white' : 'border-rule bg-orbit', className)}>
+    <summary className={cn('flex min-h-11 cursor-pointer list-none items-center gap-2 px-4 text-sm font-medium [&::-webkit-details-marker]:hidden', surface === 'light' ? 'text-ink' : 'text-white')}>
+      <svg className="size-4 shrink-0 transition-transform group-open:rotate-90" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="m6 4 4 4-4 4" /></svg>
+      {summary}
+    </summary>
+    <div className={cn('px-4 pb-4 text-sm', surface === 'light' ? 'text-muted' : 'text-mist')}>{children}</div>
+  </details>
 }

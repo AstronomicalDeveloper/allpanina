@@ -5,5 +5,5 @@
  */
 export default function TechnicalDetail({ detail }: { detail?: string | null }) {
   if (!detail) return null
-  return <details className="technical-detail"><summary>Detalle técnico</summary><code>{detail}</code></details>
+  return <details className="technical-detail"><summary>Technical detail</summary><code>{detail}</code></details>
 }
