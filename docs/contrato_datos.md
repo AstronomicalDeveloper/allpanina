@@ -275,6 +275,7 @@ Los mismos campos de v1.0 (`indicator`, `sensors`, periodos, `calibration`, `lim
 
 - **Un archivo por año.** Solo nacional: no hay GeoJSON por departamento.
 - **Celda de 10 km** en EPSG:6933. Su `cell_days` = **suma** de los `cell_days` de las celdas de 1 km ya deduplicadas que caen dentro. No se vuelve a deduplicar a 10 km.
+- **Solo celdas de Perú:** se suman únicamente las celdas de 1 km asignadas a uno de los 25 departamentos, es decir, con su centro dentro de un polígono (`DECISIONS.md` §11.1). Las demás se descartan **antes** de agregar a 10 km. Si no, las celdas de 10 km de la frontera sumarían detecciones de Brasil, Bolivia y los otros países vecinos. (Corrección pedida por Marco al cerrar P06.)
 - **Propiedades:** las mismas de v1.0: `cell_id`, `year`, `month`, `sensor_group`, `cell_days`. La celda de 10 km puede cruzar límites de departamento, así que **no lleva `region_id`**.
 - **Solo observados**, sin ningún κ aplicado.
 - **Regla de suma:** en cada mes y sensor, la suma de `cell_days` del archivo = `PE` en `monthly_series.csv`.
