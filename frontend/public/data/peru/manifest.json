@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-15T15:46:37Z",
+  "generated_at": "2026-11-15T15:51:29Z",
   "region_id": "PE",
   "producto": "MCD14ML v6.1 / VNP14IMGML v2",
   "files": [
@@ -26,7 +26,7 @@
     "monthly_series.csv": "sha256:a633da77d258c832b929d9cc672b11a08a6d3651f620469dcb3d7233acf73ede",
     "calibrated_series.csv": "sha256:5eb84f1675f826544dc978df6de210630443024aa9a16bf97eb535e0c4a67458",
     "validation.json": "sha256:b2b259928bf830abfdcc53641693343c82699f0dc9738f8fe60644677c7f1d1e",
-    "method.json": "sha256:6dade17d8dd5dee4ad805a14bcbe9c3edc6c33d4038ae51bbecaab279255073b",
+    "method.json": "sha256:52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
     "cells_PE_2013.geojson": "sha256:51d74a9154cb808babddebe3c9a16ac98b934e08557a9307e0ec8929ff8f9e1b",
     "cells_PE_2014.geojson": "sha256:6fcca04963e77a404453cbda0016b5c571a9b4a9d531e2957a1e6252255c285d",
     "cells_PE_2015.geojson": "sha256:15c4bc791354ea7d90df4b1fb92ea554d97d4562269669530e7c5d6e41579930",
