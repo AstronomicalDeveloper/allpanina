@@ -11,9 +11,14 @@ Ademas se agrega `sources` (extra, no esta en el contrato): por sensor, el valor
 
 Solo se listan los archivos que existen; los que faltan se avisan por pantalla.
 
+Extension Peru (P18, contrato v1.1 seccion H): con --peru, region_id = "PE" y se agregan
+`contract_version` = "1.1" y `regions` (los 26 region_id presentes en monthly_series.csv). El script
+se detiene si no hay exactamente 26 regiones, PE y PE-01 ... PE-25.
+
 Uso (sin preguntas interactivas):
     python scripts/08_manifest.py
     python scripts/08_manifest.py --dir frontend/public/data --info data/processed/source_info.json
+    python scripts/08_manifest.py --peru --dir frontend/public/data/peru --info data/processed/source_info.json
 """
 
 from __future__ import annotations
@@ -42,6 +47,9 @@ PRODUCT = {
 }
 ZIP_OF = {"MODIS": "modis", "VIIRS": "viirs_snpp"}
 PRODUCTO = "MCD14ML v6.1 / VNP14IMGML v2"  # texto del ejemplo del contrato (docs/contrato_datos.md)
+PERU_REGION_ID = "PE"
+PERU_CONTRACT_VERSION = "1.1"
+PERU_REGIONS = ["PE"] + [f"PE-{i:02d}" for i in range(1, 26)]
 
 
 def sha256_file(path: Path) -> str:
@@ -73,7 +81,25 @@ def period_of(directory: Path) -> dict | None:
     }
 
 
-def build_manifest(directory: Path, info_path: Path, region_id: str, generated_at: str | None = None) -> dict:
+def peru_regions(directory: Path) -> list[str]:
+    """Los region_id de monthly_series.csv, en el orden del contrato (PE, PE-01 ... PE-25).
+
+    Lanza ValueError si no son exactamente los 26 esperados.
+    """
+    path = directory / "monthly_series.csv"
+    if not path.exists():
+        raise ValueError(f"falta {path}: no se pueden listar las regiones")
+    found = set(pd.read_csv(path, usecols=["region_id"])["region_id"].astype(str))
+    if found != set(PERU_REGIONS):
+        extra = sorted(found - set(PERU_REGIONS))
+        missing = [r for r in PERU_REGIONS if r not in found]
+        raise ValueError(f"regiones distintas de las 26 esperadas; sobran {extra}, faltan {missing}")
+    return list(PERU_REGIONS)
+
+
+def build_manifest(
+    directory: Path, info_path: Path, region_id: str, generated_at: str | None = None, peru: bool = False
+) -> dict:
     files, _ = list_deliverables(directory, region_id)
     sources = {}
     if info_path.exists():
@@ -97,6 +123,9 @@ def build_manifest(directory: Path, info_path: Path, region_id: str, generated_a
     periodo = period_of(directory)
     if periodo:
         manifest["periodo"] = periodo
+    if peru:
+        manifest["contract_version"] = PERU_CONTRACT_VERSION
+        manifest["regions"] = peru_regions(directory)
     return manifest
 
 
@@ -105,7 +134,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dir", type=Path, default=ROOT / "data" / "processed")
     parser.add_argument("--info", type=Path, default=ROOT / "data" / "processed" / "source_info.json")
     parser.add_argument("--region-id", default=series.REGION_ID)
+    parser.add_argument("--peru", action="store_true", help="Extension Peru (P18): region_id PE, contract_version 1.1 y regions.")
     args = parser.parse_args(argv)
+    if args.peru:
+        args.region_id = PERU_REGION_ID
 
     if not args.dir.exists():
         print(f"ERROR: no existe {args.dir}.", file=sys.stderr)
@@ -113,9 +145,14 @@ def main(argv: list[str] | None = None) -> int:
     _, missing = list_deliverables(args.dir, args.region_id)
     if missing:
         print("AVISO: faltan entregables (no se listan en el manifest): " + ", ".join(missing))
-    manifest = build_manifest(args.dir, args.info, args.region_id)
+    try:
+        manifest = build_manifest(args.dir, args.info, args.region_id, peru=args.peru)
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
     out = args.dir / "manifest.json"
-    out.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    with out.open("w", encoding="utf-8", newline="\n") as handle:  # LF siempre, tambien en Windows
+        handle.write(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
     print(f"{out}: {len(manifest['files'])} archivos")
     return 0
 
