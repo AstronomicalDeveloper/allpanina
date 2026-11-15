@@ -83,7 +83,9 @@ No se inicia hasta que Landry confirme los lectores v1.1 y el selector de regió
 
 ## 3. Fuera de alcance de Marco (se deja a Landry)
 
-H1, H2, H4 (lectores, validadores, contrato v1.2), H12 (`package-lock.json` con 24 paquetes en un espejo bloqueable) y H13 (compresión HTTP de los GeoJSON, A8).
+H1, H2, H4 (lectores, validadores, contrato v1.2) y H13 (compresión HTTP de los GeoJSON, A8).
+
+**H12 (resuelto por Marco, con autorización del equipo):** las 24 URLs `resolved` de `package-lock.json` que apuntaban a `registry.npmmirror.com` ahora apuntan a `registry.npmjs.org`. Solo cambian esas líneas: los hashes de integridad son los mismos, así que npm exige exactamente los mismos archivos. **No verificado desde este entorno:** su red rechaza las descargas del registro oficial (también las de los 284 paquetes que ya venían de ahí). La comprobación real será el primer `npm ci` en GitHub Actions.
 
 ## 4. Verificación común de cada fase
 
