@@ -1,4 +1,5 @@
 import CellDaysHelp from '../../../components/ui/CellDaysHelp'
+import { PURPOSE_COMPARE } from '../../../components/ui/cellDaysPurpose'
 import { useEffect, useRef, useState } from 'react'
 import type { CalibratedRecord, MonthlyRecord, Sensor } from '../../../types/data'
 import type { CalendarSelection, CalendarSelectionProps } from '../../../types/selection'
@@ -62,7 +63,7 @@ export default function CalendarExplorer({ showRegionSelector = true, regionLabe
     try { downloadCsv(serializeMonthlySeries(visibleRecords), calendarCsvFilename(region,sensor,demo)) }
     catch (error) { setExportError(`No se pudo descargar el CSV: ${error instanceof Error ? error.message : 'Error desconocido'}`) }
   }
-  const detail = <CalendarDetail records={records} cell={selected} region={region} regionLabel={regionLabel} sensor={sensor} calibrated={calibrated} sourceUrl={sourceUrl} mapHref={mapHref} onOpenMap={onOpenMap} />
+  const detail = <CalendarDetail cell={selected} region={region} regionLabel={regionLabel} sensor={sensor} calibrated={calibrated} seriesRecords={visibleRecords} sourceUrl={sourceUrl} mapHref={mapHref} onOpenMap={onOpenMap} />
   return <>
     <div className="calendar-options" aria-label="Opciones del calendario">
       <header className="calendar-heading"><h1>Calendario histórico</h1><span>{regionLabel || region}</span></header>
@@ -98,7 +99,7 @@ export default function CalendarExplorer({ showRegionSelector = true, regionLabe
           <details className="calendar-scale-control"><summary>Escala</summary><div><label>Máximo de escala (días-celda)<input type="number" min="1" value={scaleMax} onInput={e=>{const value=Number(e.currentTarget.value);if(Number.isFinite(value)&&value>0)setCustomScale(value)}} /></label><button type="button" onClick={()=>setCustomScale(null)}>Automática</button><p>La saturación solo afecta el color; los valores se conservan.</p></div></details>
           <div className="calendar-numeric-legend"><span className="calendar-legend-title">Intensidad observada <small>días-celda</small></span><div className="calendar-scale-gradient" aria-hidden="true" style={{background:`linear-gradient(to right, ${calendarHeatColor(0,scaleMax)}, ${calendarHeatColor(scaleMax,scaleMax)})`}} /><div className="calendar-scale-ticks">{[0,.25,.5,.75,1].map(f=><span key={f}>{(f*scaleMax).toFixed(1)}</span>)}</div></div>
           <ul><li><i className="calendar-cell--zero" />Cero válido</li><li><i className="calendar-cell--missing" />Sin dato</li><li><i className="calendar-cell--absent" />No publicado</li></ul>
-          <CellDaysHelp />
+          <CellDaysHelp purpose={PURPOSE_COMPARE} />
         </section>
       </section>
       {!comparing && detail}

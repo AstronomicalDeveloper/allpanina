@@ -1,4 +1,5 @@
 import CellDaysHelp from '../../../components/ui/CellDaysHelp'
+import { PURPOSE_CELL } from '../../../components/ui/cellDaysPurpose'
 import type { MapController } from '../useJuanMap'
 import type { OverlayState } from '../cartography/juanLayers'
 const overlays: [keyof OverlayState, string][] = [
@@ -21,7 +22,7 @@ export default function CartographyPanel({ map, national = false }: { map: MapCo
         ['#EF4444', `> ${q50.toFixed(1)} a ${q75.toFixed(1)}`, 'P50–P75'], ['#991B1B', `> ${q75.toFixed(1)}`, 'Sobre P75'],
       ].map(([color, range, label]) => <li key={label}><i style={{ background: color }} aria-hidden="true" /><span>{label}</span><strong>{range}</strong></li>)}</ol><p>Los percentiles ordenan los valores de las celdas del período y sensor seleccionados. Un color más intenso indica {national?'más días-celda de 1 km acumulados en cada cuadrícula':'más días con detecciones por celda'} dentro de esta clasificación; no mide gravedad, riesgo ni superficie quemada. Los umbrales se recalculan y no son una escala fija entre períodos o sensores.</p></>}
       {national&&<details><summary>Límite territorial resaltado</summary><p>Referencia INEI 2023 simplificada para navegar. El filtro y recorte son solo cartográficos. Una celda fronteriza puede incluir observaciones de territorios vecinos; su valor original no es proporcional al fragmento visible.</p></details>}
-      <CellDaysHelp national={national} />
+      <CellDaysHelp national={national} purpose={PURPOSE_CELL} />
     </section>
     <p className="map-fine-print">Fondos y referencias requieren internet. La capa de áreas protegidas conserva el ámbito del piloto Ucayali.</p>
   </div>

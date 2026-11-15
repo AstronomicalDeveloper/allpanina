@@ -78,3 +78,9 @@ test('v2 overlays y opacidad actualizan la instancia existente de Juan',async t=
  assert.equal(runtime.maps.length,1)
  await click(host,'Encuadrar');assert.ok(runtime.maps[0].fitted)
 })
+test('C5 el mapa explica día-celda y contextualiza la celda seleccionada',async t=>{
+ mockFiles(t);const {host}=await setup(t)
+ assert.match(host.querySelector('.cell-days-help')!.textContent!,/Cómo leer el valor de una celda/)
+ await choose(host,'[aria-label="Seleccionar celda del mapa"]','DEMO-cell-001')
+ assert.match(host.querySelector('.map-cell-context')!.textContent!,/\d+ de \d+ celdas con registro tienen más días-celda que esta\. El máximo es \d+/)
+})

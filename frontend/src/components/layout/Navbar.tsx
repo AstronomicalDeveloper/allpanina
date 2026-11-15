@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 
 const destinations = [['/calendario', 'Calendario'], ['/mapa', 'Mapa'], ['/metodo', 'Método']]
 
@@ -6,7 +6,7 @@ export default function Navbar() {
   const { pathname, search, hash } = useLocation()
 
   return <header className={`navbar${pathname === '/mapa' ? ' navbar--map' : ''}`}>
-    <strong className="brand"><svg className="brand-symbol" viewBox="0 0 24 28" fill="none" aria-hidden="true"><path d="M13 2c1 6 7 8 7 15a8 8 0 0 1-16 0c0-3 2-6 5-8 0 4 1 6 3 7 3-4 2-9 1-14Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>AllpaNina</strong>
+    <strong className="brand-wrap"><Link className="brand" to="/" aria-label="AllpaNina, ir al inicio"><svg className="brand-symbol" viewBox="0 0 24 28" fill="none" aria-hidden="true"><path d="M13 2c1 6 7 8 7 15a8 8 0 0 1-16 0c0-3 2-6 5-8 0 4 1 6 3 7 3-4 2-9 1-14Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>AllpaNina</Link></strong>
     <nav aria-label="Navegación principal">
       {destinations.map(([path, label]) => <NavLink end key={path} to={{ pathname: path, search, hash }}>{label}</NavLink>)}
     </nav>

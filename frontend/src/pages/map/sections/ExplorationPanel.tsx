@@ -4,6 +4,7 @@ import { MONTHS } from '../../../services/data/calendar'
 import type { MapSelection } from '../../../types/selection'
 import type { MapController } from '../useJuanMap'
 import AnnualCellDetail from '../cartography/AnnualCellDetail'
+import { valueContext } from '../../../components/ui/valueContext'
 export default function ExplorationPanel({ map, selection, years, onChange, unavailable, national = false, regional }: {
   national?: boolean; regional?: ReturnType<typeof regionalSummary>; map: MapController; selection: MapSelection; years: number[]; onChange: (next: MapSelection) => void; unavailable: boolean
 }) {
@@ -11,6 +12,7 @@ export default function ExplorationPanel({ map, selection, years, onChange, unav
   const coverage = regional?.coverage ?? map.yearModel.coverage[map.sensor]
   const usableMonths=regional?.usableMonths ?? map.usableMonths
   const observedValue=regional ? regional.value : map.stats.totalDetections
+  const cellContext = map.selectedCell ? valueContext(map.filteredGeoJson.features.map(f => f.properties.cell_days), map.selectedCell.cell_days) : null
   const valid = regional ? regional.value!==null : map.scope === 'year' ? map.usableMonths > 0 : map.monthStatus === 'ok'
   return <div className="map-panel-content">
     <fieldset><legend>Período de observación</legend><div className="map-segment" aria-label="Modalidad del mapa">{([['year', 'Anual'], ['month', 'Mensual']] as const).map(([scope, label]) => <button key={scope} aria-pressed={map.scope === scope} onClick={() => onChange({ ...selection, scope })}>{label}</button>)}</div>
@@ -30,6 +32,7 @@ export default function ExplorationPanel({ map, selection, years, onChange, unav
       {map.selectedCell && <div className="map-cell-detail"><h4>Observación satelital</h4><p>{national?'Capa nacional PE · cuadrícula de 10 km':selection.region} · {map.sensor}</p>
         {map.scope === 'year' ? <AnnualCellDetail cell={map.selectedCell} model={map.yearModel} national={national} /> : <><p>{MONTHS[map.month - 1]} de {map.year}</p><p><strong>{map.selectedCell.cell_days} {national?'días-celda de 1 km':map.selectedCell.cell_days === 1 ? 'día' : 'días'}</strong> {national?'acumulados en esta cuadrícula de 10 km durante el mes. No son días distintos de la cuadrícula ni un total departamental.':'con detecciones térmicas registradas en esta celda durante el mes.'}</p><p>No equivale a ese número de incendios.</p></>}
         <p className="map-fine-print">Identificador de celda: {map.selectedCell.cell_id}</p>
+        {cellContext && <p className="map-cell-context">En esta vista, {cellContext.greater} de {cellContext.total} celdas con registro tienen más días-celda que esta. El máximo es {cellContext.max.toLocaleString('es-PE')}.</p>}
         <button onClick={() => map.selectCell('')}>Quitar selección</button>
       </div>}
     </section>
