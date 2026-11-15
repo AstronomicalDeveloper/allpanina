@@ -38,9 +38,17 @@ test('v2 menú de información muestra fuentes, cierra con Escape y devuelve foc
  const {host}=await mount(t,'/calendario',createElement(Navbar));const details=host.querySelector('details')!,summary=details.querySelector('summary')!
  await act(async()=>summary.click());assert.ok(details.open)
  assert.ok(details.querySelector('a[href="/data/manifest.json"]'))
+ assert.doesNotMatch(details.textContent!,/progresivamente/)
  await act(async()=>details.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true})))
  assert.equal(details.open,false);assert.equal(document.activeElement,summary)
  await act(async()=>summary.click());await navigate('/metodo');assert.equal(host.querySelector('details')!.open,false)
+})
+test('menú de información enlaza el manifiesto del conjunto de datos activo',async t=>{
+ const {host}=await mount(t,'/calendario',createElement(Navbar),'peru')
+ assert.match(host.querySelector('a[href="/data/peru/manifest.json"]')!.textContent!,/Perú v1\.1/)
+ await navigate('/calendario?data=pilot&mapRegion=PE-UCA');assert.match(host.querySelector('a[href="/data/manifest.json"]')!.textContent!,/piloto Ucayali v1\.0/)
+ await navigate('/mapa?data=demo');assert.match(host.querySelector('a[href="/data/demo/manifest.json"]')!.textContent!,/DEMO/)
+ await navigate('/metodo?mapRegion=PE-05');assert.ok(host.querySelector('a[href="/data/peru/manifest.json"]'))
 })
 test('v2 tokens de texto y navegación conservan contraste AA',async()=>{
  const css=await readFile(new URL('../src/styles/tokens.css',import.meta.url),'utf8')

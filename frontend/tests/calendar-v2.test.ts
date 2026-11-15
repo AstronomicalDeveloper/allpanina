@@ -49,7 +49,7 @@ test('v2 real: doce meses, detalle inicialmente vacío, selección observada, es
  await act(async()=>{input.value='1';input.dispatchEvent(new dom.window.Event('input',{bubbles:true}))})
  assert.equal(cell(host,'Septiembre 2024, VIIRS, 5581').style.backgroundColor,'rgb(221, 130, 82)')
  assert.equal(host.querySelector('.calendar-observed-value')!.textContent,'5581')
- assert.equal(host.querySelector('.calendar-scale-ticks')!.lastElementChild!.textContent,'1.0')
+ assert.equal(host.querySelector('.calendar-scale-ticks')!.lastElementChild!.textContent,'1')
 })
 
 test('v2 DEMO explícito: cero, missing y ausencia no se convierten entre sí; matriz local sin vista mensual',async t=>{

@@ -53,3 +53,6 @@ body:has(.navbar--map):not(:has(.map-workspace)) #main { padding-top: 6rem; }
 .brand-wrap { font-weight: 700; }
 a.brand { text-decoration: none; }
 .map-cell-context { font-size: .8125rem; line-height: 1.5; margin: .5rem 0; }
+.technical-detail { margin-top: .35rem; font-size: .75rem; }
+.technical-detail > summary { cursor: pointer; min-height: 24px; color: inherit; opacity: .85; }
+.technical-detail code { display: block; margin-top: .25rem; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .75rem; }

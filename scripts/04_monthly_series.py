@@ -232,7 +232,7 @@ def run(cell_days_path: Path, out_path: Path, region_id: str, bbox, first_month,
     cell_days = pd.read_parquet(cell_days_path)
     series = build_monthly_series(cell_days, region_id, bbox, first_month, last_month, updated_at, polygon)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    series.to_csv(out_path, index=False)
+    series.to_csv(out_path, index=False, lineterminator="\n")
 
     summary = series.groupby(["sensor_group", "status"]).size().unstack(fill_value=0)
     print(summary.to_string())
@@ -249,7 +249,7 @@ def run_peru(cell_days_path: Path, out_path: Path, departments_path: Path, first
     cell_days = pd.read_parquet(cell_days_path)
     series = build_peru_series(cell_days, departments, first_month, last_month, updated_at)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    series.to_csv(out_path, index=False)
+    series.to_csv(out_path, index=False, lineterminator="\n")
     print(series.groupby(["sensor_group", "status"]).size().unstack(fill_value=0).to_string())
     print(
         f"{len(series)} filas en {out_path} ({series['region_id'].nunique()} regiones, "

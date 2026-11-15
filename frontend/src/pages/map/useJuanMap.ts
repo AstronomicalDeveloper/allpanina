@@ -28,6 +28,9 @@ interface Props {
   runtimeLoader?: RuntimeLoader
 }
 type Properties = MapCellProperties
+/** Aviso del mapa: mensaje comprensible y, aparte, el detalle técnico original. */
+type MapIssue = { message: string; detail?: string }
+const problem = (message: string, error?: unknown): MapIssue => ({ message, detail: error === undefined ? undefined : error instanceof Error ? error.message : String(error) })
 
 export default function useJuanMap({ data, model, selection, runtimeLoader = loadMapRuntime, national = false }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -43,7 +46,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
   const [cursorCoords, setCursorCoords] = useState<{ lat: number | null; lon: number | null }>({ lat: null, lon: null })
   const [selected, setSelected] = useState<{ key: string; properties: Properties } | null>(null)
   const [ready, setReady] = useState(false)
-  const [issue, setIssue] = useState('')
+  const [issue, setIssue] = useState<MapIssue | null>(null)
   const [shareNotice, setShareNotice] = useState<{ text: string; copied: boolean } | null>(null)
   const shareMessage = shareNotice?.text ?? ''
   useEffect(() => {
@@ -56,7 +59,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
     if(!national)return
     let active=true
     void loadDepartmentNavigation().then(value=>{if(active)setNavigation(value)})
-      .catch(error=>{if(active)setIssue(`No se pudieron cargar los límites para enfocar el departamento: ${String(error)}. No se muestran celdas departamentales hasta recuperar los límites.`)})
+      .catch(error=>{if(active)setIssue(problem('No se pudieron cargar los límites departamentales, así que no se puede enfocar el departamento. No se muestran celdas departamentales hasta recuperarlos.', error))})
     return ()=>{active=false}
   },[national,attempt])
   const year = selection.year ?? 0, month = selection.month ?? 1, sensor = selection.sensor
@@ -94,7 +97,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
     let observer: ResizeObserver | null = null
     let timeout: ReturnType<typeof setTimeout> | undefined
     const resize = () => instance?.resize()
-    const contextLost = (event: Event) => { event.preventDefault(); setReady(false); setIssue('Se perdió el contexto WebGL. Reintenta el mapa.') }
+    const contextLost = (event: Event) => { event.preventDefault(); setReady(false); setIssue(problem('Se perdió el contexto WebGL del navegador. Reintenta el mapa.')) }
     void runtimeLoader().then(runtime => {
       if (cancelled || !mapContainer.current) return
       const current = latest.current
@@ -134,7 +137,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
         lastCoordinateUpdate = now
         setCursorCoords({ lat: Number(event.lngLat.lat.toFixed(3)), lon: Number(event.lngLat.lng.toFixed(3)) })
       })
-      map.on('error', event => { if (!cancelled) setIssue(`Recurso cartográfico o WebGL no disponible: ${event.error?.message ?? 'Error del mapa'}. Las celdas locales no se sustituyen.`) })
+      map.on('error', event => { if (!cancelled) setIssue(problem('No se pudo cargar un recurso del mapa (fondo, capa de referencia o gráficos). Comprueba la conexión o reintenta; las observaciones no se sustituyen.', event.error ?? 'Error del mapa')) })
       const refreshGrid = () => {
         if (!latest.current.overlays.graticule) return
         const source = map.getSource('graticule-grid') as MapLibre.GeoJSONSource | undefined
@@ -154,8 +157,8 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
       map.getCanvas().addEventListener('webglcontextlost', contextLost)
       if (typeof ResizeObserver !== 'undefined') { observer = new ResizeObserver(resize); observer.observe(mapContainer.current) }
       window.addEventListener('resize', resize)
-      timeout = setTimeout(() => { if (!cancelled) setIssue('La carga cartográfica tarda demasiado. Comprueba la conexión o elige otro fondo.') }, 20000)
-    }).catch(error => { if (!cancelled) setIssue(`No se pudo iniciar el mapa WebGL/worker: ${error instanceof Error ? error.message : 'Error desconocido'}`) })
+      timeout = setTimeout(() => { if (!cancelled) setIssue(problem('La carga cartográfica tarda demasiado. Comprueba la conexión o elige otro fondo.')) }, 20000)
+    }).catch(error => { if (!cancelled) setIssue(problem('No se pudo iniciar el mapa en este navegador. Prueba a recargar la página o usar otro navegador.', error)) })
     return () => {
       cancelled = true; clearTimeout(timeout); observer?.disconnect()
       window.removeEventListener('resize', resize)
@@ -184,7 +187,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
       if (!cancelled) for (const layer of layers) map.setLayoutProperty(layer, 'visibility', 'visible')
     }
     void focusDepartment().catch(error => {
-      if (!cancelled) setIssue(`No se pudo enfocar o destacar el departamento: ${String(error)}`)
+      if (!cancelled) setIssue(problem('No se pudo enfocar ni resaltar el departamento seleccionado.', error))
     })
     return () => { cancelled = true }
   }, [national, ready, navigation, selection.region])
@@ -205,7 +208,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
       renderedSummary.current = summaryPoints
       for (const layer of observedLayers) map.setLayoutProperty(layer, 'visibility', layer === 'celdas-line' && departmentSelected ? 'none' : 'visible')
     } })
-      .catch(error => { if (!cancelled) setIssue(`No se pudo actualizar el resumen cartográfico: ${String(error)}`) })
+      .catch(error => { if (!cancelled) setIssue(problem('No se pudo actualizar el resumen del mapa. Reintenta el mapa.', error)) })
     return () => { cancelled = true }
   }, [ready, filteredGeoJson, summaryPoints, departmentSelected])
   useEffect(() => {
@@ -247,7 +250,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
   }
   const toggleFullscreen = async () => {
     try { if (document.fullscreenElement === rootRef.current) await document.exitFullscreen(); else await rootRef.current?.requestFullscreen() }
-    catch { setIssue('El navegador no permite pantalla completa.') }
+    catch { setIssue(problem('El navegador no permite pantalla completa.')) }
   }
   const copyLink = async () => {
     const url = new URL(window.location.href)
@@ -263,10 +266,10 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
     setSelected(feature ? { key: selectionKey, properties: feature.properties } : null)
   }
   return { rootRef, mapContainer, baseMap, setBaseMap, overlays, setOverlays, opacity, setOpacity,
-    isFullScreen, cursorCoords, selectedCell, selectCell, ready, issue, shareMessage, representation,
+    isFullScreen, cursorCoords, selectedCell, selectCell, ready, issue: issue?.message ?? '', issueDetail: issue?.detail, shareMessage, representation,
     scope, year, month, sensor, yearModel, filteredGeoJson, usableMonths, periodLabel, monthStatus,
     percentileBreaks, stats, resetView, toggleFullscreen, copyLink,
     dismissShare: () => setShareNotice(null),
-    retry: () => { setReady(false); setIssue(''); setAttempt(attempt + 1) } }
+    retry: () => { setReady(false); setIssue(null); setAttempt(attempt + 1) } }
 }
 export type MapController = Omit<ReturnType<typeof useJuanMap>, 'rootRef' | 'mapContainer'>

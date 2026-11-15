@@ -9,6 +9,7 @@ import type { CellsData, Manifest, MonthlyRecord } from '../../types/data'
 import type { MapSelection } from '../../types/selection'
 import type { RuntimeLoader } from './cartography/mapRuntime'
 import MapWorkspace from './sections/MapWorkspace'
+import TechnicalDetail from '../../components/ui/TechnicalDetail'
 
 type State = { status: 'loading' } | { status: 'error'; message: string } | {
   status: 'loaded'; data: CellsData | null; manifest: Manifest; records: MonthlyRecord[]; years: number[]; region: string; year: number | null
@@ -47,9 +48,9 @@ function MapData({ dataRoot, selection, onChange, runtimeLoader }: {
     catch (error) { return { ok: false as const, message: error instanceof Error ? error.message : 'Datos geográficos inconsistentes' } }
   }, [state])
   if (state.status === 'loading') return <p className="map-state" role="status">Cargando observaciones y cobertura del período…</p>
-  if (state.status === 'error') return <div className="map-state" role="alert"><h2>No se pudieron cargar las observaciones</h2><p>{state.message}</p><button onClick={() => { setState({ status: 'loading' }); setAttempt(attempt + 1) }}>Reintentar datos</button></div>
+  if (state.status === 'error') return <div className="map-state" role="alert"><h2>No se pudieron cargar las observaciones</h2><p>Comprueba la conexión y vuelve a intentarlo. No se muestran valores de reemplazo.</p><TechnicalDetail detail={state.message} /><button onClick={() => { setState({ status: 'loading' }); setAttempt(attempt + 1) }}>Reintentar datos</button></div>
   if (state.year === null) return <p className="map-state" role="status">No hay años geográficos publicados en este conjunto. Revisa el manifiesto de datos.</p>
-  if (!model?.ok) return <div className="map-state" role="alert"><h2>Los datos geográficos no son consistentes</h2><p>{model?.message}</p><p>Revisa la entrega científica; no se generan valores de reemplazo.</p></div>
+  if (!model?.ok) return <div className="map-state" role="alert"><h2>Los datos geográficos no son consistentes</h2><p>Los archivos publicados para este período no coinciden entre sí, por lo que el mapa no se dibuja. No se generan valores de reemplazo.</p><TechnicalDetail detail={model?.message} /></div>
   const months = state.records.filter(row => row.region_id === state.region && row.year === state.year && row.sensor_group === selection.sensor && row.status === 'ok').map(row => row.month)
   if (national && !state.manifest.regions?.includes(selection.region || 'PE')) return <p className="map-state" role="alert">Región no válida en el manifiesto nacional.</p>
   const effective = { ...selection, region: national ? selection.region || 'PE' : state.region, year: state.year, month: selection.month ?? Math.max(1, ...months), scope: selection.scope ?? 'year' }

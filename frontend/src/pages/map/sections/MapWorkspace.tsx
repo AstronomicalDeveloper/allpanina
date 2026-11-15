@@ -7,6 +7,7 @@ import { regionalSummary } from '../../../services/data/regionalSummary'
 import useJuanMap from '../useJuanMap'
 import CartographyPanel from './CartographyPanel'
 import ExplorationPanel from './ExplorationPanel'
+import TechnicalDetail from '../../../components/ui/TechnicalDetail'
 
 export default function MapWorkspace({ data, model, selection, years, onChange, unavailable, manifest, demo, runtimeLoader, national = false, records = [] }: {
   national?: boolean; records?: MonthlyRecord[]; data: CellsData; model: MapYear; selection: MapSelection; years: number[]; onChange: (next: MapSelection) => void
@@ -59,6 +60,6 @@ export default function MapWorkspace({ data, model, selection, years, onChange, 
     <span className="map-coordinates">Lat {map.cursorCoords.lat ?? '—'}° · Lon {map.cursorCoords.lon ?? '—'}°</span>
     {map.shareMessage && <div className="map-feedback map-feedback--share"><span role="status">{map.shareMessage}</span><button className="map-feedback-close" aria-label="Cerrar aviso de enlace" onClick={map.dismissShare}>×</button></div>}
     {!map.ready && !map.issue && <p className="map-feedback" role="status">Cargando cartografía…</p>}
-    {map.issue && <div className="map-feedback map-feedback--error" role="alert">{map.issue}<button onClick={map.retry}>Reintentar mapa</button></div>}
+    {map.issue && <div className="map-feedback map-feedback--error" role="alert">{map.issue}<button onClick={map.retry}>Reintentar mapa</button><TechnicalDetail detail={map.issueDetail} /></div>}
   </div>
 }

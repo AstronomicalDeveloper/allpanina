@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { loadManifest, loadMethodDocument } from '../../services/data/loaders'
 import { datasetMode, datasetRoot } from '../../services/data/geography'
 import { leerConjunto } from '../../services/region/store'
+import TechnicalDetail from './TechnicalDetail'
 export default function GeographicSelection() {
   const [params] = useSearchParams(), navigate = useNavigate(), location = useLocation()
   const [state,setState] = useState<{options:{id:string;name:string}[];error?:string}>({options:[]})
@@ -32,7 +33,7 @@ export default function GeographicSelection() {
     </select></label>}
     {mode==='peru'&&<Link to={{pathname:location.pathname,search:`?${new URLSearchParams({...Object.fromEntries(params),data:'pilot',mapRegion:'PE-UCA'})}`,hash:location.hash}}>Piloto v1.0</Link>}
     {!state.options.length&&!state.error&&<span role="status">Cargando ámbitos…</span>}
-    {state.error&&<span role="alert">No se pudieron cargar los ámbitos: {state.error} <button onClick={()=>{setState({options:[]});setAttempt(attempt+1)}}>Reintentar ámbitos</button></span>}
+    {state.error&&<div role="alert">No se pudo cargar la lista de ámbitos geográficos. Comprueba la conexión y vuelve a intentarlo. <button onClick={()=>{setState({options:[]});setAttempt(attempt+1)}}>Reintentar ámbitos</button><TechnicalDetail detail={state.error} /></div>}
   </div>
 }
 
