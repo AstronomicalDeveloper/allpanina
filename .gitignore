@@ -343,3 +343,6 @@ crash.log
 # Official INEI boundaries and derived navigation provenance
 !/docs/region/departamentos_inei_2023.geojson
 !/docs/peru/NAVEGACION_DEPARTAMENTAL.md
+
+# Monthly descriptive historical analysis
+!/docs/ANALISIS_HISTORICO.md

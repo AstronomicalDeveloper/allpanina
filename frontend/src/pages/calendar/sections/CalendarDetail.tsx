@@ -1,11 +1,12 @@
+import HistoricalAnalysis from './HistoricalAnalysis'
 import { MONTHS } from '../../../services/data/calendar'
 import type { CalendarCell } from '../../../services/data/calendar'
-import type { CalibratedRecord, Sensor } from '../../../types/data'
+import type { CalibratedRecord, MonthlyRecord, Sensor } from '../../../types/data'
 import type { CalendarSelectionProps } from '../../../types/selection'
 const decimal = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 2 })
 const format = (value: number | null) => value === null ? 'No disponible' : decimal.format(value)
-type Props = Pick<CalendarSelectionProps,'mapHref'|'onOpenMap'> & { cell: CalendarCell | null; region: string; regionLabel?: string; sensor: Sensor; calibrated?: CalibratedRecord[]; sourceUrl?: string }
-export default function CalendarDetail({ cell, region, regionLabel, sensor, calibrated=[], sourceUrl, mapHref, onOpenMap }: Props) {
+type Props = Pick<CalendarSelectionProps,'mapHref'|'onOpenMap'> & { cell: CalendarCell | null; region: string; regionLabel?: string; sensor: Sensor; records?: MonthlyRecord[]; calibrated?: CalibratedRecord[]; sourceUrl?: string }
+export default function CalendarDetail({ cell, region, regionLabel, sensor, records=[], calibrated=[], sourceUrl, mapHref, onOpenMap }: Props) {
   const record=cell?.record
   const estimates=cell ? calibrated.filter(r=>r.region_id===region && r.year===cell.year && r.month===cell.month) : []
   const period=cell ? {region,year:cell.year,month:cell.month,series:sensor} : null
@@ -21,6 +22,7 @@ export default function CalendarDetail({ cell, region, regionLabel, sensor, cali
           : <p className="calendar-state-note">{cell.status === 'absent' ? 'No hay registro publicado para este período. No equivale a cero.' : 'No hay un valor utilizable para este período y sensor. No se sustituye por cero.'}</p>}
         <p className={`calendar-detail-state calendar-detail-state--${cell.status}`}>Estado: {cell.status === 'zero' ? 'Dato disponible · cero válido' : cell.status === 'value' ? 'Dato disponible · observado' : cell.status === 'absent' ? 'No publicado' : 'Sin dato utilizable'}</p>
         {mapHref && period && <a className="calendar-map-action" href={mapHref(period)} onClick={e=>onOpenMap?.(e,period)}>Ver este período en el mapa</a>}
+        <HistoricalAnalysis records={records} selection={{region,year:cell.year,month:cell.month,sensor}} />
         <details className="calendar-technical"><summary>Detalles científicos y procedencia</summary>
         {!!estimates.length && <section className="calendar-estimates"><h4>Comparación regional</h4><p>B0/B1 parten de VIIRS y se evalúan frente a MODIS. No son observaciones calibradas por celda.</p>{estimates.map(r=><div className="calendar-estimate" key={r.method}><strong title={r.value === null ? undefined : String(r.value)}>{r.method}: {r.value === null ? 'Sin dato' : format(r.value)}</strong><span>días-celda · split: {r.split}</span><span>Estado: {r.status} · Residual: {format(r.residual)}</span></div>)}</section>}
         <details className="calendar-provenance"><summary>Estado y procedencia</summary><dl><div><dt>Región</dt><dd>{region}</dd></div><div><dt>Sensor</dt><dd>{sensor}</dd></div><div><dt>cell_days</dt><dd>{record?.cell_days??'Sin dato'}</dd></div><div><dt>status</dt><dd>{record?.status??'Sin fila publicada'}</dd></div><div><dt>source_version</dt><dd>{record?.source_version??'No disponible'}</dd></div><div><dt>updated_at</dt><dd>{record?.updated_at??'No disponible'}</dd></div></dl>{sourceUrl && <a href={sourceUrl}>Archivo de observaciones</a>}<p>updated_at es la actualización del archivo, no la fecha de una detección.</p></details></details>

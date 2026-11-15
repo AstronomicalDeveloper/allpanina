@@ -273,3 +273,19 @@
 
 .calendar-unit-explanation { font-size: .78rem; line-height: 1.6; }
 .calendar-legend > .cell-days-help { flex-basis: 100%; width: 100%; }
+
+/* Same-month historical context; scoped to Calendar's description panel. */
+.calendar-history { margin-block: 1.25rem; border-block-start: 1px solid var(--color-border, #ced8d0); padding-block-start: .85rem; }
+.calendar-history summary { cursor: pointer; font-weight: 650; }
+.calendar-history summary:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+.calendar-history dl > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .25rem .75rem; margin-block: .65rem; }
+.calendar-history dd { margin: 0; font-weight: 600; }
+.calendar-history figure { margin: 1rem 0; }
+.calendar-history figcaption, .calendar-history-note { font-size: .85rem; }
+.calendar-history-chart { list-style: none; padding: 0; margin-block: .75rem; }
+.calendar-history-chart li { display: grid; grid-template-columns: 5.5rem minmax(1rem, 1fr) auto; align-items: center; gap: .5rem; margin-block: .45rem; font-size: .8rem; }
+.calendar-history-chart small { display: block; font-size: .7rem; }
+.calendar-history-track { height: .5rem; background: #e4ebe4; border-radius: 2px; overflow: hidden; }
+.calendar-history-track i { display: block; height: 100%; background: #6a887a; }
+.calendar-history-chart .is-selected { font-weight: 700; }
+.calendar-history-chart .is-selected i { background: #163b35; }
