@@ -206,7 +206,8 @@ Aquí solo va lo nuevo.
 
 - **Mismas columnas que v1.0:** `region_id, year, month, method, value, split, status, residual`.
 - **Clave única:** (`region_id`, `year`, `month`, `method`).
-- **κ de cada fila:** B1 usa el κ del estrato de la región. Para `PE` se usa el κ nacional. Qué κ es cada uno se lee en `method.json` (sección F); no se agrega columna.
+- **κ de cada fila:** B1 usa el κ del estrato de la región. Qué κ es cada uno se lee en `method.json` (sección F); no se agrega columna.
+- **`PE` (decisión P11, `DECISIONS.md` §12):** B1 de `PE` = **suma de las B1 de los 25 departamentos**, no VIIRS × κ nacional. Así se cumple la regla de suma de la sección C también en la serie calibrada. La versión con κ nacional se reporta solo como referencia en `method.json → resultados`. Lo mismo vale para `PE-SIN-25` en `validation.json` y `method.json`: su B1 es la suma de sus 24 departamentos.
 
 ## E. `peru/validation.json` (Antonella)
 
