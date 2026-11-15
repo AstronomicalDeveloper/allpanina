@@ -187,7 +187,7 @@ test('mapa nacional ofrece las áreas protegidas de todo el Perú (sin filtro Uc
  assert.match(overlays,/Protected natural areas · Peru/);assert.match(overlays,/References and boundaries of Peru/)
  const tiles=(runtime.maps[0].style as {sources:Record<string,{tiles?:string[]}>}).sources['overlay-protected'].tiles![0]
  assert.doesNotMatch(tiles,/UCAYALI|layerDefs/)
- assert.match(host.querySelector('.map-panel--left .map-fine-print')!.textContent!,/cover Peru only/)
+ assert.match(host.querySelector('.map-tab--layers .map-fine-print')!.textContent!,/cover Peru only/)
  const context=host.querySelector('.map-geographic-context')!.textContent!
  assert.match(context,/Scope: Peru/);assert.doesNotMatch(context,/clipped/)
 })

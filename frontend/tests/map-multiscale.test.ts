@@ -81,7 +81,7 @@ test('UI zoom no reconstruye fuentes y permite inspeccionar cuadrados individual
  const map=runtime.maps[0],source=map.sources[SUMMARY_SOURCE]
  let writes=0;const original=source.setData;source.setData=value=>{writes++;original(value)}
  await act(async()=>{map.zoom=5;map.emit('zoomend');map.emit('moveend')})
- assert.equal(writes,0);assert.match(host.querySelector('.map-legend')!.textContent!,/cuadrados individuales/)
+ assert.equal(writes,0);assert.match(host.querySelector('.map-legend')!.textContent!,/one square per cell/)
  const id=cells.features[0].properties.cell_id
  await act(async()=>map.emit(`click:${POINT_LAYER}`,{features:[{properties:{cell_id:id}}]}))
  assert.match(host.querySelector('.map-cell-detail')!.textContent!,new RegExp(id))
@@ -89,7 +89,7 @@ test('UI zoom no reconstruye fuentes y permite inspeccionar cuadrados individual
  assert.match(runtime.popups[0].content!.textContent!,new RegExp(id))
  await act(async()=>{map.zoom=11;map.emit('zoomend')})
  assert.match(host.querySelector('.map-legend')!.textContent!,/Close view/)
- await choose(host,'[aria-label="Seleccionar celda del mapa"]',id)
+ await choose(host,'[aria-label="Select map cell"]',id)
  assert.match(host.querySelector('.map-cell-detail')!.textContent!,new RegExp(id))
  await click(host,'VIIRS');assert.equal(host.querySelector('.map-cell-detail'),null)
  assert.equal((source.data as typeof points).features.reduce((s,f)=>s+f.properties.cell_days,0),5581)
