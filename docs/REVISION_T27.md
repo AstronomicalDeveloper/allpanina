@@ -2,7 +2,7 @@
 
 - **Tarea:** T27, revisión científica de la calibración (produce Antonella, revisa Aldo).
 - **Fecha:** 14-nov-2026.
-- **Estado:** ✅ **APROBADA CON CONDICIONES** — Aldo, 14-nov-2026 (aprobó el dictamen propuesto en la revisión). Condiciones pendientes en la sección 4.
+- **Estado:** ✅ **CERRADA** — aprobada con condiciones por Aldo el 14-nov-2026; todas las condiciones obligatorias cumplidas. κ y método B1 congelados en `DECISIONS.md` §10. Siguiente paso: T29.
 - **Mes de control:** 2024-09. Es el mes con más actividad de todo el periodo (MODIS 2,323 celdas-día) y cae en **validación**, no en test.
 - **Test reservado:** no se miró ni se calculó nada de 2025-01 a 2026-07. `calibrated_series.csv` no trae filas de esos años.
 
@@ -60,13 +60,14 @@ Al calibrar, el error baja unas 11 veces. **Se elige B1.**
 
 **Aprobada con condiciones.** B1 se acepta como método de AllpaNina para Ucayali. Antes de T29 (correr el test) tiene que cumplirse esto:
 
-1. ⏳ **Antonella** agrega a `method.json` → `limitations`:
+1. ✅ **Antonella** (hecho, commit `ed715f5`) agrega a `method.json` → `limitations`:
    - B1 puede subestimar los meses pico de temporadas extremas (2024-09: −29%).
    - κ varía de año a año (0.26 a 0.34 en train) y se usa un solo factor global.
-2. ⏳ **Antonella** actualiza `method.json` → `status_rule` con el segundo caso de `missing` de `DECISIONS.md` §8: ninguna detección en todo Perú ese mes.
-3. ⏳ **Antonella** cambia `method.json` → `estado` a "aprobado por Aldo (T27)" (Aldo ya confirmó el dictamen).
+2. ✅ **Antonella** (hecho, `ed715f5`) actualiza `method.json` → `status_rule` con el segundo caso de `missing` de `DECISIONS.md` §8: ninguna detección en todo Perú ese mes.
+3. ✅ **Antonella** (hecho, `ed715f5`) cambia `method.json` → `estado` a "aprobado por Aldo (T27)" (Aldo ya confirmó el dictamen).
 4. ✅ **Marco** (hecho, 14-nov-2026: `manifest.json` lista los 16 archivos y todos los hashes coinciden) vuelve a correr `08_manifest.py`, para que `manifest.json` liste también `calibrated_series.csv`, `validation.json` y `method.json` con sus hashes.
 5. **Opcional:** agregar a `validation.json` los residuos mes a mes, si Landry los necesita en la pantalla de errores.
+6. ✅ **Marco** (hecho, commit `c6fe766`: los 16 hashes de `manifest.json` coinciden) vuelve a correr `08_manifest.py`: el cambio de `method.json` dejó desactualizado su hash en `manifest.json`.
 
 No se cambia κ ni el método después de ver estos resultados. Ajustar κ para corregir 2024 sería ajustarlo a la validación, y la validación dejaría de ser independiente.
 

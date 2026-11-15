@@ -1,0 +1,47 @@
+{
+  "periodo_test": "2025-01:2026-07",
+  "serie_entrada_sha256": "a633da77d258c832b929d9cc672b11a08a6d3651f620469dcb3d7233acf73ede",
+  "referencia_kappa_nacional": {
+    "PE": {
+      "nota": "B1 de PE como VIIRS × κ nacional. Solo referencia: la estimación de PE es la suma de los B1 departamentales.",
+      "kappa": 0.24891429001146811,
+      "n_months_matched": 19,
+      "mae": 149.11344222261584,
+      "wape": 0.31901310688320017,
+      "bias": 149.11344222261584
+    }
+  },
+  "reportables": [
+    "PE",
+    "PE-SIN-25",
+    "PE-01",
+    "PE-02",
+    "PE-03",
+    "PE-04",
+    "PE-05",
+    "PE-06",
+    "PE-08",
+    "PE-09",
+    "PE-10",
+    "PE-11",
+    "PE-12",
+    "PE-13",
+    "PE-14",
+    "PE-15",
+    "PE-16",
+    "PE-17",
+    "PE-19",
+    "PE-20",
+    "PE-21",
+    "PE-22",
+    "PE-25"
+  ],
+  "no_reportables": {
+    "PE-07": "Σ MODIS en test = 0, por debajo del mínimo de 50 (DECISIONS.md §11.3)",
+    "PE-18": "Σ MODIS en test = 26, por debajo del mínimo de 50 (DECISIONS.md §11.3)",
+    "PE-23": "Σ MODIS en test = 7, por debajo del mínimo de 50 (DECISIONS.md §11.3)",
+    "PE-24": "Σ MODIS en test = 38, por debajo del mínimo de 50 (DECISIONS.md §11.3)"
+  },
+  "resultado_limpio": "PE-SIN-25",
+  "advertencia": "El test de PE-25 (Ucayali) ya se vio en T29; PE lo incluye."
+}

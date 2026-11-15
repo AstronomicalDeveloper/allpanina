@@ -1,0 +1,105 @@
+{
+  "generated_at": "2026-11-15T15:51:29Z",
+  "region_id": "PE",
+  "producto": "MCD14ML v6.1 / VNP14IMGML v2",
+  "files": [
+    "monthly_series.csv",
+    "calibrated_series.csv",
+    "validation.json",
+    "method.json",
+    "cells_PE_2013.geojson",
+    "cells_PE_2014.geojson",
+    "cells_PE_2015.geojson",
+    "cells_PE_2016.geojson",
+    "cells_PE_2017.geojson",
+    "cells_PE_2018.geojson",
+    "cells_PE_2019.geojson",
+    "cells_PE_2020.geojson",
+    "cells_PE_2021.geojson",
+    "cells_PE_2022.geojson",
+    "cells_PE_2023.geojson",
+    "cells_PE_2024.geojson",
+    "cells_PE_2025.geojson",
+    "cells_PE_2026.geojson"
+  ],
+  "hash": {
+    "monthly_series.csv": "sha256:a633da77d258c832b929d9cc672b11a08a6d3651f620469dcb3d7233acf73ede",
+    "calibrated_series.csv": "sha256:5eb84f1675f826544dc978df6de210630443024aa9a16bf97eb535e0c4a67458",
+    "validation.json": "sha256:b2b259928bf830abfdcc53641693343c82699f0dc9738f8fe60644677c7f1d1e",
+    "method.json": "sha256:52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "cells_PE_2013.geojson": "sha256:51d74a9154cb808babddebe3c9a16ac98b934e08557a9307e0ec8929ff8f9e1b",
+    "cells_PE_2014.geojson": "sha256:6fcca04963e77a404453cbda0016b5c571a9b4a9d531e2957a1e6252255c285d",
+    "cells_PE_2015.geojson": "sha256:15c4bc791354ea7d90df4b1fb92ea554d97d4562269669530e7c5d6e41579930",
+    "cells_PE_2016.geojson": "sha256:57feab837b14d48d518b7a3995e65a0bee12120153ea848de2ad6257d32de4c2",
+    "cells_PE_2017.geojson": "sha256:8f1ce4fbab801cb3bee004db01735b770e1ac6add5d55e25cde98c9f200300f5",
+    "cells_PE_2018.geojson": "sha256:dfa77f38b17ef2e0314b4f7bb893f6605a39c6267ea08cf8ac10713652bb2033",
+    "cells_PE_2019.geojson": "sha256:d964ef0e565e0236a93e2eca6698a1c3afcb329e81eead7856798b16746ea816",
+    "cells_PE_2020.geojson": "sha256:a985bd25eb3d097531f7b7b54171975ab215de506b6d3a9890527c4bc3b6df62",
+    "cells_PE_2021.geojson": "sha256:d4648c738ff179cffc28c40afa9941f1455430ec31af3e6e7b021e603c683e64",
+    "cells_PE_2022.geojson": "sha256:8f79b1b3372d9de7232adaf2acc0e8c5bcc20f42eaaeeca631bac43a8023d371",
+    "cells_PE_2023.geojson": "sha256:4ded0c98f6e3a49ce80ef434e445bde33566ca2be2caa70149223d43d175151b",
+    "cells_PE_2024.geojson": "sha256:6429261bb0c51b87520308882117b526ef2530c1adea3637e9e3ded4bdc8a781",
+    "cells_PE_2025.geojson": "sha256:7b967e0971ab06f49e8e637131b41964a8d8bba6c2d6a7d36d544d06d09bf82a",
+    "cells_PE_2026.geojson": "sha256:f656f90a8a6f33878e0eb3339178df26deabe60f7654f348c2ff2e8a4a285dd1"
+  },
+  "sources": {
+    "MODIS": {
+      "product": "MODIS Terra+Aqua, Coleccion 6.1, archivo estandar FIRMS",
+      "zip": "DL_FIRE_M-C61_848370.zip",
+      "zip_sha256": "26cf9ee849ee4736c9c321ad79445275d908cb9f3b50c959d26eecfda4d972a6",
+      "csv": "firms_raw_modis.csv",
+      "rows_raw": 352572,
+      "first_date": "2003-01-02",
+      "last_date": "2026-08-31",
+      "versions": [
+        "6.03",
+        "61.03"
+      ]
+    },
+    "VIIRS": {
+      "product": "VIIRS S-NPP 375 m, Coleccion 2, archivo estandar FIRMS",
+      "zip": "DL_FIRE_SV-C2_848371.zip",
+      "zip_sha256": "f6b49a31341a195d5321caf061866ed5a7b1d285714a3e48b530596700f6a2f9",
+      "csv": "firms_raw_viirs_snpp.csv",
+      "rows_raw": 1058423,
+      "first_date": "2012-01-20",
+      "last_date": "2026-07-31",
+      "versions": [
+        "2"
+      ]
+    }
+  },
+  "periodo": {
+    "desde": "2013-01",
+    "hasta": "2026-07"
+  },
+  "contract_version": "1.1",
+  "regions": [
+    "PE",
+    "PE-01",
+    "PE-02",
+    "PE-03",
+    "PE-04",
+    "PE-05",
+    "PE-06",
+    "PE-07",
+    "PE-08",
+    "PE-09",
+    "PE-10",
+    "PE-11",
+    "PE-12",
+    "PE-13",
+    "PE-14",
+    "PE-15",
+    "PE-16",
+    "PE-17",
+    "PE-18",
+    "PE-19",
+    "PE-20",
+    "PE-21",
+    "PE-22",
+    "PE-23",
+    "PE-24",
+    "PE-25"
+  ]
+}
