@@ -1,10 +1,10 @@
 # AllpaNina Perú — Autorización del test nacional (P12)
 
-- **Paso:** P12 del plan v2.1. Depende de P11 (`docs/peru/REVISION_P11.md`, ratificada por Aldo el 15-nov-2026).
-- **Autorizan:** Aldo y Antonella.
+- **Paso:** P12 del plan v2.1. Depende de P11 (`docs/peru/REVISION_P11.md`, aprobada con condiciones, ratificación de Aldo pendiente por su ausencia).
+- **Autorizan:** Marco (Datos, por delegación de Aldo, que no está presente) y Antonella Karla Montes.
 - **Fecha:** 15-nov-2026.
-- **Commit de referencia:** `<hash del commit de feature/calibracion con este archivo>`
-- **Estado:** BORRADOR. Pasa a **AUTORIZADO** cuando estén las dos firmas de la sección 7.
+- **Commit de referencia:** el último commit de `docs/peru/AUTORIZACION_TEST.md` en `feature/calibracion` (un archivo no puede citar su propio hash; ver el historial del archivo).
+- **Estado:** **AUTORIZADO** el 15-nov-2026 por Marco y Antonella (secc. 7). Aldo no está presente: puede ratificar o cuestionar después, y lo que decida se declara como limitación si afecta al test.
 
 Sin las dos firmas no se ejecuta nada sobre el periodo de test.
 
@@ -23,13 +23,13 @@ No se autoriza: otro periodo, ningún ajuste de κ, ninguna alternativa nueva ni
 
 | # | Condición | Evidencia | Estado |
 | :-: | :-- | :-- | :-: |
-| 1 | P11 aprobada y ratificada por Aldo | `docs/peru/REVISION_P11.md` | ✅ |
-| 2 | Las 5 condiciones de P11 cumplidas | `REVISION_P11.md` §4 | ✅ |
+| 1 | P11 aprobada con condiciones por Marco (con Claude), por delegación de Aldo | `docs/peru/REVISION_P11.md` §5 | ✅ |
+| 2 | Condiciones 1 a 4 de P11 cumplidas por Antonella y verificadas de forma independiente. La 5 (ratificación de Aldo) queda pendiente por su ausencia | `REVISION_P11.md` §4 | ✅ (1 a 4) / ⏳ (5) |
 | 3 | κ congelados, calculados solo con train 2013-01 a 2022-12 | `DECISIONS.md` §12 | ✅ |
 | 4 | Estratos (P02) y reglas de métricas (P04) fijados antes de ver la validación | `DECISIONS.md` §11.2 y §11.3 | ✅ |
 | 5 | Validación 2023-2024 hecha, con las alternativas (b) κ nacional y (c) κ de Ucayali | `docs/peru/valid/comparacion_alternativas.json` | ✅ |
 | 6 | `PE-25` coincide con Ucayali v1 (serie y κ) | `REVISION_P07.md`, `REVISION_P11.md` | ✅ |
-| 7 | Nadie ha mirado valores de test de Perú | firmas de la sección 7 | ☐ |
+| 7 | Nadie ha mirado valores de test de Perú (salvo el test de Ucayali en T29, declarado en la sección 4) | firmas de la sección 7 | ✅ |
 
 ## 3. Insumos congelados
 
@@ -100,5 +100,6 @@ Con mi firma confirmo que se cumplen las condiciones de la sección 2, que acept
 
 | Persona | Rol | Firma (nombre y fecha) |
 | :-- | :-- | :-- |
-| Aldo | Autoriza (decisiones y revisión científica) |Aldo Ruiz 15-nov-2026|
-| Antonella | Autoriza y ejecuta P14 |Karla Montes 15-nov-2026 |
+| Aldo | Ausente. No firma; podrá ratificar después | — pendiente — |
+| Marco | Autoriza, por delegación de Aldo (Datos) | Marco, 15-nov-2026 |
+| Antonella | Autoriza y ejecuta P14 | Antonella Karla Montes, 15-nov-2026 |
