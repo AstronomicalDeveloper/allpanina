@@ -379,3 +379,18 @@ no deja fija):
   Si no lo es, en P11 se elige entre (a), (b) y (c) la de menor WAPE agregado, se
   documenta y se congela. No se crean alternativas nuevas después de ver validación.
 - El test no interviene en esta elección.
+### P04 — Reglas de métricas (fijadas antes de ver valid y test)
+Fecha: 2026-11-15 · Acordado por: Aldo + Antonella
+
+1. Mínimo para reportar una región en un split: Σ MODIS ≥ 50 celdas-día en ese split
+   (valid 2023-01..2024-12 o test 2025-01..2026-07). Si no lo cumple, la región
+   no se reporta sola; solo cuenta dentro del agregado PE.
+2. WAPE = Σ|B − MODIS| / Σ MODIS. No se reporta si Σ MODIS = 0.
+3. Se usan las mismas métricas del piloto de Ucayali, sin agregar ni quitar ninguna.
+4. Validación (P10): se compara B1 estratificado contra B0, κ nacional único (0.249)
+   y κ de Ucayali (0.294).
+   "Estratificar mejora" si el WAPE nacional de B1 estratificado es menor que el del
+   κ nacional único. Además se reporta en cuántas regiones reportables mejora.
+5. Test (P14): se reporta para PE, PE sin Ucayali (PE − PE-25) y cada región que
+   cumpla la regla 1. Advertencia: el test de Ucayali ya se vio en T29.
+6. Estas reglas no se cambian después de ver los resultados de valid ni de test.
