@@ -1,7 +1,1119 @@
 {
- "fuente": "Semilla: departamentos INEI 2023 (versión de navegación). Para todos los países: python scripts/11_world_boundaries.py (geoBoundaries).",
- "licencia": "INEI (Perú); geoBoundaries CC BY 4.0 para el resto",
+ "fuente": "geoBoundaries (gbOpen, ADM1, simplificado) - www.geoboundaries.org",
+ "licencia": "CC BY 4.0 salvo indicación por país (campo licencia)",
  "paises": [
+  {
+   "iso3": "AFG",
+   "iso2": "AF",
+   "nombre": "Afghanistan",
+   "archivo": "AFG.geojson",
+   "regiones": 34,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "AGO",
+   "iso2": "AO",
+   "nombre": "Angola",
+   "archivo": "AGO.geojson",
+   "regiones": 18,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "ALB",
+   "iso2": "AL",
+   "nombre": "Albania",
+   "archivo": "ALB.geojson",
+   "regiones": 12,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "AND",
+   "iso2": "AD",
+   "nombre": "Andorra",
+   "archivo": "AND.geojson",
+   "regiones": 7,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "ARE",
+   "iso2": "AE",
+   "nombre": "United Arab Emirates",
+   "archivo": "ARE.geojson",
+   "regiones": 7,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "ARG",
+   "iso2": "AR",
+   "nombre": "Argentina",
+   "archivo": "ARG.geojson",
+   "regiones": 23,
+   "licencia": "Creative Commons Attribution 2.5 Generic"
+  },
+  {
+   "iso3": "ARM",
+   "iso2": "AM",
+   "nombre": "Armenia",
+   "archivo": "ARM.geojson",
+   "regiones": 11,
+   "licencia": "Creative Commons Attribution 2.5 Generic"
+  },
+  {
+   "iso3": "ATG",
+   "iso2": "AG",
+   "nombre": "Antigua and Barbuda",
+   "archivo": "ATG.geojson",
+   "regiones": 8,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "AUS",
+   "iso2": "AU",
+   "nombre": "Australia",
+   "archivo": "AUS.geojson",
+   "regiones": 9,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "AUT",
+   "iso2": "AT",
+   "nombre": "Austria",
+   "archivo": "AUT.geojson",
+   "regiones": 9,
+   "licencia": "Creative Commons Attribution-ShareAlike 2.0"
+  },
+  {
+   "iso3": "AZE",
+   "iso2": "AZ",
+   "nombre": "Azerbaijan",
+   "archivo": "AZE.geojson",
+   "regiones": 2,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "BDI",
+   "iso2": "BI",
+   "nombre": "Burundi",
+   "archivo": "BDI.geojson",
+   "regiones": 18,
+   "licencia": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication"
+  },
+  {
+   "iso3": "BEL",
+   "iso2": "BE",
+   "nombre": "Belgium",
+   "archivo": "BEL.geojson",
+   "regiones": 3,
+   "licencia": "Creative Commons Attribution 4.0 (CC BY 4.0)"
+  },
+  {
+   "iso3": "BEN",
+   "iso2": "BJ",
+   "nombre": "Benin",
+   "archivo": "BEN.geojson",
+   "regiones": 12,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "BFA",
+   "iso2": "BF",
+   "nombre": "Burkina Faso",
+   "archivo": "BFA.geojson",
+   "regiones": 13,
+   "licencia": "Creative Commons Attribution 4.0 (CC BY 4.0)"
+  },
+  {
+   "iso3": "BGD",
+   "iso2": "BD",
+   "nombre": "Bangladesh",
+   "archivo": "BGD.geojson",
+   "regiones": 8,
+   "licencia": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication"
+  },
+  {
+   "iso3": "BGR",
+   "iso2": "BG",
+   "nombre": "Bulgaria",
+   "archivo": "BGR.geojson",
+   "regiones": 28,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "BHR",
+   "iso2": "BH",
+   "nombre": "Bahrain",
+   "archivo": "BHR.geojson",
+   "regiones": 4,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "BHS",
+   "iso2": "BS",
+   "nombre": "Bahamas",
+   "archivo": "BHS.geojson",
+   "regiones": 32,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "BIH",
+   "iso2": "BA",
+   "nombre": "Bosnia and Herzegovina",
+   "archivo": "BIH.geojson",
+   "regiones": 3,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "BLR",
+   "iso2": "BY",
+   "nombre": "Belarus",
+   "archivo": "BLR.geojson",
+   "regiones": 7,
+   "licencia": "Creative Commons Attribution 3.0 License"
+  },
+  {
+   "iso3": "BLZ",
+   "iso2": "BZ",
+   "nombre": "Belize",
+   "archivo": "BLZ.geojson",
+   "regiones": 6,
+   "licencia": "Creative Commons Attribution 2.5 Generic"
+  },
+  {
+   "iso3": "BOL",
+   "iso2": "BO",
+   "nombre": "Bolivia (Plurinational State of)",
+   "archivo": "BOL.geojson",
+   "regiones": 9,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "BRA",
+   "iso2": "BR",
+   "nombre": "Brazil",
+   "archivo": "BRA.geojson",
+   "regiones": 27,
+   "licencia": "Creative Commons Attribution 2.5 Generic"
+  },
+  {
+   "iso3": "BRB",
+   "iso2": "BB",
+   "nombre": "Barbados",
+   "archivo": "BRB.geojson",
+   "regiones": 11,
+   "licencia": "Creative Commons Attribution 2.5 Generic"
+  },
+  {
+   "iso3": "BRN",
+   "iso2": "BN",
+   "nombre": "Brunei Darussalam",
+   "archivo": "BRN.geojson",
+   "regiones": 4,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "BTN",
+   "iso2": "BT",
+   "nombre": "Bhutan",
+   "archivo": "BTN.geojson",
+   "regiones": 20,
+   "licencia": "Creative Commons Attribution 3.0 License"
+  },
+  {
+   "iso3": "BWA",
+   "iso2": "BW",
+   "nombre": "Botswana",
+   "archivo": "BWA.geojson",
+   "regiones": 10,
+   "licencia": "Creative Commons Attribution-ShareAlike 2.0"
+  },
+  {
+   "iso3": "CAF",
+   "iso2": "CF",
+   "nombre": "Central African Republic",
+   "archivo": "CAF.geojson",
+   "regiones": 17,
+   "licencia": "Creative Commons Attribution 2.5 Generic"
+  },
+  {
+   "iso3": "CAN",
+   "iso2": "CA",
+   "nombre": "Canada",
+   "archivo": "CAN.geojson",
+   "regiones": 13,
+   "licencia": "Open Government Canada 2.0"
+  },
+  {
+   "iso3": "CHE",
+   "iso2": "CH",
+   "nombre": "Switzerland",
+   "archivo": "CHE.geojson",
+   "regiones": 26,
+   "licencia": "Federal Office of Topography swisstopo License"
+  },
+  {
+   "iso3": "CHL",
+   "iso2": "CL",
+   "nombre": "Chile",
+   "archivo": "CHL.geojson",
+   "regiones": 16,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "CHN",
+   "iso2": "CN",
+   "nombre": "China",
+   "archivo": "CHN.geojson",
+   "regiones": 34,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "CIV",
+   "iso2": "CI",
+   "nombre": "Côte d'Ivoire",
+   "archivo": "CIV.geojson",
+   "regiones": 14,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "CMR",
+   "iso2": "CM",
+   "nombre": "Cameroon",
+   "archivo": "CMR.geojson",
+   "regiones": 10,
+   "licencia": "Creative Commons Attribution 3.0 License"
+  },
+  {
+   "iso3": "COD",
+   "iso2": "CD",
+   "nombre": "Democratic Republic of the Congo",
+   "archivo": "COD.geojson",
+   "regiones": 26,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "COG",
+   "iso2": "CG",
+   "nombre": "Congo",
+   "archivo": "COG.geojson",
+   "regiones": 12,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "COL",
+   "iso2": "CO",
+   "nombre": "Colombia",
+   "archivo": "COL.geojson",
+   "regiones": 33,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "COM",
+   "iso2": "KM",
+   "nombre": "Comoros",
+   "archivo": "COM.geojson",
+   "regiones": 3,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "CPV",
+   "iso2": "CV",
+   "nombre": "Cabo Verde",
+   "archivo": "CPV.geojson",
+   "regiones": 22,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "CRI",
+   "iso2": "CR",
+   "nombre": "Costa Rica",
+   "archivo": "CRI.geojson",
+   "regiones": 7,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "CUB",
+   "iso2": "CU",
+   "nombre": "Cuba",
+   "archivo": "CUB.geojson",
+   "regiones": 16,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "CYP",
+   "iso2": "CY",
+   "nombre": "Cyprus",
+   "archivo": "CYP.geojson",
+   "regiones": 6,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "CZE",
+   "iso2": "CZ",
+   "nombre": "Czechia",
+   "archivo": "CZE.geojson",
+   "regiones": 14,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "DEU",
+   "iso2": "DE",
+   "nombre": "Germany",
+   "archivo": "DEU.geojson",
+   "regiones": 16,
+   "licencia": "Data license Germany - Attribution - Version 2.0"
+  },
+  {
+   "iso3": "DJI",
+   "iso2": "DJ",
+   "nombre": "Djibouti",
+   "archivo": "DJI.geojson",
+   "regiones": 6,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "DMA",
+   "iso2": "DM",
+   "nombre": "Dominica",
+   "archivo": "DMA.geojson",
+   "regiones": 10,
+   "licencia": "Creative Commons Attribution 2.5 Generic"
+  },
+  {
+   "iso3": "DNK",
+   "iso2": "DK",
+   "nombre": "Denmark",
+   "archivo": "DNK.geojson",
+   "regiones": 5,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "DOM",
+   "iso2": "DO",
+   "nombre": "Dominican Republic",
+   "archivo": "DOM.geojson",
+   "regiones": 32,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "DZA",
+   "iso2": "DZ",
+   "nombre": "Algeria",
+   "archivo": "DZA.geojson",
+   "regiones": 48,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "ECU",
+   "iso2": "EC",
+   "nombre": "Ecuador",
+   "archivo": "ECU.geojson",
+   "regiones": 24,
+   "licencia": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication"
+  },
+  {
+   "iso3": "EGY",
+   "iso2": "EG",
+   "nombre": "Egypt",
+   "archivo": "EGY.geojson",
+   "regiones": 27,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "ERI",
+   "iso2": "ER",
+   "nombre": "Eritrea",
+   "archivo": "ERI.geojson",
+   "regiones": 6,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "ESP",
+   "iso2": "ES",
+   "nombre": "Spain",
+   "archivo": "ESP.geojson",
+   "regiones": 19,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "EST",
+   "iso2": "EE",
+   "nombre": "Estonia",
+   "archivo": "EST.geojson",
+   "regiones": 15,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "ETH",
+   "iso2": "ET",
+   "nombre": "Ethiopia",
+   "archivo": "ETH.geojson",
+   "regiones": 11,
+   "licencia": "Creative Commons Attribution 4.0 (CC BY 4.0)"
+  },
+  {
+   "iso3": "FIN",
+   "iso2": "FI",
+   "nombre": "Finland",
+   "archivo": "FIN.geojson",
+   "regiones": 19,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "FJI",
+   "iso2": "FJ",
+   "nombre": "Fiji",
+   "archivo": "FJI.geojson",
+   "regiones": 4,
+   "licencia": "Creative Commons Attribution 2.5 Generic"
+  },
+  {
+   "iso3": "FRA",
+   "iso2": "FR",
+   "nombre": "France",
+   "archivo": "FRA.geojson",
+   "regiones": 13,
+   "licencia": "Etalab Open License 2.0"
+  },
+  {
+   "iso3": "FSM",
+   "iso2": "FM",
+   "nombre": "Micronesia (Fed. States of)",
+   "archivo": "FSM.geojson",
+   "regiones": 4,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "GAB",
+   "iso2": "GA",
+   "nombre": "Gabon",
+   "archivo": "GAB.geojson",
+   "regiones": 9,
+   "licencia": "Creative Commons Attribution-ShareAlike 3.0 Unported"
+  },
+  {
+   "iso3": "GBR",
+   "iso2": "GB",
+   "nombre": "United Kingdom",
+   "archivo": "GBR.geojson",
+   "regiones": 4,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "GEO",
+   "iso2": "GE",
+   "nombre": "Georgia",
+   "archivo": "GEO.geojson",
+   "regiones": 12,
+   "licencia": "Creative Commons Attribution 3.0 License"
+  },
+  {
+   "iso3": "GHA",
+   "iso2": "GH",
+   "nombre": "Ghana",
+   "archivo": "GHA.geojson",
+   "regiones": 16,
+   "licencia": "Creative Commons Attribution-ShareAlike 2.0"
+  },
+  {
+   "iso3": "GIN",
+   "iso2": "GN",
+   "nombre": "Guinea",
+   "archivo": "GIN.geojson",
+   "regiones": 8,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "GMB",
+   "iso2": "GM",
+   "nombre": "Gambia",
+   "archivo": "GMB.geojson",
+   "regiones": 8,
+   "licencia": "Creative Commons Attribution 4.0 (CC BY 4.0)"
+  },
+  {
+   "iso3": "GNB",
+   "iso2": "GW",
+   "nombre": "Guinea-Bissau",
+   "archivo": "GNB.geojson",
+   "regiones": 9,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "GNQ",
+   "iso2": "GQ",
+   "nombre": "Equatorial Guinea",
+   "archivo": "GNQ.geojson",
+   "regiones": 7,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "GRC",
+   "iso2": "GR",
+   "nombre": "Greece",
+   "archivo": "GRC.geojson",
+   "regiones": 8,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "GRD",
+   "iso2": "GD",
+   "nombre": "Grenada",
+   "archivo": "GRD.geojson",
+   "regiones": 7,
+   "licencia": "Creative Commons Attribution-ShareAlike 2.0"
+  },
+  {
+   "iso3": "GRL",
+   "iso2": "GL",
+   "nombre": "Greenland",
+   "archivo": "GRL.geojson",
+   "regiones": 6,
+   "licencia": "Creative Commons Attribution-ShareAlike 3.0 Unported"
+  },
+  {
+   "iso3": "GTM",
+   "iso2": "GT",
+   "nombre": "Guatemala",
+   "archivo": "GTM.geojson",
+   "regiones": 22,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "GUY",
+   "iso2": "GY",
+   "nombre": "Guyana",
+   "archivo": "GUY.geojson",
+   "regiones": 10,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "HND",
+   "iso2": "HN",
+   "nombre": "Honduras",
+   "archivo": "HND.geojson",
+   "regiones": 18,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "HRV",
+   "iso2": "HR",
+   "nombre": "Croatia",
+   "archivo": "HRV.geojson",
+   "regiones": 21,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "HTI",
+   "iso2": "HT",
+   "nombre": "Haiti",
+   "archivo": "HTI.geojson",
+   "regiones": 10,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "HUN",
+   "iso2": "HU",
+   "nombre": "Hungary",
+   "archivo": "HUN.geojson",
+   "regiones": 19,
+   "licencia": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication"
+  },
+  {
+   "iso3": "IDN",
+   "iso2": "ID",
+   "nombre": "Indonesia",
+   "archivo": "IDN.geojson",
+   "regiones": 34,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "IND",
+   "iso2": "IN",
+   "nombre": "India",
+   "archivo": "IND.geojson",
+   "regiones": 36,
+   "licencia": "Creative Commons Attribution 2.5 India (CC BY 2.5 IN)"
+  },
+  {
+   "iso3": "IND",
+   "iso2": "IN",
+   "nombre": "India",
+   "archivo": "IND.geojson",
+   "regiones": 36,
+   "licencia": "Creative Commons Attribution 2.5 India (CC BY 2.5 IN)"
+  },
+  {
+   "iso3": "IRL",
+   "iso2": "IE",
+   "nombre": "Ireland",
+   "archivo": "IRL.geojson",
+   "regiones": 4,
+   "licencia": "Creative Commons Attribution 4.0 (CC BY 4.0)"
+  },
+  {
+   "iso3": "IRN",
+   "iso2": "IR",
+   "nombre": "Iran (Islamic Republic of)",
+   "archivo": "IRN.geojson",
+   "regiones": 32,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "IRQ",
+   "iso2": "IQ",
+   "nombre": "Iraq",
+   "archivo": "IRQ.geojson",
+   "regiones": 18,
+   "licencia": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication"
+  },
+  {
+   "iso3": "ISL",
+   "iso2": "IS",
+   "nombre": "Iceland",
+   "archivo": "ISL.geojson",
+   "regiones": 8,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "ISR",
+   "iso2": "IL",
+   "nombre": "Israel",
+   "archivo": "ISR.geojson",
+   "regiones": 6,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "ITA",
+   "iso2": "IT",
+   "nombre": "Italy",
+   "archivo": "ITA.geojson",
+   "regiones": 5,
+   "licencia": "Creative Commons Attribution 3.0 License"
+  },
+  {
+   "iso3": "JAM",
+   "iso2": "JM",
+   "nombre": "Jamaica",
+   "archivo": "JAM.geojson",
+   "regiones": 14,
+   "licencia": "Creative Commons Attribution-ShareAlike 2.0"
+  },
+  {
+   "iso3": "JOR",
+   "iso2": "JO",
+   "nombre": "Jordan",
+   "archivo": "JOR.geojson",
+   "regiones": 12,
+   "licencia": "Creative Commons Attribution 2.5 Generic"
+  },
+  {
+   "iso3": "JPN",
+   "iso2": "JP",
+   "nombre": "Japan",
+   "archivo": "JPN.geojson",
+   "regiones": 47,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "KAZ",
+   "iso2": "KZ",
+   "nombre": "Kazakhstan",
+   "archivo": "KAZ.geojson",
+   "regiones": 16,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "KEN",
+   "iso2": "KE",
+   "nombre": "Kenya",
+   "archivo": "KEN.geojson",
+   "regiones": 47,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "KGZ",
+   "iso2": "KG",
+   "nombre": "Kyrgyzstan",
+   "archivo": "KGZ.geojson",
+   "regiones": 7,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "KHM",
+   "iso2": "KH",
+   "nombre": "Cambodia",
+   "archivo": "KHM.geojson",
+   "regiones": 25,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "KIR",
+   "iso2": "KI",
+   "nombre": "Kiribati",
+   "archivo": "KIR.geojson",
+   "regiones": 3,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "KNA",
+   "iso2": "KN",
+   "nombre": "Saint Kitts and Nevis",
+   "archivo": "KNA.geojson",
+   "regiones": 14,
+   "licencia": "Creative Commons Attribution-ShareAlike 2.0"
+  },
+  {
+   "iso3": "KOR",
+   "iso2": "KR",
+   "nombre": "Republic of Korea",
+   "archivo": "KOR.geojson",
+   "regiones": 17,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "KWT",
+   "iso2": "KW",
+   "nombre": "Kuwait",
+   "archivo": "KWT.geojson",
+   "regiones": 6,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "LAO",
+   "iso2": "LA",
+   "nombre": "Lao People's Democratic Republic",
+   "archivo": "LAO.geojson",
+   "regiones": 18,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "LBN",
+   "iso2": "LB",
+   "nombre": "Lebanon",
+   "archivo": "LBN.geojson",
+   "regiones": 9,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "LBR",
+   "iso2": "LR",
+   "nombre": "Liberia",
+   "archivo": "LBR.geojson",
+   "regiones": 15,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "LBY",
+   "iso2": "LY",
+   "nombre": "Libya",
+   "archivo": "LBY.geojson",
+   "regiones": 22,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "LCA",
+   "iso2": "LC",
+   "nombre": "Saint Lucia",
+   "archivo": "LCA.geojson",
+   "regiones": 10,
+   "licencia": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication"
+  },
+  {
+   "iso3": "LIE",
+   "iso2": "LI",
+   "nombre": "Liechtenstein",
+   "archivo": "LIE.geojson",
+   "regiones": 11,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "LKA",
+   "iso2": "LK",
+   "nombre": "Sri Lanka",
+   "archivo": "LKA.geojson",
+   "regiones": 9,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "LSO",
+   "iso2": "LS",
+   "nombre": "Lesotho",
+   "archivo": "LSO.geojson",
+   "regiones": 10,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "LTU",
+   "iso2": "LT",
+   "nombre": "Lithuania",
+   "archivo": "LTU.geojson",
+   "regiones": 10,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "LUX",
+   "iso2": "LU",
+   "nombre": "Luxembourg",
+   "archivo": "LUX.geojson",
+   "regiones": 12,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "LVA",
+   "iso2": "LV",
+   "nombre": "Latvia",
+   "archivo": "LVA.geojson",
+   "regiones": 43,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "MAR",
+   "iso2": "MA",
+   "nombre": "Morocco",
+   "archivo": "MAR.geojson",
+   "regiones": 12,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "MCO",
+   "iso2": "MC",
+   "nombre": "Monaco",
+   "archivo": "MCO.geojson",
+   "regiones": 1,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "MDA",
+   "iso2": "MD",
+   "nombre": "Republic of Moldova",
+   "archivo": "MDA.geojson",
+   "regiones": 37,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "MDG",
+   "iso2": "MG",
+   "nombre": "Madagascar",
+   "archivo": "MDG.geojson",
+   "regiones": 22,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "MDV",
+   "iso2": "MV",
+   "nombre": "Maldives",
+   "archivo": "MDV.geojson",
+   "regiones": 21,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "MEX",
+   "iso2": "MX",
+   "nombre": "Mexico",
+   "archivo": "MEX.geojson",
+   "regiones": 32,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "MHL",
+   "iso2": "MH",
+   "nombre": "Marshall Islands",
+   "archivo": "MHL.geojson",
+   "regiones": 24,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "MKD",
+   "iso2": "MK",
+   "nombre": "North Macedonia",
+   "archivo": "MKD.geojson",
+   "regiones": 8,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "MLI",
+   "iso2": "ML",
+   "nombre": "Mali",
+   "archivo": "MLI.geojson",
+   "regiones": 9,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "MLT",
+   "iso2": "MT",
+   "nombre": "Malta",
+   "archivo": "MLT.geojson",
+   "regiones": 68,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "MMR",
+   "iso2": "MM",
+   "nombre": "Myanmar",
+   "archivo": "MMR.geojson",
+   "regiones": 14,
+   "licencia": "Creative Commons Attribution 4.0 (CC BY 4.0)"
+  },
+  {
+   "iso3": "MNE",
+   "iso2": "ME",
+   "nombre": "Montenegro",
+   "archivo": "MNE.geojson",
+   "regiones": 23,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "MNG",
+   "iso2": "MN",
+   "nombre": "Mongolia",
+   "archivo": "MNG.geojson",
+   "regiones": 22,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "MOZ",
+   "iso2": "MZ",
+   "nombre": "Mozambique",
+   "archivo": "MOZ.geojson",
+   "regiones": 10,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "MRT",
+   "iso2": "MR",
+   "nombre": "Mauritania",
+   "archivo": "MRT.geojson",
+   "regiones": 13,
+   "licencia": "Creative Commons Attribution-ShareAlike 3.0 Unported"
+  },
+  {
+   "iso3": "MUS",
+   "iso2": "MU",
+   "nombre": "Mauritius",
+   "archivo": "MUS.geojson",
+   "regiones": 12,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "MWI",
+   "iso2": "MW",
+   "nombre": "Malawi",
+   "archivo": "MWI.geojson",
+   "regiones": 3,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "MYS",
+   "iso2": "MY",
+   "nombre": "Malaysia",
+   "archivo": "MYS.geojson",
+   "regiones": 16,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "NAM",
+   "iso2": "NA",
+   "nombre": "Namibia",
+   "archivo": "NAM.geojson",
+   "regiones": 14,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "NER",
+   "iso2": "NE",
+   "nombre": "Niger",
+   "archivo": "NER.geojson",
+   "regiones": 6,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "NGA",
+   "iso2": "NG",
+   "nombre": "Nigeria",
+   "archivo": "NGA.geojson",
+   "regiones": 37,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "NIC",
+   "iso2": "NI",
+   "nombre": "Nicaragua",
+   "archivo": "NIC.geojson",
+   "regiones": 17,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "NIU",
+   "iso2": "NU",
+   "nombre": "Niue",
+   "archivo": "NIU.geojson",
+   "regiones": 14,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "NLD",
+   "iso2": "NL",
+   "nombre": "Netherlands",
+   "archivo": "NLD.geojson",
+   "regiones": 12,
+   "licencia": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication"
+  },
+  {
+   "iso3": "NOR",
+   "iso2": "NO",
+   "nombre": "Norway",
+   "archivo": "NOR.geojson",
+   "regiones": 11,
+   "licencia": "Creative Commons Attribution 4.0 (CC BY 4.0)"
+  },
+  {
+   "iso3": "NPL",
+   "iso2": "NP",
+   "nombre": "Nepal",
+   "archivo": "NPL.geojson",
+   "regiones": 7,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "NRU",
+   "iso2": "NR",
+   "nombre": "Nauru",
+   "archivo": "NRU.geojson",
+   "regiones": 14,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "NZL",
+   "iso2": "NZ",
+   "nombre": "New Zealand",
+   "archivo": "NZL.geojson",
+   "regiones": 17,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "OMN",
+   "iso2": "OM",
+   "nombre": "Oman",
+   "archivo": "OMN.geojson",
+   "regiones": 7,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "PAK",
+   "iso2": "PK",
+   "nombre": "Pakistan",
+   "archivo": "PAK.geojson",
+   "regiones": 7,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "PAN",
+   "iso2": "PA",
+   "nombre": "Panama",
+   "archivo": "PAN.geojson",
+   "regiones": 13,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
   {
    "iso3": "PER",
    "iso2": "PE",
@@ -9,6 +1121,478 @@
    "archivo": "PER.geojson",
    "regiones": 25,
    "licencia": "INEI"
+  },
+  {
+   "iso3": "PHL",
+   "iso2": "PH",
+   "nombre": "Philippines",
+   "archivo": "PHL.geojson",
+   "regiones": 17,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "PLW",
+   "iso2": "PW",
+   "nombre": "Palau",
+   "archivo": "PLW.geojson",
+   "regiones": 16,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "PNG",
+   "iso2": "PG",
+   "nombre": "Papua New Guinea",
+   "archivo": "PNG.geojson",
+   "regiones": 22,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "POL",
+   "iso2": "PL",
+   "nombre": "Poland",
+   "archivo": "POL.geojson",
+   "regiones": 16,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "PRK",
+   "iso2": "KP",
+   "nombre": "Dem. People's Republic of Korea",
+   "archivo": "PRK.geojson",
+   "regiones": 11,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "PRT",
+   "iso2": "PT",
+   "nombre": "Portugal",
+   "archivo": "PRT.geojson",
+   "regiones": 20,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "PRY",
+   "iso2": "PY",
+   "nombre": "Paraguay",
+   "archivo": "PRY.geojson",
+   "regiones": 18,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "PSE",
+   "iso2": "PS",
+   "nombre": "State of Palestine",
+   "archivo": "PSE.geojson",
+   "regiones": 2,
+   "licencia": "Creative Commons Attribution 4.0 (CC BY 4.0)"
+  },
+  {
+   "iso3": "QAT",
+   "iso2": "QA",
+   "nombre": "Qatar",
+   "archivo": "QAT.geojson",
+   "regiones": 8,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "ROU",
+   "iso2": "RO",
+   "nombre": "Romania",
+   "archivo": "ROU.geojson",
+   "regiones": 42,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "RUS",
+   "iso2": "RU",
+   "nombre": "Russian Federation",
+   "archivo": "RUS.geojson",
+   "regiones": 83,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "RWA",
+   "iso2": "RW",
+   "nombre": "Rwanda",
+   "archivo": "RWA.geojson",
+   "regiones": 5,
+   "licencia": "Creative Commons Attribution 4.0 (CC BY 4.0)"
+  },
+  {
+   "iso3": "SAU",
+   "iso2": "SA",
+   "nombre": "Saudi Arabia",
+   "archivo": "SAU.geojson",
+   "regiones": 13,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "SDN",
+   "iso2": "SD",
+   "nombre": "Sudan",
+   "archivo": "SDN.geojson",
+   "regiones": 19,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "SEN",
+   "iso2": "SN",
+   "nombre": "Senegal",
+   "archivo": "SEN.geojson",
+   "regiones": 14,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "SGP",
+   "iso2": "SG",
+   "nombre": "Singapore",
+   "archivo": "SGP.geojson",
+   "regiones": 5,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "SLB",
+   "iso2": "SB",
+   "nombre": "Solomon Islands",
+   "archivo": "SLB.geojson",
+   "regiones": 10,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "SLE",
+   "iso2": "SL",
+   "nombre": "Sierra Leone",
+   "archivo": "SLE.geojson",
+   "regiones": 4,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "SLV",
+   "iso2": "SV",
+   "nombre": "El Salvador",
+   "archivo": "SLV.geojson",
+   "regiones": 14,
+   "licencia": "Creative Commons Attribution-ShareAlike 2.0"
+  },
+  {
+   "iso3": "SMR",
+   "iso2": "SM",
+   "nombre": "San Marino",
+   "archivo": "SMR.geojson",
+   "regiones": 9,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "SOM",
+   "iso2": "SO",
+   "nombre": "Somalia",
+   "archivo": "SOM.geojson",
+   "regiones": 18,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "SRB",
+   "iso2": "RS",
+   "nombre": "Serbia",
+   "archivo": "SRB.geojson",
+   "regiones": 25,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "SSD",
+   "iso2": "SS",
+   "nombre": "South Sudan",
+   "archivo": "SSD.geojson",
+   "regiones": 10,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "STP",
+   "iso2": "ST",
+   "nombre": "Sao Tome and Principe",
+   "archivo": "STP.geojson",
+   "regiones": 2,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "SUR",
+   "iso2": "SR",
+   "nombre": "Suriname",
+   "archivo": "SUR.geojson",
+   "regiones": 10,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "SVK",
+   "iso2": "SK",
+   "nombre": "Slovakia",
+   "archivo": "SVK.geojson",
+   "regiones": 8,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "SVN",
+   "iso2": "SI",
+   "nombre": "Slovenia",
+   "archivo": "SVN.geojson",
+   "regiones": 2,
+   "licencia": "Creative Commons Attribution 4.0 (CC BY 4.0)"
+  },
+  {
+   "iso3": "SWE",
+   "iso2": "SE",
+   "nombre": "Sweden",
+   "archivo": "SWE.geojson",
+   "regiones": 21,
+   "licencia": "Creative Commons Attribution 3.0 License"
+  },
+  {
+   "iso3": "SWZ",
+   "iso2": "SZ",
+   "nombre": "Eswatini",
+   "archivo": "SWZ.geojson",
+   "regiones": 4,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "SYC",
+   "iso2": "SC",
+   "nombre": "Seychelles",
+   "archivo": "SYC.geojson",
+   "regiones": 26,
+   "licencia": "Creative Commons Attribution-ShareAlike 3.0 Unported"
+  },
+  {
+   "iso3": "SYR",
+   "iso2": "SY",
+   "nombre": "Syrian Arab Republic",
+   "archivo": "SYR.geojson",
+   "regiones": 14,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "TCD",
+   "iso2": "TD",
+   "nombre": "Chad",
+   "archivo": "TCD.geojson",
+   "regiones": 23,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "TGO",
+   "iso2": "TG",
+   "nombre": "Togo",
+   "archivo": "TGO.geojson",
+   "regiones": 5,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "THA",
+   "iso2": "TH",
+   "nombre": "Thailand",
+   "archivo": "THA.geojson",
+   "regiones": 77,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "TJK",
+   "iso2": "TJ",
+   "nombre": "Tajikistan",
+   "archivo": "TJK.geojson",
+   "regiones": 5,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "TKM",
+   "iso2": "TM",
+   "nombre": "Turkmenistan",
+   "archivo": "TKM.geojson",
+   "regiones": 5,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "TLS",
+   "iso2": "TL",
+   "nombre": "Timor-Leste",
+   "archivo": "TLS.geojson",
+   "regiones": 13,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "TON",
+   "iso2": "TO",
+   "nombre": "Tonga",
+   "archivo": "TON.geojson",
+   "regiones": 5,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "TTO",
+   "iso2": "TT",
+   "nombre": "Trinidad and Tobago",
+   "archivo": "TTO.geojson",
+   "regiones": 14,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "TUN",
+   "iso2": "TN",
+   "nombre": "Tunisia",
+   "archivo": "TUN.geojson",
+   "regiones": 24,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "TUR",
+   "iso2": "TR",
+   "nombre": "Turkey",
+   "archivo": "TUR.geojson",
+   "regiones": 81,
+   "licencia": "Creative Commons Attribution-ShareAlike 2.0"
+  },
+  {
+   "iso3": "TUV",
+   "iso2": "TV",
+   "nombre": "Tuvalu",
+   "archivo": "TUV.geojson",
+   "regiones": 8,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "TWN",
+   "iso2": "TW",
+   "nombre": "Taiwan",
+   "archivo": "TWN.geojson",
+   "regiones": 22,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "TZA",
+   "iso2": "TZ",
+   "nombre": "United Republic of Tanzania",
+   "archivo": "TZA.geojson",
+   "regiones": 30,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "UGA",
+   "iso2": "UG",
+   "nombre": "Uganda",
+   "archivo": "UGA.geojson",
+   "regiones": 4,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "UKR",
+   "iso2": "UA",
+   "nombre": "Ukraine",
+   "archivo": "UKR.geojson",
+   "regiones": 27,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "URY",
+   "iso2": "UY",
+   "nombre": "Uruguay",
+   "archivo": "URY.geojson",
+   "regiones": 19,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "USA",
+   "iso2": "US",
+   "nombre": "United States of America",
+   "archivo": "USA.geojson",
+   "regiones": 56,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "UZB",
+   "iso2": "UZ",
+   "nombre": "Uzbekistan",
+   "archivo": "UZB.geojson",
+   "regiones": 14,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "VCT",
+   "iso2": "VC",
+   "nombre": "Saint Vincent and the Grenadines",
+   "archivo": "VCT.geojson",
+   "regiones": 6,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "VEN",
+   "iso2": "VE",
+   "nombre": "Venezuela (Bolivarian Republic of)",
+   "archivo": "VEN.geojson",
+   "regiones": 25,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "VNM",
+   "iso2": "VN",
+   "nombre": "Viet Nam",
+   "archivo": "VNM.geojson",
+   "regiones": 64,
+   "licencia": "Public Domain"
+  },
+  {
+   "iso3": "VUT",
+   "iso2": "VU",
+   "nombre": "Vanuatu",
+   "archivo": "VUT.geojson",
+   "regiones": 6,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "WSM",
+   "iso2": "WS",
+   "nombre": "Samoa",
+   "archivo": "WSM.geojson",
+   "regiones": 11,
+   "licencia": "Creative Commons Attribution-ShareAlike 3.0 Unported"
+  },
+  {
+   "iso3": "XKX",
+   "iso2": "XK",
+   "nombre": "Kosovo",
+   "archivo": "XKX.geojson",
+   "regiones": 7,
+   "licencia": "Creative Commons Attribution-ShareAlike 2.0"
+  },
+  {
+   "iso3": "YEM",
+   "iso2": "YE",
+   "nombre": "Yemen",
+   "archivo": "YEM.geojson",
+   "regiones": 22,
+   "licencia": "Open Data Commons Open Database License 1.0"
+  },
+  {
+   "iso3": "ZAF",
+   "iso2": "ZA",
+   "nombre": "South Africa",
+   "archivo": "ZAF.geojson",
+   "regiones": 9,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
+  },
+  {
+   "iso3": "ZMB",
+   "iso2": "ZM",
+   "nombre": "Zambia",
+   "archivo": "ZMB.geojson",
+   "regiones": 10,
+   "licencia": "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+  },
+  {
+   "iso3": "ZWE",
+   "iso2": "ZW",
+   "nombre": "Zimbabwe",
+   "archivo": "ZWE.geojson",
+   "regiones": 10,
+   "licencia": "Creative Commons Attribution 3.0 Intergovernmental Organisations (CC BY 3.0 IGO)"
   }
  ]
 }
