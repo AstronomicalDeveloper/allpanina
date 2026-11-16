@@ -18,7 +18,7 @@ export default function InformationPanel({ map, national, region, regionName, ma
     </section>
     <MapCellDaysHelp national={national} />
     {national && <details><summary>Highlighted boundary</summary><p>Simplified INEI 2023 boundary, for navigation. The filter and the clipping are only visual. A border cell may include observations from neighbouring territories; its original value is not split by the visible fragment.</p></details>}
-    <details className="map-provenance"><summary>Data provenance</summary><p>{manifest.producto}</p><p>Published: {manifest.generated_at}</p><p>GeoJSON WGS84 · {national ? 'Peru · national coverage' : regionName}</p></details>
+    <details className="map-provenance"><summary>Data provenance</summary><p>Published satellite thermal detection products</p><p>Published: {manifest.generated_at}</p><p>GeoJSON WGS84 · {national ? 'Peru · national coverage' : regionName}</p></details>
     <p className="map-fine-print">Observations, not confirmed fires or burned area. The calibrated estimate (B1) is never applied per cell. Published availability does not measure cloud cover.</p>
   </div>
 }

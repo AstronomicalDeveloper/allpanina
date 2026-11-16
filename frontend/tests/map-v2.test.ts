@@ -180,22 +180,14 @@ test('F5b: pestañas Explore/Layers/Information conservan estado; panel plegable
   assert.equal(runtime.maps.length, 1)
 })
 
-test('F5b: línea de tiempo con años, mes y año completo; barras relativas a la serie publicada', async t => {
+test('F6: Explore period controls work without a timeline', async t => {
   mockFiles(t); const { host } = await setup(t, '?periodYear=2024&periodMonth=9&scope=month&mapSensor=MODIS')
-  const bar = host.querySelector<HTMLElement>('.map-timebar')!
-  assert.equal(bar.getAttribute('aria-label'), 'Timeline')
-  const months = [...bar.querySelectorAll<HTMLButtonElement>('.map-timebar-month')]
-  assert.equal(months.length, 12)
-  assert.equal(months[8].getAttribute('aria-pressed'), 'true')
-  assert.match(months[8].getAttribute('aria-label')!, /^September 2024: [\d,]+ cell-days \(MODIS, published monthly series\)$/)
-  for (const m of months) assert.match(m.getAttribute('aria-label')!, /cell-days|valid zero|no usable data|not published/)
-  await act(async () => months[7].click())
+  assert.equal(host.querySelector('.map-timebar'), null)
+  await choose(host, 'Map month', '8')
   assert.equal(new URLSearchParams(window.location.search).get('periodMonth'), '8')
-  assert.equal(new URLSearchParams(window.location.search).get('scope'), 'month')
-  await act(async () => [...bar.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent === 'Whole year')!.click())
+  await act(async () => button(host, 'Yearly').click())
   assert.equal(new URLSearchParams(window.location.search).get('scope'), 'year')
-  const years = [...bar.querySelectorAll<HTMLButtonElement>('.map-timebar-years button')]
-  assert.ok(years.some(b => b.textContent === '2024' && b.getAttribute('aria-pressed') === 'true'))
+  assert.match(host.textContent!, /B1 is a calibrated region-month estimate/)
 })
 
 test('Mapa v2 URL e historial: período compartido, sensores independientes y regreso al Calendario', async t => {
@@ -332,6 +324,8 @@ test('herramientas móviles abren, cierran con Escape y al ejecutar una acción'
   await act(async () => toggle.click())
   assert.equal(toggle.getAttribute('aria-expanded'), 'true')
   assert.equal(toggle.getAttribute('aria-controls'), 'map-view-actions')
+  assert.ok(host.querySelector('#map-view-actions .map-legend'), 'legend belongs to the tools menu')
+  assert.ok(toggle.querySelector('path')!.getAttribute('d')!.includes('M12 5v14'), 'tools use a plus icon')
   await act(async () => host.querySelector('.map-view-tools')!.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })))
   assert.equal(toggle.getAttribute('aria-expanded'), 'false')
   assert.equal(document.activeElement, toggle)

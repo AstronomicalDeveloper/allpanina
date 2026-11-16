@@ -53,6 +53,7 @@ test('Acerca de muestra equipo, créditos, uso de IA y el piloto anterior',async
  assert.equal(host.querySelector('h1')!.textContent,'About AllpaNina')
  for(const name of ['Aldo','Marco','Antonella','Juan Matías','Landry','Adriana'])assert.match(host.querySelector('main')!.textContent!,new RegExp(name))
  assert.match(host.querySelector('main')!.textContent!,/Use of AI/)
+ for (const tool of ['ChatGPT (OpenAI)', 'Codex (OpenAI)', 'Claude (Anthropic)']) assert.ok(host.textContent!.includes(tool))
  const pilot=[...host.querySelectorAll<HTMLAnchorElement>('main a')].find(a=>a.textContent==='Open the Ucayali pilot')!
  const url=new URL(pilot.href)
  assert.equal(url.pathname,'/calendar');assert.equal(url.searchParams.get('data'),'pilot');assert.equal(url.searchParams.get('mapRegion'),'PE-UCA')

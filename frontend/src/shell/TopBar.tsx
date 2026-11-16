@@ -38,13 +38,13 @@ export default function TopBar() {
   )
 
   return <header className="sticky top-0 z-40 h-14 border-b border-rule bg-night text-white">
-    <div className="mx-auto flex h-full items-center gap-6 px-4 sm:px-6 lg:px-10">
+    <div className="mx-auto flex h-full items-center gap-2 px-3 sm:gap-4 sm:px-4 lg:gap-6 lg:px-4 sm:px-6 lg:px-10">
       <Logo />
       <nav aria-label="Main navigation" className="hidden h-full lg:flex">
         {NAVIGATION.map(item => <NavLink key={item.to} end to={target(item.to, item.keepQuery)} className={linkClass}>{item.label}</NavLink>)}
       </nav>
-      <div className="ml-auto flex min-w-0 items-center gap-3">
-        {scoped && <div className="min-w-0"><ScopePicker /></div>}
+      <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2 lg:flex-none lg:gap-3">
+        {scoped && <div className="min-w-0 flex-1 lg:flex-none"><ScopePicker /></div>}
         <button ref={button} type="button" className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-control border-0 bg-transparent text-white hover:bg-orbit lg:hidden"
           aria-expanded={open} aria-controls="mobile-menu" aria-label={open ? 'Close menu' : 'Open menu'} onClick={() => setOpen(!open)}>
           <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">

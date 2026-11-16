@@ -107,6 +107,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
     let instance: MapLibre.Map | null = null
     let popup: MapLibre.Popup | null = null
     let observer: ResizeObserver | null = null
+    let popupDismissTimer: ReturnType<typeof setTimeout> | undefined
     let timeout: ReturnType<typeof setTimeout> | undefined
     const resize = () => instance?.resize()
     const contextLost = (event: Event) => { event.preventDefault(); setReady(false); setIssue(problem('The browser lost the WebGL context. Retry the map.')) }
@@ -115,7 +116,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
       const current = latest.current
       const map = createJuanMap(runtime, mapContainer.current, current.filteredGeoJson, current.percentileBreaks, current.opacity, current.summaryPoints)
       instance = map; mapRef.current = map
-      popup = new runtime.Popup({ closeButton: false, closeOnClick: false, offset: 10 })
+      popup = new runtime.Popup({ closeButton: true, closeOnClick: false, offset: 16, maxWidth: '300px' })
       popupRef.current = popup
       const updateRepresentation = () => setRepresentation(map.getZoom() >= LOCAL_ZOOM ? 'local' : 'summary')
       map.on('zoomend', updateRepresentation)
@@ -128,17 +129,45 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
         const coverage = latest.current.coverage
         return cellPopup(properties, { national: latest.current.national, coveredMonths: coverage.some(month => month.status === 'unknown') ? undefined : coverage.filter(month => month.status === 'ok').length })
       }
+      let clickedCell: string | null = null
+      let clickedPoint: { x: number; y: number } | undefined
+      let overPopup = false
+      const keepCellPopup = () => { clearTimeout(popupDismissTimer); popupDismissTimer = undefined }
+      const dismissCellPopup = () => { keepCellPopup(); clickedCell = null; popup?.remove() }
+      const deferDismiss = () => {
+        if (!clickedCell || overPopup || popupDismissTimer) return
+        popupDismissTimer = setTimeout(dismissCellPopup, 650)
+      }
+      const enterPopup = () => { overPopup = true; keepCellPopup() }
+      const leavePopup = () => { overPopup = false; deferDismiss() }
+      map.on('mousemove', event => {
+        if (!clickedCell || !clickedPoint || !event.point) return
+        if (Math.hypot(event.point.x - clickedPoint.x, event.point.y - clickedPoint.y) <= 120) keepCellPopup()
+        else deferDismiss()
+      })
       for (const layer of ['celdas-fill', POINT_LAYER, DEPARTMENT_SQUARE_LAYER]) {
       map.on('mousemove', layer, event => {
         const feature = pick(event)
-        if (feature) { map.getCanvas().style.cursor = 'pointer'; popup?.setLngLat(event.lngLat).setDOMContent(popupContent(feature.properties)).addTo(map) }
+        map.getCanvas().style.cursor = feature ? 'pointer' : ''
+        if (feature?.properties.cell_id === clickedCell) keepCellPopup()
       })
-      map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = ''; popup?.remove() })
+      map.on('mouseleave', layer, event => {
+        map.getCanvas().style.cursor = ''
+        if (clickedPoint && event?.point && Math.hypot(event.point.x - clickedPoint.x, event.point.y - clickedPoint.y) <= 120) keepCellPopup()
+        else deferDismiss()
+      })
       map.on('click', layer, event => {
         const feature = pick(event)
         if (feature) {
+          keepCellPopup()
+          overPopup = false
+          clickedPoint = event.point
+          clickedCell = feature.properties.cell_id
           setSelected({ key: latest.current.selectionKey, properties: feature.properties })
           popup?.setLngLat(event.lngLat).setDOMContent(popupContent(feature.properties)).addTo(map)
+          const element = popup?.getElement?.()
+          element?.addEventListener('pointerenter', enterPopup)
+          element?.addEventListener('pointerleave', leavePopup)
         }
       })
       }
@@ -200,7 +229,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
       timeout = setTimeout(() => { if (!cancelled) setIssue(problem('The map is taking too long to load. Check the connection or choose another base map.')) }, 20000)
     }).catch(error => { if (!cancelled) setIssue(problem('The map could not start in this browser. Reload the page or try another browser.', error)) })
     return () => {
-      cancelled = true; clearTimeout(timeout); observer?.disconnect()
+      cancelled = true; clearTimeout(timeout); clearTimeout(popupDismissTimer); observer?.disconnect()
       window.removeEventListener('resize', resize)
       instance?.getCanvas().removeEventListener('webglcontextlost', contextLost)
       renderedSummary.current = null; focusedRegion.current = null

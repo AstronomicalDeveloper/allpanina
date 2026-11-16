@@ -159,11 +159,6 @@ export default function RegionPage() {
       description={<>Choose a region, bring the NASA FIRMS data and AllpaNina builds the calendar and the map with the same method used for Peru. <strong>Everything runs on your computer:</strong> your files are not uploaded to any server.</>} />
     <p className="region-hero-note">The selector lists the countries published on this server; for other places you can upload a GeoJSON polygon.</p>
 
-    <nav className="region-stepper" aria-label="Progress">
-      <ol>{pasos.map(p => <li key={p.n} className={`region-stepper-item${p.hecho ? ' is-done' : ''}${actual === p.n ? ' is-current' : ''}`} aria-current={actual === p.n ? 'step' : undefined}>
-        <a href={`#step-${p.n}`}><span className="region-stepper-n" aria-hidden="true">{p.hecho ? '✓' : p.n}</span><span className="region-stepper-label">{p.titulo}</span><span className="region-sr-only">{p.hecho ? ', completed' : actual === p.n ? ', current step' : ', pending'}</span></a></li>)}</ol>
-    </nav>
-
     <div className="region-layout">
       <div className="region-steps">
         <section id="step-1" className={tarjeta(1, true)} aria-labelledby="step-1-title">

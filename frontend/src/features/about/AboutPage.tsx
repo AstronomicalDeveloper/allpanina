@@ -84,7 +84,7 @@ export default function AboutPage() {
 
     <section aria-labelledby="about-ai" className="flex flex-col gap-3">
       <h2 id="about-ai" className={h2}>Use of AI</h2>
-      <p className={prose}>The team used Claude, an AI assistant by Anthropic, to help review code, reproduce results, write parts of the website and draft documents. Every scientific decision and sign-off was made by the team, and each review is recorded in the repository.</p>
+      <p className={prose}>The team used ChatGPT (OpenAI), Codex (OpenAI) and Claude (Anthropic) for assistance with development, code review, documentation and technical questions. Scientific decisions and final validation remain the responsibility of the human team.</p>
     </section>
 
     <Panel className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

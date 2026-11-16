@@ -124,7 +124,7 @@ test('Método regional reportable, no reportable, cambio de etapa y observacione
  await click(host,'Validation');assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'17.8%')
  await choose(host,'[aria-label="Area"]','PE-07')
  assert.match(host.querySelector('.method-scope')!.textContent!,/Callao/)
- assert.match(host.querySelector('[aria-label="Regional scientific context"]')!.textContent!,/Test not reportable.*Σ MODIS en test = 0/)
+ assert.match(host.querySelector('[aria-label="Regional scientific context"]')!.textContent!,/Test not reportable.*MODIS test total is 0/)
  assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'Not available')
  assert.ok(host.querySelector('nav a[href*="calendar"]'))
 })

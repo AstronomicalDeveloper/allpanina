@@ -41,7 +41,7 @@ function MethodContent({ dataRoot, demo, national, region }: { dataRoot: string;
   return <>
     <header className="method-intro"><div><h1>Method and evaluation</h1><p className="method-lead">Reading the signals of fire, understanding their limits.</p><p>AllpaNina lets you explore the history of satellite-observed thermal anomalies and compare what different instruments record.</p></div>
       <aside className="method-scope" aria-label="Publication scope"><h2>The data set you are exploring</h2>
-        {publication ? <><strong>{national?region:publication.region_id}</strong>{national&&<p>National publication: {publication.region_id}</p>}<p>{publication.periodo.desde} — {publication.periodo.hasta}</p><p><Published>{publication.producto}</Published></p></> : <p>Scope pending: the manifest has not been read yet.</p>}
+        {publication ? <><strong>{national?region:publication.region_id}</strong>{national&&<p>National publication: {publication.region_id}</p>}<p>{publication.periodo.desde} — {publication.periodo.hasta}</p><p>{demo ? 'Synthetic demonstration data' : publication.producto}</p></> : <p>Scope pending: the manifest has not been read yet.</p>}
         {info?.region && <p><Published>{info.region}</Published></p>}
         <p>{national?'The metrics belong to the region and stage shown; they describe a retrospective evaluation, not confidence for the future.':'The metrics belong to the scope declared in the files; they do not validate the method for all of Peru.'}</p>
       </aside>
@@ -52,7 +52,6 @@ function MethodContent({ dataRoot, demo, national, region }: { dataRoot: string;
     {errors.length > 0 && <button className="method-retry" onClick={() => { setMethod(null); setValidation(null); setManifest(null); setCalibrated(null); setAttempt(attempt + 1) }}>Retry loading</button>}
     {conflict && <p role="alert" className="method-notice">The files declare different regions. The results are not combined and no evaluation is attributed to another region. Check the scientific delivery.</p>}
     <nav className="method-index" aria-label="Method contents"><a href="#observations">From signal to indicator</a><a href="#evaluation">How it is evaluated</a><a href="#limits">Limits and sources</a></nav>
-    {(info?.indicator || info?.calibration || info?.limitations?.length) ? <p className="method-language-note">Texts marked <span className="method-original-tag">ES</span> are quoted as published by the science team, in Spanish; numbers and rules are shown unchanged.</p> : null}
     {info ? <ProcessingSection method={info} demo={demo} national={national} aggregate={national&&region==='PE'} /> : <section id="observations" className="method-section"><h2>From signal to indicator</h2><p>The processing explanation will be available once method.json can be read.</p></section>}
     {national&&!conflict&&<NationalMethodNotes method={nationalMethod} validation={nationalValidation} region={region} calibrated={calibrated?.ok?calibrated.data:null} />}
     <EvaluationSection key={`${dataRoot}-${attempt}-${conflict}`} method={conflict ? null : info} validation={conflict ? null : evaluation} demo={demo} />

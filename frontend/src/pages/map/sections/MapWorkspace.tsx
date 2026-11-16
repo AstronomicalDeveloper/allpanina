@@ -11,7 +11,6 @@ import ExplorationPanel from './ExplorationPanel'
 import InformationPanel from './InformationPanel'
 import MapLegend from './MapLegend'
 import TechnicalDetail from './MapTechnicalDetail'
-import TimeBar from './TimeBar'
 
 type Tab = 'explore' | 'layers' | 'information'
 type Sheet = 'peek' | 'half' | 'full'
@@ -81,18 +80,16 @@ export default function MapWorkspace({ data, model, selection, years, onChange, 
     </aside>
     {collapsed && <button ref={showButton} type="button" className="map-sidebar-show" onClick={() => setCollapsed(false)}>Show panel</button>}
 
-    <div className="map-context"><strong>{regionName}</strong><span>{period}</span>{national && <span>Layer: Peru · 10 km grid</span>}{demo && <b>DEMO DATA — NOT REAL OBSERVATIONS</b>}</div>
+    <div className="map-context"><strong>{regionName}</strong><span>{period}</span>{national && <span>Layer: Peru · 10 km grid</span>}<span className="map-coordinates">Lat {map.cursorCoords.lat ?? '—'}° · Lon {map.cursorCoords.lon ?? '—'}°</span>{demo && <b>DEMO DATA — NOT REAL OBSERVATIONS</b>}</div>
 
     <div ref={toolsRef} className={`map-view-tools${toolsOpen ? ' map-view-tools--open' : ''}`} aria-label="View controls" onKeyDown={event => {
       if (event.key === 'Escape' && toolsOpen) { setToolsOpen(false); toolsButton.current?.focus() }
     }}>
-      <button ref={toolsButton} className="map-tools-toggle" aria-label="Map tools" aria-expanded={toolsOpen} aria-controls="map-view-actions" onClick={() => setToolsOpen(!toolsOpen)}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
-      <div id="map-view-actions" className="map-view-actions"><button onClick={() => runTool(map.resetView)} title="Zoom to the selected scope">Zoom to scope</button><button onClick={() => runTool(() => void map.toggleFullscreen())}>{map.isFullScreen ? 'Exit full screen' : 'Full screen'}</button><button onClick={() => runTool(() => void map.copyLink())}>Copy link</button></div>
+      <button ref={toolsButton} className="map-tools-toggle" aria-label="Map tools" aria-expanded={toolsOpen} aria-controls="map-view-actions" onClick={() => setToolsOpen(!toolsOpen)}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button>
+      <div id="map-view-actions" className="map-view-actions"><button onClick={() => runTool(map.resetView)} title="Zoom to the selected scope">Zoom to scope</button><button onClick={() => runTool(() => void map.toggleFullscreen())}>{map.isFullScreen ? 'Exit full screen' : 'Full screen'}</button><button onClick={() => runTool(() => void map.copyLink())}>Copy link</button><MapLegend map={map} national={national} /></div>
     </div>
 
-    <MapLegend map={map} national={national} />
-    <TimeBar years={years} selection={selection} records={records} onChange={onChange} />
-    <span className="map-coordinates">Lat {map.cursorCoords.lat ?? '—'}° · Lon {map.cursorCoords.lon ?? '—'}°</span>
+
 
     {map.shareMessage && <div className="map-feedback map-feedback--share"><span role="status">{map.shareMessage}</span><button className="map-feedback-close" aria-label="Close link notice" onClick={map.dismissShare}>×</button></div>}
     {map.notice && <div className="map-feedback map-feedback--notice"><span role="status">{map.notice}</span><button className="map-feedback-close" aria-label="Close map notice" onClick={map.dismissNotice}>×</button></div>}

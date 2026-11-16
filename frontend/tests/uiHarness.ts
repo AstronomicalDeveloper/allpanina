@@ -48,12 +48,14 @@ export function fakeRuntime() {
   const maps: FakeMap[] = []
   const popups: FakePopup[] = []
   class FakePopup {
+    element = document.createElement('div')
+    getElement() { return this.element }
     content: HTMLElement | null = null
     removed = false
     constructor() { popups.push(this) }
     setLngLat() { return this }
     setDOMContent(content: HTMLElement) { this.content = content; return this }
-    addTo() { return this }
+    addTo() { this.removed = false; return this }
     remove() { this.removed = true; return this }
   }
   class FakeMap {

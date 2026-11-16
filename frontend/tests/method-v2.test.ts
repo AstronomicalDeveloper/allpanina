@@ -56,8 +56,8 @@ test('F4: Método en inglés; los textos científicos publicados se citan en esp
   assert.deepEqual([...host.querySelectorAll('.method-section h2')].map(h => h.textContent).slice(0, 4), ['From signal to indicator', 'Comparing instruments needs context', 'Separate periods to evaluate', 'What changes with calibration'])
   assert.deepEqual([...host.querySelectorAll('.method-index a')].map(a => a.getAttribute('href')), ['#observations', '#evaluation', '#limits'])
   for (const id of ['observations', 'evaluation', 'limits']) assert.ok(host.querySelector(`#${id}`), id)
-  const quoted = [...host.querySelectorAll('.method-original')]
-  assert.ok(quoted.length >= 3 && quoted.every(q => q.getAttribute('lang') === 'es' && q.querySelector('.method-original-tag')))
+  assert.equal(host.querySelector('[lang=es]'), null)
+  assert.doesNotMatch(host.textContent!, /DECISIONS|aprobado por|P11|P15|T29/)
   assert.deepEqual([...host.querySelectorAll('.method-switch button')].map(b => b.textContent), ['Training', 'Validation', 'Test'])
   for (const el of host.querySelectorAll('.method-v2 :is(h1, h2, h3, h4, summary, th, button, dt)')) if (!el.closest('[lang="es"]')) assert.doesNotMatch(el.textContent!, /(ción|Método|Prueba|Meses|Sesgo|Fuente|días)/, el.textContent!)
 })
@@ -73,7 +73,7 @@ test('Método v2 permite examinar errores de B1 y B0 conservando valores y signo
   const select = host.querySelector<HTMLSelectElement>('[aria-label="Method for the errors"]')!
   await act(async () => { select.value = 'B0'; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
   assert.match(host.querySelector('[aria-label="Monthly test errors"] tbody tr')!.textContent!, /2237.0.*1765.0/)
-  assert.match(host.querySelector('.method-limitations')!.textContent!, /B1.*celdas individuales/)
+  assert.match(host.querySelector('.method-limitations')!.textContent!, /B1.*individual map cells/)
   assert.equal(host.querySelectorAll('.method-hashes > div').length, 18)
   assert.ok(host.querySelector('a[href="/data/validation.json"]'))
 })

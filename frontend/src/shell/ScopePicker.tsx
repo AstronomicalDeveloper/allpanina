@@ -10,7 +10,7 @@ import { areaName } from './scope'
 type Area = { id: string; name: string }
 
 const linkClass = 'text-sm text-mist underline underline-offset-4 hover:text-white'
-const selectClass = 'min-h-9 max-w-[16rem] cursor-pointer appearance-none rounded-control border border-rule bg-orbit py-1 pl-3 pr-8 font-sans text-sm text-white disabled:opacity-60'
+const selectClass = 'min-h-9 min-w-0 w-full cursor-pointer appearance-none rounded-control border border-rule bg-orbit py-1 pl-3 pr-8 font-sans text-sm text-white disabled:opacity-60'
 
 /**
  * Selector de ámbito de la barra superior (D7). Lee y escribe `mapRegion` y `data` en la URL,
@@ -43,9 +43,9 @@ export default function ScopePicker() {
   const selected = params.get('mapRegion') || (mode === 'pilot' ? 'PE-UCA' : 'PE')
   const known = state.options.some(option => option.id === selected)
   return <div className="flex min-w-0 items-center gap-3">
-    <label className="flex min-w-0 items-center gap-2 text-sm text-mist">
+    <label className="flex min-w-0 flex-1 items-center gap-2 text-sm text-mist">
       <span className="sr-only lg:not-sr-only">Area</span>
-      <span className="relative min-w-0">
+      <span className="relative block min-w-0 w-full max-w-[16rem] flex-1">
         <select aria-label="Area" className={selectClass} value={selected} disabled={!state.options.length} onChange={event => {
           const next = new URLSearchParams(params), id = event.target.value
           next.set('mapRegion', id)
