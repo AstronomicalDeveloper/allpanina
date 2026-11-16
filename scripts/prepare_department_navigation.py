@@ -11,7 +11,7 @@ from shapely import transform
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "docs/region/departamentos_inei_2023.geojson"
+SOURCE = ROOT / "tests/fixtures/region/departamentos_inei_2023.geojson"
 TARGET = ROOT / "frontend/public/cartography/departamentos_inei_2023.navigation.geojson"
 TOLERANCE_METRES = 100
 

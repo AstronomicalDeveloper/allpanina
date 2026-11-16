@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "file": "DL_FIRE_M-C61_848370.zip",
+      "sha256": "26cf9ee849ee4736c9c321ad79445275d908cb9f3b50c959d26eecfda4d972a6",
+      "original_path": "docs/DL_FIRE_M-C61_848370.zip",
+      "source_version_commit": "c047c7471e8b1bc37c881b3a9af11955ac03a243"
+    },
+    {
+      "file": "DL_FIRE_SV-C2_848371.zip",
+      "sha256": "f6b49a31341a195d5321caf061866ed5a7b1d285714a3e48b530596700f6a2f9",
+      "original_path": "docs/DL_FIRE_SV-C2_848371.zip",
+      "source_version_commit": "c047c7471e8b1bc37c881b3a9af11955ac03a243"
+    },
+    {
+      "file": "region/ucayali_inei_2023.geojson",
+      "sha256": "e30fab4663751f7dab89778635318dc2a382f0be1c383462a8bc976eb98ce10e",
+      "original_path": "docs/region/ucayali_inei_2023.geojson",
+      "source_version_commit": "c047c7471e8b1bc37c881b3a9af11955ac03a243"
+    },
+    {
+      "file": "region/departamentos_inei_2023.geojson",
+      "sha256": "06cfcdd4e1a5a7747c30fc23a8ddb51f7ca166fd66e9b1bc04f87d57b1279c7d",
+      "original_path": "docs/region/departamentos_inei_2023.geojson",
+      "source_version_commit": "c047c7471e8b1bc37c881b3a9af11955ac03a243"
+    },
+    {
+      "file": "peru/AUTORIZACION_TEST.md",
+      "sha256": "c5de9651c68d324fe3dceaa818d5a7582ab11a2800916d9e63e5ac524b4daf06",
+      "original_path": "docs/peru/AUTORIZACION_TEST.md",
+      "source_version_commit": "c047c7471e8b1bc37c881b3a9af11955ac03a243"
+    },
+    {
+      "file": "peru/valid/method.json",
+      "sha256": "51045b2f36188c0393f391f9b5a13cbbf865befaa33de601ebb31875bbff2110",
+      "original_path": "docs/peru/valid/method.json",
+      "source_version_commit": "c047c7471e8b1bc37c881b3a9af11955ac03a243"
+    },
+    {
+      "file": "peru/test/calibrated_series.csv",
+      "sha256": "5eb84f1675f826544dc978df6de210630443024aa9a16bf97eb535e0c4a67458",
+      "original_path": "docs/peru/test/calibrated_series.csv",
+      "source_version_commit": "c047c7471e8b1bc37c881b3a9af11955ac03a243"
+    },
+    {
+      "file": "peru/test/validation.json",
+      "sha256": "b2b259928bf830abfdcc53641693343c82699f0dc9738f8fe60644677c7f1d1e",
+      "original_path": "docs/peru/test/validation.json",
+      "source_version_commit": "c047c7471e8b1bc37c881b3a9af11955ac03a243"
+    },
+    {
+      "file": "peru/test/resumen_test.json",
+      "sha256": "096de76bb806a2a22f34e1c41e8e60a4ea071ca8ee4a11072482438400b2b1e1",
+      "original_path": "docs/peru/test/resumen_test.json",
+      "source_version_commit": "c047c7471e8b1bc37c881b3a9af11955ac03a243"
+    },
+    {
+      "file": "peru/test/monthly_series_full.csv",
+      "sha256": "a633da77d258c832b929d9cc672b11a08a6d3651f620469dcb3d7233acf73ede",
+      "original_path": "docs/peru/test/monthly_series_full.csv",
+      "source_version_commit": "c047c7471e8b1bc37c881b3a9af11955ac03a243"
+    },
+    {
+      "file": "peru/ejemplo/monthly_series.csv",
+      "sha256": "b3ceeae6df820b19f7f132558cea08e51d27f6528f04b460c4c6c8b517893109",
+      "original_path": "docs/peru/ejemplo/monthly_series.csv",
+      "source_version_commit": "c047c7471e8b1bc37c881b3a9af11955ac03a243"
+    }
+  ]
+}

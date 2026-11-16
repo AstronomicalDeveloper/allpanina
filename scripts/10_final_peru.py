@@ -100,14 +100,14 @@ def build_method(method_p11, validation, resumen):
 
 
 def run(root, out_rel="frontend/public/data/peru"):
-    test_dir = os.path.join(root, "docs", "peru", "test")
+    test_dir = os.path.join(root, "tests", "fixtures", "peru", "test")
     for name, sha in SHA_FIRMADOS.items():
         got = sha256(os.path.join(test_dir, name))
         if got != sha:
             raise SystemExit(f"{name}: SHA-256 {got} no es el firmado en P15 ({sha}).")
-    mp = os.path.join(root, "docs", "peru", "valid", "method.json")
+    mp = os.path.join(root, "tests", "fixtures", "peru", "valid", "method.json")
     if sha256(mp) != SHA_METHOD_P11:
-        raise SystemExit("docs/peru/valid/method.json no es el aprobado en P11.")
+        raise SystemExit("tests/fixtures/peru/valid/method.json no es el aprobado en P11.")
     with open(mp, encoding="utf-8") as f:
         method_p11 = json.load(f)
     with open(os.path.join(test_dir, "validation.json"), encoding="utf-8") as f:

@@ -64,7 +64,7 @@ def test_limitaciones():
 
 
 def test_rechaza_archivos_no_firmados(tmp_path):
-    t = tmp_path / "docs" / "peru" / "test"
+    t = tmp_path / "tests" / "fixtures" / "peru" / "test"
     t.mkdir(parents=True)
     (t / "validation.json").write_text("{}", encoding="utf-8")
     (t / "calibrated_series.csv").write_text("x\n", encoding="utf-8")
@@ -73,7 +73,7 @@ def test_rechaza_archivos_no_firmados(tmp_path):
 
 
 def test_salidas_reales_reproducibles(tmp_path):
-    if not os.path.exists(os.path.join(ROOT, "docs", "peru", "test", "resumen_test.json")):
+    if not os.path.exists(os.path.join(ROOT, "tests", "fixtures", "peru", "test", "resumen_test.json")):
         pytest.skip("sin salidas de P14")
     a = fp.run(ROOT, out_rel=os.path.relpath(tmp_path / "a", ROOT))
     b = fp.run(ROOT, out_rel=os.path.relpath(tmp_path / "b", ROOT))

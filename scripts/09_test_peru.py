@@ -262,9 +262,9 @@ def main(argv=None):
 
     p = argparse.ArgumentParser(description="P14: corrida unica del test nacional Peru")
     p.add_argument("full_csv", help="docs/peru/test/monthly_series_full.csv (P13)")
-    p.add_argument("--out", default="docs/peru/test")
-    p.add_argument("--autorizacion", default="docs/peru/AUTORIZACION_TEST.md")
-    p.add_argument("--p07", default="docs/peru/ejemplo/monthly_series.csv")
+    p.add_argument("--out", default="data/processed/peru/test")
+    p.add_argument("--autorizacion", default="tests/fixtures/peru/AUTORIZACION_TEST.md")
+    p.add_argument("--p07", default="tests/fixtures/peru/ejemplo/monthly_series.csv")
     a = p.parse_args(argv)
     try:
         run(a.full_csv, a.out, a.autorizacion, a.p07)

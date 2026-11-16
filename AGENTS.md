@@ -10,7 +10,9 @@ This repository is a monorepo:
 - `scripts/`: scientific data preparation and publication utilities.
 - `tests/`: automated scientific Python tests, using root `requirements.txt`.
 - `data/`: information about datasets and small approved test fixtures; do not commit downloaded or generated large data.
-- `docs/`: sources, methodology, architecture decisions and demo instructions.
+- `REPRODUCIBILITY.md`: public verification guide.
+- `tests/fixtures/`: curated scientific inputs and provenance.
+- `docs/` and `frontend/docs/`: local internal archives, excluded from the current public tree.
 
 Treat this as the intended layout, not as proof that every folder or dependency already exists. Inspect the repository before modifying it. Do not create unused scaffolding.
 The unused FastAPI health-only backend was removed at the user's request. The frontend consumes static scientific files and processes My region in a browser Worker; do not recreate an API without a concrete requirement.
@@ -63,7 +65,7 @@ The unused FastAPI health-only backend was removed at the user's request. The fr
 ## API contract
 - Keep endpoint paths and JSON shapes stable once frontend and backend agree on them.
 - If an endpoint changes, update the schema, frontend client, mock fixture, tests and relevant docs in the same task when possible.
-- Prefer versioned examples of API responses in `docs/` or small test fixtures.
+- Prefer versioned examples of API responses in the reproducibility guide or small test fixtures.
 - Include meaningful error messages and appropriate HTTP status codes.
 - Do not bypass validation simply to get the demo working.
 

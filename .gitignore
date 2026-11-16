@@ -360,3 +360,7 @@ crash.log
 !/docs/frontend/
 /docs/frontend/*
 !/docs/frontend/HISTORIAL_README_FRONTEND.md
+
+# Internal working documents stay local; reproducibility uses curated fixtures.
+/docs/
+/frontend/docs/

@@ -1,9 +1,0 @@
-# Análisis histórico mensual
-
-Se utiliza exclusivamente monthly_series.csv del conjunto activo (nacional, piloto o DEMO), sin unir fuentes ni utilizar B0/B1. Para la región y sensor seleccionados, la referencia contiene el mismo mes calendario de años estrictamente anteriores al seleccionado, con status ok y cell_days válido. Se incluyen ceros; missing y períodos no publicados no aportan registros ni ceros. Tampoco se restringe la referencia a los años elegidos en la matriz Comparar años.
-
-Con tres o más años válidos y observación seleccionada válida, se ordenan los valores: la mediana es el central para n impar y el promedio de los dos centrales para n par. Delta = observado − mediana. Diferencia absoluta = |delta|, acompañada de dirección (por encima/por debajo/igual). Porcentaje = 100 × delta / mediana, únicamente si mediana > 0. Con mediana cero se muestra la diferencia absoluta y no un porcentaje. Con menos de tres referencias se informa Historial insuficiente; con selección missing/ausente no se calcula comparación.
-
-El gráfico muestra observaciones válidas del mismo mes hasta el año seleccionado, lo identifica por texto y color y publica valores numéricos legibles. El año seleccionado no entra en la mediana. El número informado corresponde únicamente a los años anteriores utilizados. Las ausencias no se dibujan como barras de cero.
-
-Limitaciones: comparación descriptiva de actividad térmica satelital, sin pruebas de significancia, umbrales de semejanza, predicción ni inferencias sobre incendios confirmados. La mediana no corrige cambios de cobertura, nubes, instrumentos o disponibilidad histórica. Un año parcial como 2026 se compara únicamente para el mes publicado seleccionado. No se modifican productos científicos, contratos ni calibración. El servicio puro historicalAnalysis.ts está separado de la sección visual HistoricalAnalysis.tsx del Calendario.

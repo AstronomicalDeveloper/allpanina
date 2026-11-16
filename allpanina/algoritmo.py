@@ -41,7 +41,7 @@ tp = importlib.import_module("scripts.09_test_peru")
 
 VERSION = "1.1"
 PUBLICADO = ROOT / "frontend" / "public" / "data" / "peru"          # entrega aprobada (P17-P19)
-DEPARTAMENTOS = ROOT / "docs" / "region" / "departamentos_inei_2023.geojson"
+DEPARTAMENTOS = ROOT / "tests" / "fixtures" / "region" / "departamentos_inei_2023.geojson"
 DESDE = (2013, 1)
 ULTIMO_MES_VALIDADO = "2026-07"                                        # fin del test (P14/P15)
 SPLIT_NUEVO = "sin_validar"
@@ -276,7 +276,7 @@ def verificar_contra_publicado(salida: Path | str | None = None, publicado: Path
         raw = Path(t)
         csvs = {}
         for sensor, zname in (("MODIS", "DL_FIRE_M-C61_848370.zip"), ("VIIRS", "DL_FIRE_SV-C2_848371.zip")):
-            with zipfile.ZipFile(ROOT / "docs" / zname) as z:
+            with zipfile.ZipFile(ROOT / "tests" / "fixtures" / zname) as z:
                 nombre = next(n for n in z.namelist() if n.startswith("fire_archive_"))
                 z.extract(nombre, raw)
                 csvs[sensor] = raw / nombre
