@@ -1,243 +1,132 @@
-# AllpaNina 🔥🛰️
+# AllpaNina
 
-**Harmonizing MODIS and VIIRS active-fire detections into one consistent, long-term record.** *Allpa* means "land" and *nina* means "fire" in Quechua.
+**A reproducible history of satellite thermal activity, with an explicit comparison between MODIS and VIIRS.**
 
-NASA's MODIS sensors (Terra and Aqua) recorded fires for more than two decades and are reaching the end of their missions. VIIRS sees many more fires because its pixels are smaller. Placing the two sensors one after the other therefore creates a false jump in fire activity. AllpaNina measures both sensors the same way and calibrates VIIRS to the MODIS scale, so that fire seasons can be compared across years.
+Built for the **NASA Space Apps Challenge 2026**. *Allpa* means land and *nina* means fire in Quechua. [Source repository](https://github.com/AstronomicalDeveloper/allpanina). A public deployment is planned; no live application URL is claimed yet.
 
-**What it offers**
+## Why this project?
 
-- **Calendar and map** of thermal-anomaly activity per month, for Peru and its 25 departments, plus the Ucayali pilot.
-- **Calibrated estimate (B1)** with a frozen factor κ, validated out of sample and tested once on reserved data: national WAPE 0.12 in validation and 0.31 in the test, against 2.86 and 4.30 without calibration ([details](#-peru-national-extension-v2)).
-- **Any region of the world, in the browser.** In "Mi región", choose a country and region (199 countries), load the NASA FIRMS files and get your own calendar and map. Everything runs on the user's computer. These results are labelled exploratory.
-- **Reproducible algorithm** (`python -m allpanina`) whose tests check that it reproduces the published files byte for byte.
+MODIS and VIIRS observe the same planet with different instruments and pixel sizes. Joining their raw detection counts produces an apparent jump that can reflect the change of sensor rather than a change in fire activity.
 
-**Honest limits.** A detection is a thermal anomaly seen from orbit, not a confirmed fire or a burned area. A fixed κ cannot follow every season: in the test it overestimated MODIS in all 19 months. Suomi NPP stopped producing new data on 2 November 2026. Full list in [`frontend/public/data/peru/method.json`](frontend/public/data/peru/method.json).
+AllpaNina goes beyond displaying hotspots: it builds comparable cell-day series, publishes the calibration and its measured error, distinguishes observations from estimates, and retains the inputs and tests needed to reproduce its outputs. The delivered national record covers **January 2013 to July 2026**, Peru and its 25 departments, with the earlier Ucayali pilot available separately.
 
-Built for the NASA Space Apps Challenge 2026 by the AllpaNina team. Code under the [MIT License](LICENSE); data keep their own terms (see [Data sources](#️-data-sources-and-acknowledgements)). How we used AI: [`AI_USE.md`](AI_USE.md).
+## Explore
 
-## Ejecutar la integración científica L5/T32
+| Page | What it offers |
+|---|---|
+| **Home** | A 14-year calendar, department selection and data-derived featured months |
+| **Calendar** | Monthly MODIS/VIIRS and published B1 estimates, historical comparisons, CSV export and evaluation warnings |
+| **Map** | Observed MODIS/VIIRS cells, basemap fallbacks, selectable cells, mobile panels and a legend inside the **+** tools menu |
+| **Method** | Indicator, calibration, published evaluation, limitations, provenance and source downloads |
+| **My region** | A five-section workflow to load FIRMS files and generate exploratory results locally in a browser Worker |
+| **About** | Team contributions, data acknowledgements and AI disclosure |
 
-Frontend: Node.js 24, `cd frontend`, `npm ci`, `npm run dev`.
-Por defecto se utilizan los resultados reales publicados en `frontend/public/data/`.
-Modo sintético explícito: `?data=demo`; sin fallback silencioso.
+Routes: `/`, `/calendar`, `/map`, `/method`, `/my-region`, `/about`. Legacy Spanish routes redirect while preserving query parameters and anchors. `?data=pilot&mapRegion=PE-UCA` opens the pilot; `?data=demo` explicitly selects synthetic data. Failed loads never silently switch to DEMO.
 
-Pruebas científicas desde la raíz (Python 3.12 en CI):
+## Scientific method
+
+1. Filter and organise FIRMS thermal detections by sensor, spatial cell and local day. Repeated detections in the same cell-day count once for that sensor group.
+2. Aggregate **cell-days** into regional monthly observations. A regional total can exceed the number of days in a month.
+3. Compare unscaled VIIRS (**B0**) with a calibrated estimate (**B1 = B0 times kappa**). Factors are fitted on training, with separate validation and test periods. National B1 sums the published department estimates using their own or grouped factors.
+4. Publish retrospective metrics, residuals and limitations alongside the observations. The map retains observed values: B1 is a **region-month estimate**, never a cell-level satellite observation.
+
+Read the [data contract](docs/contrato_datos.md), [scientific source guide](docs/peru/SOURCE_README.md), [decisions and assumptions](DECISIONS.md), and published [method](frontend/public/data/peru/method.json), [evaluation](frontend/public/data/peru/validation.json) and [manifest](frontend/public/data/peru/manifest.json).
+
+## Technology and architecture
+
+- **Web:** React, TypeScript, Vite, Tailwind CSS, MapLibre GL and locally served IBM Plex fonts.
+- **Science:** Python, pandas, NumPy, PyArrow, pyproj and Shapely.
+- **Validation:** Node test runner, JSDOM, pytest and GitHub Actions.
+
+```text
+frontend/             Static web app, browser Worker and interface tests
+frontend/public/data/ Frozen scientific products and manifests
+allpanina/            Reproducible scientific Python package and CLI
+scripts/              Preparation and publication utilities
+scripts/data/         Country codes and time-zone reference tables
+tests/                Scientific tests and byte-parity regressions
+docs/                 Contracts, provenance, research inputs and technical guides
+```
+
+The website consumes static files; no FastAPI server, database or authentication service is required. My region processes files on the user's computer and marks its outputs as exploratory.
+
+## Run locally
+
+Use **Node.js 24**. In `frontend/`:
+
+```sh
+npm ci
+npm run dev
+```
+
+Open the URL printed by Vite. In PowerShell, `npm.cmd` and `npx.cmd` work when `.ps1` scripts are restricted. See the [frontend guide](frontend/README.md) for configuration and route details.
+
+## Tests and reproducibility
+
+Frontend, from `frontend/`:
+
+```sh
+npm run lint
+npx tsc --noEmit -p tsconfig.app.json
+npm test
+npm run build
+```
+
+Include Ucayali byte parity with `ALLPANINA_LENTO=1 npm test`; PowerShell: `$env:ALLPANINA_LENTO='1'; npm.cmd test`.
+
+Scientific checks, from the repository root, using Python 3.12 or newer:
 
 ```sh
 python -m venv .venv
-# Windows PowerShell:
-.venv/Scripts/python.exe -m pip install -r requirements.txt
-.venv/Scripts/python.exe -m pytest tests/ -q
-# Linux/macOS: usar .venv/bin/python en lugar de .venv/Scripts/python.exe
+# Linux/macOS: .venv/bin/python; Windows: .venv/Scripts/python.exe
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m pytest tests/ -q
+ALLPANINA_LENTO=1 .venv/bin/python -m pytest tests/ -q
 ```
 
-CI ejecuta `tests/` con las dependencias científicas de la raíz y las pruebas,
-lint y build del frontend. No ejecuta el pipeline ni recalibra resultados.
-[Informe T32 y procedencia](docs/t32/INTEGRACION_T32.md).
+PowerShell: set `$env:ALLPANINA_LENTO='1'` before running the Python command. If the repository and system temporary directory are on different Windows drives, use a dedicated `--basetemp .cache/pytest-local` directory on the repository drive; pytest clears that dedicated directory.
 
-## 🤝 Git Collaboration Workflow
+The slow regressions use the original FIRMS ZIPs retained in `docs/` and compare Peru and Ucayali with published outputs byte for byte. The package also provides `python -m allpanina --verificar`. These are reproducibility checks, not a new scientific evaluation or permission to recalibrate frozen results. [Research inputs and provenance](docs/datos.md).
 
-To keep AllpaNina stable and allow multiple team members to work simultaneously, we follow a simplified **GitHub Flow**.
+## Sources and acknowledgements
 
-### 1. Branching strategy
+- [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/): MODIS Collection 6.1 (MCD14ML, Terra/Aqua) and VIIRS 375 m (VNP14IMGML, Suomi NPP) standard archives. We acknowledge FIRMS, NASA LANCE and ESDIS.
+- [INEI Peru](https://ide.inei.gob.pe/): official department boundaries, updated to 2023.
+- [MINAM Geoservidor](https://geoservidorperu.minam.gob.pe/): reference cartography and protected natural areas.
+- [NASA GIBS](https://gibs.earthdata.nasa.gov/) and Esri: map imagery, basemaps and reference overlays; provider attribution remains in the map.
+- [geoBoundaries](https://www.geoboundaries.org/): world administrative boundaries, mostly CC BY 4.0 with country-specific licences in the [catalogue](frontend/public/cartography/world/index.json).
+- IANA time-zone reference data and IBM Plex fonts (SIL Open Font License); see the source tables and frontend acknowledgements.
 
-The `main` branch contains the latest stable and integrated version of the project.
+FIRMS data are provided as is and are not intended for tactical emergency decisions. Original sources retain their own terms; the code licence does not relicense the data.
 
-Cada integrante tiene su propia rama.
+## Scientific limits
 
+A thermal detection is **not a confirmed wildfire or burned area**. Zero, missing data and unpublished periods have different meanings. FIRMS does not provide cloud-cover observations, so zero detections do not prove absence of fire.
 
-### 2. Step-by-step workflow
+A fixed factor can underestimate extreme peaks or overestimate quiet periods. Retrospective WAPE is **not accuracy or a confidence percentage for future months**. Ucayali's test was examined earlier; the separate national analysis excluding Ucayali must be read with its published context. My region outputs have not received the same regional review as the frozen national products. See the complete limitations in [Method](frontend/public/data/peru/method.json).
 
-**Step 1 — Update your local repository**
+The national map's 10 km geometries aggregate 1 km cell-days. Department clipping is visual: boundary cells retain complete values, while department totals come from the CSV. The delivered series ends in July 2026; later sensor availability does not extend the validated record automatically.
 
-Before starting a new task, synchronize your local `main` branch:
+## Team and contributions
 
-```bash
-git switch main
-git pull origin main
-```
+| Member | Agreed responsibilities |
+|---|---|
+| Aldo | Scientific method, study area, data contracts and frozen test period |
+| Marco | FIRMS acquisition, normalisation, cell-days, series and observed maps |
+| Antonella | B0/B1 calibration, error metrics, residuals, validation and test |
+| Juan Matías | Interactive React/MapLibre map, filters, interactions and integration tests |
+| Landry | Web architecture, calendar, method, integration and deployment |
+| Adriana | Wireframes, visual system, accessibility, legends, video and pitch |
 
-**Step 2 — Create a feature branch**
+Full names, affiliations and biographies remain pending confirmation by the members. No awards or affiliations are claimed.
 
-Create a new branch using the appropriate naming convention:
+## AI, licence and deployment
 
-```bash
-git switch -c feat/frontend-map
-```
+The team used **ChatGPT and Codex (OpenAI)** and **Claude (Anthropic)** for programming, documentation, review and technical assistance. Scientific decisions and final validation remain human responsibilities. Read [AI_USE.md](AI_USE.md).
 
-**Step 3 — Make and commit your changes**
+Code is released under the [MIT License](LICENSE). Data, imagery and fonts retain their source licences.
 
-Implement your assigned task and verify that it works.
+The planned target is a **static site on Ubuntu with ISPConfig and Nginx**, potentially `allpanina.astrodev.pe`; it is **not deployed by this repository task**. Build with `npm ci && npm run build` and publish only `frontend/dist/`, never the repository or research ZIPs. The [deployment guide](docs/DESPLIEGUE_ESTATICO.md) covers isolated web roots, HTTPS, SPA routes, real resource 404s, compression, caching, Workers and verification without changing the existing BugLab site.
 
-```bash
-git status
-git add .
-git commit -m "feat: implement wildfire map"
-```
-
-**Step 4 — Push your branch to GitHub**
-
-```bash
-git push -u origin feat/frontend-map
-```
-
-**Step 5 — Open a Pull Request (PR)**
-
-1. Go to the repository on GitHub.
-2. Select **Compare & pull request**.
-3. Set `main` as the destination branch.
-4. Explain what you implemented and how it was tested.
-5. Request a review from another team member.
-
-After approval and successful checks, merge the PR into `main`.
-
-**Step 6 — Synchronize before your next task**
-
-```bash
-git switch main
-git pull origin main
-```
-
-Create a new branch for the next task. Delete merged branches when they are no longer needed.
-
-### 3. Collaboration rules
-
-- **Never push directly to `main`.**
-- Create one branch per task, not per developer.
-- Keep commits small and descriptive.
-- Test your changes before opening a PR.
-- Coordinate changes that affect shared files or API contracts.
-- Never commit passwords, API keys, credentials, or local environment files.
-- Do not force-push to `main`.
-- Do not merge a PR with unresolved conflicts or failing required checks.
-- Review another contributor's changes before merging whenever possible.
-
-### 4. Working with AI coding agents
-
-Codex, Claude, and other AI coding assistants must follow the same collaboration rules.
-
-- Read `AGENTS.md` before making changes.
-- Work on the branch assigned to the current task.
-- Do not create unnecessary branches.
-- Do not modify unrelated code without authorization.
-- Do not commit secrets or generated temporary files.
-- Review and test AI-generated changes before committing.
-- Never merge automatically into `main` without human approval.
-
-### 5. Commit message conventions
-
-Use concise, descriptive commit messages following this format:
-
-```text
-type: short description
-```
-
-Examples:
-
-```bash
-git commit -m "feat: add satellite hotspot markers"
-git commit -m "fix: handle empty NASA API responses"
-git commit -m "docs: update installation instructions"
-git commit -m "test: add fire analysis unit tests"
-```
-
-### 6. Resolving merge conflicts
-
-If your branch is outdated, synchronize it with the latest `main`:
-
-```bash
-git fetch origin
-git switch feat/frontend-map
-git merge origin/main
-```
-
-If Git reports conflicts:
-
-1. Open the conflicting files.
-2. Resolve the differences carefully.
-3. Remove all conflict markers.
-4. Stage the resolved files.
-5. Complete the merge:
-
-```bash
-git add .
-git commit
-git push
-```
-
-If you are unsure how to resolve a conflict, ask another team member before proceeding.
-
----
-
-**Our priority:** Deliver a functional, integrated, and reproducible solution within the hackathon timeframe. Collaboration practices should support development, not slow it down.
-
-## 🇵🇪 Peru national extension (v2)
-
-AllpaNina started with a validated pilot for the Ucayali department (`frontend/public/data/`, unchanged). Version 2 extends the same method to **Peru as a whole (`PE`) and its 25 departments (`PE-01` … `PE-25`, INEI codes)**. All Peru files are in [`frontend/public/data/peru/`](frontend/public/data/peru/) and follow data contract v1.1 ([`docs/contrato_datos.md`](docs/contrato_datos.md)).
-
-**Indicator.** `cell_days`: number of (1 km cell, day) pairs with at least one active-fire detection, per region, month and sensor. The grid is EPSG:6933 and days are in Lima local time. A cell belongs to the department whose official INEI 2023 polygon contains its centre.
-
-**Method.**
-- `B0` = VIIRS without correction.
-- `B1` = VIIRS × κ, where κ = Σ MODIS / Σ VIIRS over the training period (2013-01 to 2022-12 only).
-- **κ is stratified.** The 17 departments with enough data have their own κ (0.164–0.337); the 8 low-activity departments share one pooled κ (0.207). Using a single national κ (0.249) instead would overestimate Amazonas (own κ 0.164) by ~52% and underestimate Madre de Dios (own κ 0.337) by ~26% (training κ from [`DECISIONS.md`](DECISIONS.md) §11.2: 0.249 / 0.164 ≈ 1.52 and 0.249 / 0.337 ≈ 0.74).
-- National `B1` is the **sum** of the 25 departmental estimates, so the national value always equals the sum of its departments.
-- Every rule was frozen before looking at validation or test data ([`DECISIONS.md`](DECISIONS.md) §11–12).
-
-**Results (WAPE, lower is better).**
-
-| Period | Region | B0 (uncalibrated) | B1 (calibrated) |
-|---|---|---:|---:|
-| Validation 2023-01 to 2024-12 | Peru | 2.86 | **0.12** |
-| Reserved test 2025-01 to 2026-07, run once | Peru without Ucayali (clean result) | 4.58 | **0.33** |
-| Reserved test 2025-01 to 2026-07, run once | Peru | 4.30 | **0.31** |
-
-Calibration reduces the error by roughly 14 times in the test and improves on B0 in all 21 reportable departments. In the test, however, `B1` overestimated MODIS in all 19 months. The national MODIS/VIIRS ratio dropped to 0.191 in 2025 and 0.176 in 2026, below its 2013–2024 range of 0.222–0.286. A κ fixed on 2013–2022 cannot follow that change. Terra/Aqua orbital drift is a possible cause, but this has not been tested. In high-activity years the opposite happens and `B1` underestimates the peak (September 2024: −31% in San Martín, −29% in Ucayali). Full results and all limitations: [`docs/peru/RESULTADO_TEST.md`](docs/peru/RESULTADO_TEST.md) and `frontend/public/data/peru/method.json`.
-
-**Main limitations.**
-- The error grows when there is little fire activity.
-- Four departments (Callao, Moquegua, Tacna, Tumbes) have too little activity for test metrics of their own (Σ MODIS < 50).
-- The Ucayali test had already been seen in the pilot, so the clean national reading is "Peru without Ucayali".
-- `B1` is validated at region-month scale only. The national map (10 km cells) shows observed values only.
-- Suomi NPP VIIRS stopped producing new data in FIRMS on 2 November 2026, so extending the series requires another VIIRS sensor.
-
-**Run or reproduce.** The algorithm is packaged as `allpanina` ([`docs/ALGORITHM` guide, in Spanish](docs/ALGORITMO.md)). It turns raw FIRMS standard CSVs into the files above using the frozen κ, and never recalibrates. Months after 2026-07 are flagged `sin_validar` (not validated).
-
-```bash
-pip install -r requirements.txt && python -m pytest
-python -m allpanina --verificar      # rebuilds series, calibration and the 14 maps from the FIRMS archives in docs/
-                                     # and checks they are byte-for-byte identical to frontend/public/data/peru/
-python -m allpanina --modis <fire_archive_M.csv> --viirs <fire_archive_SV.csv> --salida <dir>   # new data
-```
-
-The stage-by-stage pipeline (scripts 01–10, including the one-time test run) is documented in [`docs/peru/REPRODUCCION.md`](docs/peru/REPRODUCCION.md).
-
-Review trail: [`REVISION_P07`](docs/peru/REVISION_P07.md) (series), [`REVISION_P11`](docs/peru/REVISION_P11.md) (calibration), [`AUTORIZACION_TEST`](docs/peru/AUTORIZACION_TEST.md) (test authorisation), [`RESULTADO_TEST`](docs/peru/RESULTADO_TEST.md) (signed test result), [`REVISION_P17`](docs/peru/REVISION_P17.md) (final files) and [`REPRODUCCION`](docs/peru/REPRODUCCION.md) (reproduction).
-
-## 🌎 Any region of the world (exploratory)
-
-The same algorithm also runs for **any region on Earth**, for example the province of Mendoza (Argentina). The user gives a free FIRMS `MAP_KEY` and the region's polygon; AllpaNina downloads MODIS and VIIRS from the FIRMS API, harmonizes them and writes the single-region files the web already reads (same format as the Ucayali pilot):
-
-```bash
-python -m allpanina region --region-id AR-M --nombre Mendoza --poligono mendoza.geojson \
-    --zona-horaria America/Argentina/Mendoza --map-key <MAP_KEY> --salida salida_mendoza/
-```
-
-- Calendar days use the region's own time zone.
-- A **local κ** is fitted on 2013–2022 only, and offered only if the region has enough training data (Σ VIIRS ≥ 5,000 and Σ MODIS ≥ 1,000 cell-days). Otherwise the web shows observed data only.
-- `B1` is evaluated automatically, out of sample, on 2023–2024 and 2025–2026-07.
-- These results are **exploratory**: unlike Ucayali and Peru, nobody on the team has reviewed them or signed a reserved test. `method.json` says so.
-
-Guide (in Spanish): [`docs/ALGORITMO.md`](docs/ALGORITMO.md#cualquier-región-el-caso-mendoza).
-
-## 🛰️ Data sources and acknowledgements
-
-AllpaNina uses active-fire detections from NASA's Fire Information for Resource Management System (FIRMS), which is part of NASA's Land, Atmosphere Near real-time Capability for EO (LANCE) and is operated by NASA's Earth Science Data and Information System (ESDIS) project. Sensors used: MODIS (Terra and Aqua, Collection 6.1) and VIIRS (Suomi NPP, 375 m, Collection 2).
-
-FIRMS data are provided "as is". NASA advises against using them for tactical decisions or for conditions at a local scale; AllpaNina is a scientific prototype and must not be used for that purpose. Our acknowledgement follows NASA's request for anyone who shares FIRMS data: see the official acknowledgements and full disclaimer at https://www.earthdata.nasa.gov/data/tools/firms.
-
-Department boundaries come from the National Institute of Statistics and Informatics of Peru (INEI), spatial data infrastructure, layer *Departamental (actualizado al 2023)*, https://ide.inei.gob.pe/ ([`docs/region/`](docs/region/)).
-
-Country and first-level region boundaries outside Peru (page "Mi región") come from geoBoundaries (William & Mary geoLab, www.geoboundaries.org), gbOpen release, mostly under CC BY 4.0; the license of each country is listed in `frontend/public/cartography/world/index.json` once the "Mi región" data are merged.
-
-Provenance of the files we downloaded (request IDs, hashes, columns and limitations) is documented in [`docs/datos.md`](docs/datos.md). Raw FIRMS files are not part of the final content of `main`.
+For maintenance evidence, see the [predeployment audit](docs/AUDITORIA_PREDEPLOY.md). Historical implementation notes remain linked from the frontend guide, rather than being presented as current features.

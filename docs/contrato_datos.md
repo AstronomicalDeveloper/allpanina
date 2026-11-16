@@ -18,16 +18,14 @@ estático), Landry puede hacer `fetch('/data/<archivo>')` directamente.
 Marco y Antonella (ignoradas a propósito). Solo lo que ya está listo para Landry se
 copia a `frontend/public/data/`.
 
-## ⚠️ Pendiente de resolver con Landry (CI)
+## Validación en CI
 
-El `.github/workflows/ci.yml` actual solo revisa `backend/requirements.txt` y
-`backend/tests/` — carpetas que no existen en este repo (los scripts y tests del
-equipo de datos viven en la raíz: `scripts/`, `tests/`, `requirements.txt`). Eso
-significa que el job "backend" se salta en silencio y **marca verde sin ejecutar
-ninguna prueba real** — exactamente el "check ficticio" que prohíbe la sección 3
-de la matriz. Falta que Landry actualice el workflow para que apunte a la raíz
-(o para que el equipo de datos mueva su código a `backend/`, lo que decidan).
-No lo toqué yo porque es su pieza del repo.
+`.github/workflows/ci.yml` instala las dependencias científicas desde
+`requirements.txt` y ejecuta `python -m pytest tests/ -q`, además de las
+comprobaciones del frontend. El paquete científico vive en `allpanina/` y los
+scripts en `scripts/`. El backend preliminar que solo ofrecía `/health` fue
+retirado porque la aplicación estática no lo utiliza. No se alteran los formatos
+ni los productos científicos descritos en este contrato.
 
 ## 1. `monthly_series.csv` — produce Marco, usan Antonella + Landry
 
