@@ -15,7 +15,7 @@ import type {CellsData} from '../src/types/data'
 import {files,mockFiles,mount,fakeRuntime,choose,click} from './uiHarness'
 const bytes=await readFile(new URL('../public/cartography/departamentos_inei_2023.navigation.geojson',import.meta.url))
 const navigation=validateDepartmentNavigation(JSON.parse(bytes.toString('utf8')))
-const originalBytes=await readFile(new URL('../../docs/region/departamentos_inei_2023.geojson',import.meta.url))
+const originalBytes=await readFile(new URL('../../tests/fixtures/region/departamentos_inei_2023.geojson',import.meta.url))
 const original=JSON.parse(originalBytes.toString('utf8')) as {features:{properties:{region_id:string};geometry:CellsData['features'][number]['geometry']}[]}
 files['/data/peru/cells_PE_2024.geojson']=await readFile(new URL('../public/data/peru/cells_PE_2024.geojson',import.meta.url),'utf8')
 files['/data/peru/cells_PE_2026.geojson']=await readFile(new URL('../public/data/peru/cells_PE_2026.geojson',import.meta.url),'utf8')

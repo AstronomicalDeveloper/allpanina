@@ -51,7 +51,7 @@ test('la redirección reemplaza la entrada del historial: Atrás no vuelve a la 
 test('Acerca de muestra equipo, créditos, uso de IA y el piloto anterior',async t=>{
  const host=await open(t,'/about')
  assert.equal(host.querySelector('h1')!.textContent,'About AllpaNina')
- for(const name of ['Aldo','Marco','Antonella','Juan Matías','Landry','Adriana'])assert.match(host.querySelector('main')!.textContent!,new RegExp(name))
+ for(const name of ['Aldo Fabricio Ruiz Collazos','Marco Antonio Arcila Santander','Karla Antonella Montes Matamoros','Juan Matías Purihuaman Rivera','Landry Gabriela Guadalupe Bardales','Adriana Bazan Liberato'])assert.ok(host.querySelector('main')!.textContent!.includes(name), name)
  assert.match(host.querySelector('main')!.textContent!,/Use of AI/)
  for (const tool of ['ChatGPT (OpenAI)', 'Codex (OpenAI)', 'Claude (Anthropic)']) assert.ok(host.textContent!.includes(tool))
  const pilot=[...host.querySelectorAll<HTMLAnchorElement>('main a')].find(a=>a.textContent==='Open the Ucayali pilot')!

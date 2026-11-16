@@ -13,10 +13,12 @@ mf = importlib.import_module("scripts.08_manifest")
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def test_hashes_match_docs_datos():
-    text = (ROOT / "docs" / "datos.md").read_text(encoding="utf-8")
+def test_archive_hashes_match_fixture_provenance():
+    records = json.loads((ROOT / "tests/fixtures/PROVENANCE.json").read_text(encoding="utf-8"))["files"]
+    by_name = {r["file"]: r for r in records}
     for spec in dl.EXPECTED.values():
-        assert spec["sha256"] in text and spec["zip"] in text
+        assert by_name[spec["zip"]]["sha256"] == spec["sha256"]
+        assert dl.sha256_of(ROOT / "tests/fixtures" / spec["zip"]) == spec["sha256"]
 
 
 def _fake_zip(directory: Path, sensor: str, payload: bytes = b"a,b\n1,2\n") -> Path:
@@ -67,3 +69,11 @@ def test_missing_deliverables_are_reported_not_listed(tmp_path):
     present, missing = mf.list_deliverables(tmp_path, "PE-UCA")
     assert present == ["monthly_series.csv"]
     assert "validation.json" in missing and "cells_PE-UCA_<anio>.geojson" in missing
+
+
+def test_all_relocated_fixtures_keep_their_recorded_bytes():
+    base = ROOT / "tests/fixtures"
+    records = json.loads((base / "PROVENANCE.json").read_text(encoding="utf-8"))["files"]
+    assert records
+    for record in records:
+        assert hashlib.sha256((base / record["file"]).read_bytes()).hexdigest() == record["sha256"], record["file"]

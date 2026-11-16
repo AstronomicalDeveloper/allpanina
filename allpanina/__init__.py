@@ -1,6 +1,6 @@
 """AllpaNina: algoritmo de armonización MODIS/VIIRS (detecciones de fuego de NASA FIRMS).
 
-Tres entradas (ver docs/ALGORITMO.md):
+Tres entradas (ver REPRODUCIBILITY.md):
 
     from allpanina import procesar_peru      # Perú + 25 departamentos, κ congelados y validados
     from allpanina import procesar_region    # cualquier región del mundo, κ local exploratorio

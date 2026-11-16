@@ -52,14 +52,14 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parent.parent
 REGION_ID = "PE-UCA"
 REGION_BBOX = (-76.10, -11.55, -70.40, -7.15)  # lon_min, lat_min, lon_max, lat_max (DECISIONS.md, seccion 1)
-REGION_POLYGON = ROOT / "docs" / "region" / "ucayali_inei_2023.geojson"  # poligono oficial INEI 2023
+REGION_POLYGON = ROOT / "tests" / "fixtures" / "region" / "ucayali_inei_2023.geojson"  # poligono oficial INEI 2023
 FIRST_MONTH = (2013, 1)
 DEFAULT_LAST_MONTH = (2024, 12)
 TEST_LAST_MONTH = (2026, 7)
 SENSOR_FIRST_COMPLETE_MONTH = {"MODIS": (2003, 1), "VIIRS": (2012, 2)}
 SENSORS = tuple(SENSOR_FIRST_COMPLETE_MONTH)
 STATUS_OK, STATUS_MISSING = "ok", "missing"
-DEPARTMENTS_POLYGONS = ROOT / "docs" / "region" / "departamentos_inei_2023.geojson"  # P05, 25 poligonos INEI 2023
+DEPARTMENTS_POLYGONS = ROOT / "tests" / "fixtures" / "region" / "departamentos_inei_2023.geojson"  # P05, 25 poligonos INEI 2023
 NATIONAL_ID = "PE"
 COLUMNS = ["region_id", "year", "month", "sensor_group", "cell_days", "status", "source_version", "updated_at"]
 

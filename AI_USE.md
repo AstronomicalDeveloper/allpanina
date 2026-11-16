@@ -13,7 +13,7 @@ These tools assisted the team; they did not own scientific decisions or final va
 ## What the team decided and checked
 
 - **Scientific decisions are the team's.** The indicator, the filters, the train/validation/test periods, the κ calibration rules and the reporting thresholds were set by the team before looking at the results, and are recorded in [`DECISIONS.md`](DECISIONS.md).
-- **The reserved test was run once**, after a written authorisation signed by team members ([`docs/peru/AUTORIZACION_TEST.md`](docs/peru/AUTORIZACION_TEST.md)). Its result was reviewed and signed by the team ([`docs/peru/RESULTADO_TEST.md`](docs/peru/RESULTADO_TEST.md)).
+- **The reserved test was run once**, after a written authorisation signed by team members ([the retained authorisation fixture](tests/fixtures/peru/AUTORIZACION_TEST.md)). The original review record is archived locally; [published evaluation files](frontend/public/data/peru/validation.json) and the [reproducibility guide](REPRODUCIBILITY.md) remain available.
 - **Outputs are checked by tests, not trusted.** The packaged algorithm must reproduce the published files byte for byte (`python -m allpanina --verificar`), and the in-browser version must reproduce the Ucayali pilot byte for byte (`frontend/tests/region-pipeline.test.ts`).
 
 ## Limits

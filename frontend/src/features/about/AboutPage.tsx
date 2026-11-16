@@ -4,12 +4,12 @@ import { REPOSITORY_URL, ROUTES } from '../../shell/routes'
 
 /** Integrantes y responsabilidades, según el plan del equipo (AllpaNina v1.3, §2). Sin datos inventados. */
 const TEAM = [
-  { name: 'Aldo', role: 'Scientific method, study area, data contracts and the frozen test period' },
-  { name: 'Marco', role: 'NASA FIRMS data acquisition, normalization, cell-days, series and observed maps' },
-  { name: 'Antonella', role: 'B0/B1 calibration, error metrics and monthly residuals, validation and test' },
-  { name: 'Juan Matías', role: 'Interactive map: React and MapLibre, filters, interactions and integration tests' },
-  { name: 'Landry', role: 'Web architecture, calendar, method page, integration and deployment' },
-  { name: 'Adriana', role: 'Wireframes, visual system, perceptual accessibility, legends, video and pitch' },
+  { name: 'Aldo Fabricio Ruiz Collazos', role: 'Scientific method, study area, data contracts and the frozen test period' },
+  { name: 'Marco Antonio Arcila Santander', role: 'NASA FIRMS data acquisition, normalization, cell-days, series and observed maps' },
+  { name: 'Karla Antonella Montes Matamoros', role: 'B0/B1 calibration, error metrics and monthly residuals, validation and test' },
+  { name: 'Juan Matías Purihuaman Rivera', role: 'Interactive map: React and MapLibre, filters, interactions and integration tests' },
+  { name: 'Landry Gabriela Guadalupe Bardales', role: 'Web architecture, calendar, method page, integration and deployment' },
+  { name: 'Adriana Bazan Liberato', role: 'Wireframes, visual system, perceptual accessibility, legends, video and pitch' },
 ]
 
 const h2 = 'm-0 font-display text-2xl font-semibold text-ink'
@@ -50,8 +50,8 @@ export default function AboutPage() {
           <p className="m-0 text-sm text-muted">{person.role}</p>
         </li>)}
       </ul>
-      <Notice tone="exploratory" title="Pending: full names, affiliations and short bios">
-        <p>Each member will add their own. Until then, only first names and the roles agreed in the team plan are shown.</p>
+      <Notice tone="exploratory" title="Pending: affiliations and short bios">
+        <p>Each member will add their own. Names and the roles agreed in the team plan are shown.</p>
       </Notice>
     </section>
 

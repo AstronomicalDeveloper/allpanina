@@ -17,7 +17,7 @@ npm run build
 
 Open the local URL printed by Vite. PowerShell users with script execution restrictions can use `npm.cmd` and `npx.cmd`.
 
-The full Ucayali byte-parity test also needs the original research ZIPs in `../docs/`; run `ALLPANINA_LENTO=1 npm test`, or `$env:ALLPANINA_LENTO='1'; npm.cmd test` in PowerShell. The runner reports skipped tests explicitly when inputs or the opt-in are absent. Scientific Python tests use the root requirements and `python -m pytest tests/ -q` from the repository root.
+The full Ucayali byte-parity test also needs the original research ZIPs in `../tests/fixtures/`; run `ALLPANINA_LENTO=1 npm test`, or `$env:ALLPANINA_LENTO='1'; npm.cmd test` in PowerShell. The runner reports skipped tests explicitly when inputs or the opt-in are absent. Scientific Python tests use the root requirements and `python -m pytest tests/ -q` from the repository root.
 
 ## Routes and data
 
@@ -42,7 +42,7 @@ Publish only `dist/` after `npm ci` and `npm run build`, at the domain root. `np
 
 No environment variable is required for published exploration. Optional `VITE_FIRMS_BASE` sets a FIRMS proxy base at build time. All `VITE_*` values are public: never put keys in them. My region asks the user for a FIRMS MAP_KEY if automatic downloading is selected; manual CSV upload remains available when the upstream service or browser access fails. Browser files and results are processed locally.
 
-See the [provider-neutral deployment checklist](../docs/DESPLIEGUE_ESTATICO.md). A successful local build does not certify hosting headers, external services or mobile rendering.
+See the [ISPConfig/Nginx deployment guide](../DEPLOYMENT.md). A successful local build does not certify hosting headers, external services or mobile rendering.
 
 ## Architecture and evidence
 
@@ -54,6 +54,4 @@ See the [provider-neutral deployment checklist](../docs/DESPLIEGUE_ESTATICO.md).
 - `src/pages/method/publicCopy.json`: reviewable English explanations linked to original source fields and SHA-256; original scientific products remain unchanged.
 - `tests/`: contracts, UI interaction, route compatibility, scientific values and parity checks.
 
-[Data contract](../docs/contrato_datos.md), [national sources](../docs/peru/SOURCE_README.md), [territorial navigation](../docs/peru/NAVEGACION_DEPARTAMENTAL.md), [F6 corrections](docs/F6_REVISION_UI.md), [integration history](docs/INTEGRACION_FINAL_FRONTEND.md), [predeploy audit](../docs/AUDITORIA_PREDEPLOY.md).
-
-The former accumulated README is preserved as a [historical archive](../docs/frontend/HISTORIAL_README_FRONTEND.md). It describes earlier implementations and is not the current setup guide.
+[Reproducibility guide](../REPRODUCIBILITY.md), [published scientific method](public/data/peru/method.json), [evaluation](public/data/peru/validation.json), [fixture provenance](../tests/fixtures/PROVENANCE.json). Internal implementation reports are archived locally and are not required to run the site or its tests.

@@ -2,7 +2,7 @@
 
 La solicitud al Archive Download de FIRMS se hace a mano en la web y se confirma
 por correo, por lo que este script NO descarga nada: busca los zips originales,
-verifica su SHA-256 contra el registrado en docs/datos.md y extrae solo el archivo
+verifica su SHA-256 contra el registrado en REPRODUCIBILITY.md y extrae solo el archivo
 estandar (fire_archive_*) a un nombre fijo:
 
     data/raw/firms_raw_modis.csv
@@ -33,7 +33,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# Procedencia: ver docs/datos.md (solicitud del 2026-11-14, area Peru, formato CSV).
+# Procedencia: ver REPRODUCIBILITY.md (solicitud del 2026-11-14, area Peru, formato CSV).
 EXPECTED = {
     "modis": {
         "zip": "DL_FIRE_M-C61_848370.zip",
@@ -64,18 +64,18 @@ def locate_zip(sensor: str, search_dirs: list[Path]) -> Path:
         if candidate.exists():
             return candidate
     where = ", ".join(str(d) for d in search_dirs)
-    raise FileNotFoundError(f"Falta {name}. Buscado en: {where}. Ver docs/datos.md para repetir la descarga.")
+    raise FileNotFoundError(f"Falta {name}. Buscado en: {where}. Ver REPRODUCIBILITY.md para repetir la descarga.")
 
 
 def prepare_sensor(sensor: str, raw_dir: Path, skip_hash: bool, search_dirs: list[Path] | None = None) -> Path:
     spec = EXPECTED[sensor]
-    zip_path = locate_zip(sensor, search_dirs or [raw_dir, ROOT / "docs"])
+    zip_path = locate_zip(sensor, search_dirs or [raw_dir, ROOT / "tests" / "fixtures"])
 
     actual = sha256_of(zip_path)
     if actual != spec["sha256"]:
         message = f"SHA-256 distinto para {zip_path.name}:\n  esperado {spec['sha256']}\n  obtenido {actual}"
         if not skip_hash:
-            raise ValueError(message + "\nSi FIRMS regenero el archivo, usa --skip-hash y actualiza docs/datos.md.")
+            raise ValueError(message + "\nSi FIRMS regenero el archivo, usa --skip-hash y actualiza REPRODUCIBILITY.md.")
         print("AVISO:", message)
 
     raw_dir.mkdir(parents=True, exist_ok=True)

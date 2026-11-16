@@ -1,8 +1,24 @@
-# AllpaNina
+<p align="center"><strong>English</strong> · <a href="README.es.md">Español</a></p>
 
-**A reproducible history of satellite thermal activity, with an explicit comparison between MODIS and VIIRS.**
+<h1 align="center">🔥 AllpaNina</h1>
 
-Built for the **NASA Space Apps Challenge 2026**. *Allpa* means land and *nina* means fire in Quechua. [Source repository](https://github.com/AstronomicalDeveloper/allpanina). A public deployment is planned; no live application URL is claimed yet.
+<p align="center"><strong>Understand fourteen years of thermal activity — with reproducible science behind every comparison.</strong></p>
+
+<p align="center">
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-149eca?logo=react&amp;logoColor=white">
+  <img alt="TypeScript 6" src="https://img.shields.io/badge/TypeScript-6-3178c6?logo=typescript&amp;logoColor=white">
+  <img alt="Python 3.12+" src="https://img.shields.io/badge/Python-3.12%2B-3776ab?logo=python&amp;logoColor=white">
+  <img alt="MapLibre GL" src="https://img.shields.io/badge/MapLibre-GL-396cb2">
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-fb9c38"></a>
+  <a href="https://github.com/AstronomicalDeveloper/allpanina/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AstronomicalDeveloper/allpanina/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+</p>
+
+<p align="center"><strong>NASA Space Apps Challenge 2026 · Scientific prototype</strong></p>
+<p align="center">MODIS &amp; VIIRS · Peru and its 25 departments · January 2013–July 2026</p>
+
+---
+
+*Allpa* means land and *nina* means fire in Quechua. AllpaNina combines a historical explorer with transparent sensor calibration and published evaluation. A public deployment is planned; no live application URL is claimed yet.
 
 ## Why this project?
 
@@ -30,7 +46,7 @@ Routes: `/`, `/calendar`, `/map`, `/method`, `/my-region`, `/about`. Legacy Span
 3. Compare unscaled VIIRS (**B0**) with a calibrated estimate (**B1 = B0 times kappa**). Factors are fitted on training, with separate validation and test periods. National B1 sums the published department estimates using their own or grouped factors.
 4. Publish retrospective metrics, residuals and limitations alongside the observations. The map retains observed values: B1 is a **region-month estimate**, never a cell-level satellite observation.
 
-Read the [data contract](docs/contrato_datos.md), [scientific source guide](docs/peru/SOURCE_README.md), [decisions and assumptions](DECISIONS.md), and published [method](frontend/public/data/peru/method.json), [evaluation](frontend/public/data/peru/validation.json) and [manifest](frontend/public/data/peru/manifest.json).
+Read the [reproducibility guide](REPRODUCIBILITY.md), [decisions and assumptions](DECISIONS.md), and published [method](frontend/public/data/peru/method.json), [evaluation](frontend/public/data/peru/validation.json) and [manifest](frontend/public/data/peru/manifest.json).
 
 ## Technology and architecture
 
@@ -45,7 +61,8 @@ allpanina/            Reproducible scientific Python package and CLI
 scripts/              Preparation and publication utilities
 scripts/data/         Country codes and time-zone reference tables
 tests/                Scientific tests and byte-parity regressions
-docs/                 Contracts, provenance, research inputs and technical guides
+tests/fixtures/       Curated research inputs and frozen test references
+REPRODUCIBILITY.md     Commands, provenance, expected results and limitations
 ```
 
 The website consumes static files; no FastAPI server, database or authentication service is required. My region processes files on the user's computer and marks its outputs as exploratory.
@@ -87,7 +104,7 @@ ALLPANINA_LENTO=1 .venv/bin/python -m pytest tests/ -q
 
 PowerShell: set `$env:ALLPANINA_LENTO='1'` before running the Python command. If the repository and system temporary directory are on different Windows drives, use a dedicated `--basetemp .cache/pytest-local` directory on the repository drive; pytest clears that dedicated directory.
 
-The slow regressions use the original FIRMS ZIPs retained in `docs/` and compare Peru and Ucayali with published outputs byte for byte. The package also provides `python -m allpanina --verificar`. These are reproducibility checks, not a new scientific evaluation or permission to recalibrate frozen results. [Research inputs and provenance](docs/datos.md).
+The slow regressions use the original FIRMS ZIPs retained in `tests/fixtures/` and compare Peru and Ucayali with published outputs byte for byte. The package also provides `python -m allpanina --verificar`. These are reproducibility checks, not a new scientific evaluation or permission to recalibrate frozen results. [Research inputs and provenance](REPRODUCIBILITY.md).
 
 ## Sources and acknowledgements
 
@@ -112,14 +129,14 @@ The national map's 10 km geometries aggregate 1 km cell-days. Department clippin
 
 | Member | Agreed responsibilities |
 |---|---|
-| Aldo | Scientific method, study area, data contracts and frozen test period |
-| Marco | FIRMS acquisition, normalisation, cell-days, series and observed maps |
-| Antonella | B0/B1 calibration, error metrics, residuals, validation and test |
-| Juan Matías | Interactive React/MapLibre map, filters, interactions and integration tests |
-| Landry | Web architecture, calendar, method, integration and deployment |
-| Adriana | Wireframes, visual system, accessibility, legends, video and pitch |
+| Aldo Fabricio Ruiz Collazos | Scientific method, study area, data contracts and frozen test period |
+| Marco Antonio Arcila Santander | FIRMS acquisition, normalisation, cell-days, series and observed maps |
+| Karla Antonella Montes Matamoros | B0/B1 calibration, error metrics, residuals, validation and test |
+| Juan Matías Purihuaman Rivera | Interactive React/MapLibre map, filters, interactions and integration tests |
+| Landry Gabriela Guadalupe Bardales | Web architecture, calendar, method, integration and deployment |
+| Adriana Bazan Liberato | Wireframes, visual system, accessibility, legends, video and pitch |
 
-Full names, affiliations and biographies remain pending confirmation by the members. No awards or affiliations are claimed.
+Affiliations and biographies remain pending confirmation by the members. No awards or affiliations are claimed.
 
 ## AI, licence and deployment
 
@@ -127,6 +144,6 @@ The team used **ChatGPT and Codex (OpenAI)** and **Claude (Anthropic)** for prog
 
 Code is released under the [MIT License](LICENSE). Data, imagery and fonts retain their source licences.
 
-The planned target is a **static site on Ubuntu with ISPConfig and Nginx**, potentially `allpanina.astrodev.pe`; it is **not deployed by this repository task**. Build with `npm ci && npm run build` and publish only `frontend/dist/`, never the repository or research ZIPs. The [deployment guide](docs/DESPLIEGUE_ESTATICO.md) covers isolated web roots, HTTPS, SPA routes, real resource 404s, compression, caching, Workers and verification without changing the existing BugLab site.
+The planned target is a **static site on Ubuntu with ISPConfig and Nginx**, potentially `allpanina.astrodev.pe`; it is **not deployed by this repository task**. Build with `npm ci && npm run build` and publish only `frontend/dist/`, never the repository or research ZIPs. The [deployment guide](DEPLOYMENT.md) covers isolated web roots, HTTPS, SPA routes, real resource 404s, compression, caching, Workers and verification without changing the existing BugLab site.
 
-For maintenance evidence, see the [predeployment audit](docs/AUDITORIA_PREDEPLOY.md). Historical implementation notes remain linked from the frontend guide, rather than being presented as current features.
+Start with [REPRODUCIBILITY.md](REPRODUCIBILITY.md) to verify the science, or [DEPLOYMENT.md](DEPLOYMENT.md) to prepare hosting. Internal working reports are kept outside the current public tree.

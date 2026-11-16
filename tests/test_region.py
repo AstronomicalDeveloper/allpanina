@@ -106,7 +106,7 @@ def test_regresion_ucayali_reproduce_el_piloto(tmp_path):
     raw = tmp_path / "raw"
     csvs = {}
     for s, z in (("MODIS", "DL_FIRE_M-C61_848370.zip"), ("VIIRS", "DL_FIRE_SV-C2_848371.zip")):
-        with zipfile.ZipFile(ROOT / "docs" / z) as f:
+        with zipfile.ZipFile(ROOT / "tests" / "fixtures" / z) as f:
             n = next(x for x in f.namelist() if x.startswith("fire_archive_"))
             f.extract(n, raw)
             csvs[s] = raw / n
@@ -114,7 +114,7 @@ def test_regresion_ucayali_reproduce_el_piloto(tmp_path):
     stamp = next(csv.DictReader(open(pub / "monthly_series.csv", encoding="utf-8")))["updated_at"]
     out = tmp_path / "out"
     res = procesar_region(csvs["MODIS"], csvs["VIIRS"], out, region_id="PE-UCA",
-                          poligono=ROOT / "docs" / "region" / "ucayali_inei_2023.geojson",
+                          poligono=ROOT / "tests" / "fixtures" / "region" / "ucayali_inei_2023.geojson",
                           zona_horaria="America/Lima", celda_mapa_km=1, hasta="2026-07", actualizado=stamp)
     assert res["kappa"] == 0.2936037257560573                        # κ del piloto (DECISIONS.md §10)
     assert (out / "monthly_series.csv").read_bytes() == (pub / "monthly_series.csv").read_bytes()

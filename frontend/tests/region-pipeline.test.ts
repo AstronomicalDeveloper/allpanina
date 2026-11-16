@@ -128,12 +128,12 @@ test('mapas y series respetan el inicio dentro del año; importación valida tod
   await assert.rejects(leerZip(damaged.buffer), /CRC/)
 })
 
-test('paridad con el piloto publicado de Ucayali (serie, B0/B1 y 14 mapas byte a byte)', { skip: process.env.ALLPANINA_LENTO !== '1' || !existsSync(new URL('docs/DL_FIRE_M-C61_848370.zip', ROOT)) }, async () => {
-  const leer = async (z: string) => { const bytes = readFileSync(new URL(`docs/${z}`, ROOT)); const f = await leerZip(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer); const k = Object.keys(f).find(n => n.startsWith('fire_archive'))!; return { nombre: k, texto: new TextDecoder().decode(f[k]) } }
+test('paridad con el piloto publicado de Ucayali (serie, B0/B1 y 14 mapas byte a byte)', { skip: process.env.ALLPANINA_LENTO !== '1' || !existsSync(new URL('tests/fixtures/DL_FIRE_M-C61_848370.zip', ROOT)) }, async () => {
+  const leer = async (z: string) => { const bytes = readFileSync(new URL(`tests/fixtures/${z}`, ROOT)); const f = await leerZip(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer); const k = Object.keys(f).find(n => n.startsWith('fire_archive'))!; return { nombre: k, texto: new TextDecoder().decode(f[k]) } }
   const [m, v] = await Promise.all([leer('DL_FIRE_M-C61_848370.zip'), leer('DL_FIRE_SV-C2_848371.zip')])
   const pub = (n: string) => readFileSync(new URL(`frontend/public/data/${n}`, ROOT), 'utf8')
   const stamp = pub('monthly_series.csv').split('\n')[1].split(',').at(-1)!
-  const r = await procesarRegion([m], [v], { region_id: 'PE-UCA', poligono: JSON.parse(readFileSync(new URL('docs/region/ucayali_inei_2023.geojson', ROOT), 'utf8')), zona_horaria: 'America/Lima', celda_mapa_km: 1, hasta: '2026-07', actualizado: stamp })
+  const r = await procesarRegion([m], [v], { region_id: 'PE-UCA', poligono: JSON.parse(readFileSync(new URL('tests/fixtures/region/ucayali_inei_2023.geojson', ROOT), 'utf8')), zona_horaria: 'America/Lima', celda_mapa_km: 1, hasta: '2026-07', actualizado: stamp })
   assert.equal(r.resumen.kappa, 0.2936037257560573)
   for (const n of ['monthly_series.csv', 'calibrated_series.csv', ...Array.from({ length: 14 }, (_, i) => `cells_PE-UCA_${2013 + i}.geojson`)]) assert.ok(r.archivos[n] === pub(n), n)
 })

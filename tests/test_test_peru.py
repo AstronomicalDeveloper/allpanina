@@ -173,7 +173,7 @@ def test_salidas_reproducibles(caso, tmp_path):
 
 
 def test_lee_la_autorizacion_real_del_repo():
-    aut = os.path.join(os.path.dirname(__file__), "..", "docs", "peru", "AUTORIZACION_TEST.md")
+    aut = os.path.join(os.path.dirname(__file__), "..", "tests", "fixtures", "peru", "AUTORIZACION_TEST.md")
     if not os.path.exists(aut):
         pytest.skip("sin AUTORIZACION_TEST.md")
     k = tp.leer_autorizacion(aut)

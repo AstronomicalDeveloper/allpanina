@@ -484,7 +484,7 @@ def main(argv=None):
 
     p = argparse.ArgumentParser(description="P09/P10 Peru: kappa por estrato y validacion 2023-2024")
     p.add_argument("monthly_csv")
-    p.add_argument("--out", default="docs/peru/valid")
+    p.add_argument("--out", default="data/processed/peru/valid")
     p.add_argument("--pilot-method", default="frontend/public/data/method.json")
     p.add_argument("--solo-kappa", action="store_true", help="P09: solo kappa y method.json borrador")
     p.add_argument("--estado", default="borrador P10, pendiente de revisión P11",
