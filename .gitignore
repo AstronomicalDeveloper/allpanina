@@ -352,3 +352,11 @@ crash.log
 
 # Git fetch metadata belongs in .git, never in the project sources.
 /FETCH_HEAD
+*.bundle
+
+# Current predeployment documentation and preserved frontend history.
+!/docs/AUDITORIA_PREDEPLOY.md
+!/docs/DESPLIEGUE_ESTATICO.md
+!/docs/frontend/
+/docs/frontend/*
+!/docs/frontend/HISTORIAL_README_FRONTEND.md

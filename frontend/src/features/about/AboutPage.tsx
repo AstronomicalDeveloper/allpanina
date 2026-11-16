@@ -67,7 +67,7 @@ export default function AboutPage() {
           <li>Active fire detections: <External href="https://firms.modaps.eosdis.nasa.gov/">NASA FIRMS</External> standard archive, MODIS Collection 6.1 (MCD14ML, Terra and Aqua) and VIIRS 375 m (VNP14IMGML, Suomi NPP).</li>
           <li>Department boundaries: <External href="https://ide.inei.gob.pe/">INEI Peru</External>, departmental limits updated to 2023.</li>
           <li>Basemaps: NASA GIBS (Blue Marble), Esri and <External href="https://geoservidorperu.minam.gob.pe/">MINAM Geoservidor</External>.</li>
-          <li>World regions for My region: <External href="https://www.geoboundaries.org/">geoBoundaries</External>, CC BY 4.0.</li>
+          <li>World regions for My region: <External href="https://www.geoboundaries.org/">geoBoundaries</External>, mostly CC BY 4.0; individual country licences are listed in the published catalogue.</li>
         </ul>
         <p className="m-0 max-w-[68ch] text-sm text-muted">We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS), part of NASA's Land, Atmosphere Near real-time Capability for Earth observations (LANCE) and NASA's Earth Science Data and Information System (ESDIS).</p>
       </div>

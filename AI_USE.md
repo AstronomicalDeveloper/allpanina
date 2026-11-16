@@ -4,9 +4,11 @@ The AllpaNina team used AI assistants during the NASA Space Apps Challenge 2026.
 
 ## What AI was used for
 
-- **Coding assistant (Claude, by Anthropic).** Wrote and revised code under the team's direction: the processing scripts (`scripts/`), the packaged algorithm (`allpanina/`, including region mode and the FIRMS downloader), the in-browser version of the algorithm and the "Mi región" page (`frontend/src/services/region/`, `frontend/src/pages/region/`), and their tests.
-- **Review and documentation.** Drafted and checked review documents, the data contract, guides and this README, and pointed out errors and inconsistencies for the team to decide on.
-- Team members also used AI assistants in their own work on the frontend and the analyses.
+- **ChatGPT — OpenAI.** Used for development assistance, technical questions, review and documentation.
+- **Codex — OpenAI.** Assisted with repository inspection, frontend integration, UI corrections, automated checks, Git operations authorised by the team, and documentation. Passing automated checks does not imply an independent scientific audit or a completed visual review.
+- **Claude — Anthropic.** Assisted with development and review of processing scripts, the Python package, browser-side regional processing, frontend code, tests and documentation under the team's direction.
+
+These tools assisted the team; they did not own scientific decisions or final validation. Their participation is not evidence that every generated suggestion was adopted or independently audited. The public About page recognises the same three tools.
 
 ## What the team decided and checked
 

@@ -206,6 +206,7 @@ def pais(meta: dict, tz: dict, iso2s: dict) -> dict | None:
 def reparar(tz: dict, iso2s: dict) -> int:
     idx_path = OUT / "index.json"
     idx = json.loads(idx_path.read_text(encoding="utf-8"))
+    idx["paises"] = unicos_por_codigo(idx["paises"], "iso3")
     for p in idx["paises"]:
         if p["iso3"] == "PER" and p.get("licencia") == "INEI":
             continue                          # semilla oficial del INEI: ya trae PE-01 ... PE-25 y America/Lima
@@ -217,6 +218,17 @@ def reparar(tz: dict, iso2s: dict) -> int:
     idx_path.write_text(json.dumps(idx, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"{len(idx['paises'])} países reparados")
     return 0
+
+
+def unicos_por_codigo(rows: list[dict], campo: str) -> list[dict]:
+    """Keep exact duplicates once; conflicting metadata needs human review."""
+    seen = {}
+    for row in rows:
+        code = row[campo]
+        if code in seen and seen[code] != row:
+            raise ValueError(f"Conflicting catalogue entries: {code}")
+        seen.setdefault(code, row)
+    return list(seen.values())
 
 
 def main(argv=None) -> int:
@@ -233,6 +245,7 @@ def main(argv=None) -> int:
         metas = [m for m in metas if m["boundaryISO"] in set(args.solo)]
     else:  # Perú se queda con los departamentos oficiales del INEI que ya trae el repositorio
         metas = [m for m in metas if m["boundaryISO"] != "PER"]
+    metas = unicos_por_codigo(metas, "boundaryISO")
     indice = json.loads((OUT / "index.json").read_text(encoding="utf-8"))["paises"] if (OUT / "index.json").exists() else []
     indice = [p for p in indice if p["iso3"] not in {m["boundaryISO"] for m in metas}]
     for k, m in enumerate(sorted(metas, key=lambda m: m["boundaryISO"]), 1):
@@ -243,6 +256,7 @@ def main(argv=None) -> int:
                 indice.append(r)
         except Exception as e:
             print(f"[{k}/{len(metas)}] {m['boundaryISO']}: ERROR {e}", file=sys.stderr)
+    indice = unicos_por_codigo(indice, "iso3")
     indice.sort(key=lambda p: p["iso3"])
     (OUT / "index.json").write_text(json.dumps({
         "fuente": "geoBoundaries (gbOpen, ADM1, simplificado) - www.geoboundaries.org",

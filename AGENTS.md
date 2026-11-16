@@ -6,15 +6,14 @@ AllpaNina is a NASA Space Apps Challenge project focused on the analysis and vis
 ## Architecture
 This repository is a monorepo:
 - `frontend/`: React, TypeScript, Vite, UI, maps, charts and API clients.
-- `backend/`: Python, FastAPI, validation, satellite data handling and analysis.
-- `backend/app/api/`: HTTP route definitions.
-- `backend/app/services/`: satellite processing, calculations and business logic.
-- `backend/app/schemas/`: API request/response models.
-- `backend/tests/`: automated backend tests.
+- `allpanina/`: scientific Python package and command-line processing.
+- `scripts/`: scientific data preparation and publication utilities.
+- `tests/`: automated scientific Python tests, using root `requirements.txt`.
 - `data/`: information about datasets and small approved test fixtures; do not commit downloaded or generated large data.
 - `docs/`: sources, methodology, architecture decisions and demo instructions.
 
 Treat this as the intended layout, not as proof that every folder or dependency already exists. Inspect the repository before modifying it. Do not create unused scaffolding.
+The unused FastAPI health-only backend was removed at the user's request. The frontend consumes static scientific files and processes My region in a browser Worker; do not recreate an API without a concrete requirement.
 
 ## Priorities
 1. Keep the end-to-end demo working.
@@ -43,7 +42,7 @@ Treat this as the intended layout, not as proof that every folder or dependency 
 - Avoid hardcoded API URLs and credentials; use Vite environment variables for public configuration only (`VITE_*` is exposed to the browser).
 - Respect responsive layout, keyboard navigation and accessible labels where feasible.
 
-## Backend conventions
+## Backend conventions (only if an API is required in a future task)
 - Keep FastAPI routes thin; implement data processing in `backend/app/services/`.
 - Validate inbound inputs and outbound data with explicit schemas.
 - Handle upstream API outages, timeouts, missing values and empty responses gracefully.
@@ -103,10 +102,10 @@ The workflow must:
 - Validate the React + TypeScript frontend.
 - Install dependencies using `npm ci`.
 - Run frontend lint and build checks.
-- Validate the Python backend.
-- Install backend dependencies.
-- Run backend tests using pytest.
-- Keep frontend and backend checks independent.
+- Validate the scientific Python package and scripts.
+- Install scientific dependencies from root `requirements.txt`.
+- Run `python -m pytest tests/ -q`.
+- Keep frontend and scientific Python checks independent.
 - Fail when a required validation fails.
 - Avoid deployment and unnecessary external services.
 
