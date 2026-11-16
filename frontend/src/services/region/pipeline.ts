@@ -84,15 +84,15 @@ function validacion(cal: Calibrada[], modisMes: Map<string, number | null>, regi
 export async function procesarRegion(modis: ArchivoEntrada[], viirs: ArchivoEntrada[], op: Opciones): Promise<Resultado> {
   const avisar = op.progreso ?? (() => {})
   const region_id = op.region_id
-  if (!/^[\w.-]+$/.test(region_id) || region_id.length > 40) throw new ErrorDeEntrada("El código de región debe usar letras ASCII, números, guiones, puntos o guion bajo, sin espacios ni barras (p. ej. 'AR-M').")
-  if (!modis.length || !viirs.length) throw new ErrorDeEntrada('Hacen falta archivos de los dos sensores: MODIS y VIIRS.')
+  if (!/^[\w.-]+$/.test(region_id) || region_id.length > 40) throw new ErrorDeEntrada("The region code must use ASCII letters, digits, hyphens, dots or underscores, with no spaces or slashes (e.g. 'AR-M').")
+  if (!modis.length || !viirs.length) throw new ErrorDeEntrada('Files from both sensors are needed: MODIS and VIIRS.')
   const forma = op.poligono !== undefined ? RegionShape.fromGeoJson(op.poligono) : op.bbox ? RegionShape.fromBbox(op.bbox) : null
-  if (!forma) throw new ErrorDeEntrada('Hace falta la región: un polígono GeoJSON o una caja (oeste, sur, este, norte).')
-  if (!LocalDay.valid(op.zona_horaria)) throw new ErrorDeEntrada(`Zona horaria desconocida: ${op.zona_horaria} (use un nombre IANA).`)
+  if (!forma) throw new ErrorDeEntrada('The region is needed: a GeoJSON polygon or a box (west, south, east, north).')
+  if (!LocalDay.valid(op.zona_horaria)) throw new ErrorDeEntrada(`Unknown time zone: ${op.zona_horaria} (use an IANA name).`)
   const advertencias: string[] = []
   const km = op.celda_mapa_km ?? (forma.area_km2 <= AREA_1KM_MAX ? 1 : 10)
-  if (!Number.isInteger(km) || km < 1) throw new ErrorDeEntrada('La celda del mapa debe ser un número entero positivo de kilómetros.')
-  for (const mes of [op.desde, op.hasta]) if (mes !== undefined && !/^[1-9]\d{3}-(0[1-9]|1[0-2])$/.test(mes)) throw new ErrorDeEntrada('El período debe usar meses AAAA-MM válidos.')
+  if (!Number.isInteger(km) || km < 1) throw new ErrorDeEntrada('The map cell must be a positive whole number of kilometres.')
+  for (const mes of [op.desde, op.hasta]) if (mes !== undefined && !/^[1-9]\d{3}-(0[1-9]|1[0-2])$/.test(mes)) throw new ErrorDeEntrada('The period must use valid YYYY-MM months.')
   const actualizado = op.actualizado ?? new Date().toISOString().slice(0, 10)
   const uv = op.umbral_viirs ?? UMBRAL_VIIRS, um = op.umbral_modis ?? UMBRAL_MODIS
   const dia = new LocalDay(op.zona_horaria)
@@ -102,9 +102,9 @@ export async function procesarRegion(modis: ArchivoEntrada[], viirs: ArchivoEntr
   const entradas: Entrada[] = []
   const todos = [...modis.map(a => [a, 'MODIS'] as const), ...viirs.map(a => [a, 'VIIRS'] as const)]
   for (const [k, [archivo, sensor]] of todos.entries()) {
-    avisar(`Leyendo ${archivo.nombre}`, k / todos.length)
+    avisar(`Reading ${archivo.nombre}`, k / todos.length)
     const detectado = detectarSensor(archivo.texto, archivo.nombre)
-    if (detectado !== sensor) throw new ErrorDeEntrada(`${archivo.nombre}: es un archivo ${detectado}, pero se cargó como ${sensor}.`)
+    if (detectado !== sensor) throw new ErrorDeEntrada(`${archivo.nombre}: it is a ${detectado} file, but it was loaded as ${sensor}.`)
     const info = leerFirms(archivo.texto, archivo.nombre, sensor, fila => {
       const [x, y] = cellOf(fila.lon, fila.lat)
       const key = `${sensor === 'MODIS' ? 'M' : 'V'}|${x}|${y}|${dia.day(fila.utcMs)}`
@@ -115,7 +115,7 @@ export async function procesarRegion(modis: ArchivoEntrada[], viirs: ArchivoEntr
     entradas.push({ ...info, sha256: await sha256(archivo.bytes ?? archivo.texto) })
   }
 
-  avisar('Armando la serie mensual', 0.55)
+  avisar('Building the monthly series', 0.55)
   // 4. Cobertura (toda el área descargada), versiones y conteo dentro de la región.
   const cubiertos = new Set<string>(), versiones = new Map<string, Set<string>>(), conteo = new Map<string, number>()
   const rango: Record<Sensor, [number, number]> = { MODIS: [Infinity, -Infinity], VIIRS: [Infinity, -Infinity] }
@@ -137,11 +137,11 @@ export async function procesarRegion(modis: ArchivoEntrada[], viirs: ArchivoEntr
     }
     if (ok) { conteo.set(mk, (conteo.get(mk) ?? 0) + 1); enRegion.push([sensor, Number(xs), Number(ys), year, month]) }
   }
-  for (const s of SENSORES) if (!Number.isFinite(rango[s][0])) throw new ErrorDeEntrada(`Después de los filtros de calidad no queda ninguna detección ${s}.`)
+  for (const s of SENSORES) if (!Number.isFinite(rango[s][0])) throw new ErrorDeEntrada(`After the quality filters there is no ${s} detection left.`)
   let ini = Math.max(rango.MODIS[0], rango.VIIRS[0], INICIO), fin = Math.min(rango.MODIS[1], rango.VIIRS[1])
   if (op.desde) ini = Math.max(ini, mesIdx(op.desde))
   if (op.hasta) fin = Math.min(fin, mesIdx(op.hasta))
-  if (ini > fin) throw new ErrorDeEntrada('No hay meses comunes a MODIS y VIIRS desde 2013-01 en los datos entregados.')
+  if (ini > fin) throw new ErrorDeEntrada('The data have no months shared by MODIS and VIIRS since 2013-01.')
 
   const serieCsv = ['region_id,year,month,sensor_group,cell_days,status,source_version,updated_at']
   const filas: Fila[] = []
@@ -163,7 +163,7 @@ export async function procesarRegion(modis: ArchivoEntrada[], viirs: ArchivoEntr
   if (!algoDentro) advertencias.push('Ninguna detección cae dentro de la región: revise el polígono y el área descargada.')
 
   // 5. κ local solo con train y meses con los dos sensores; B0/B1.
-  avisar('Calibrando', 0.7)
+  avisar('Calibrating', 0.7)
   const pares = filas.filter(r => r.split === 'train' && valido(r.modis) && valido(r.viirs))
   const sm = pares.reduce((a, r) => a + r.modis!, 0), sv = pares.reduce((a, r) => a + r.viirs!, 0)
   const insumos = { suma_modis_train: f(sm), suma_viirs_train: f(sv), meses_train: pares.length }
@@ -200,7 +200,7 @@ export async function procesarRegion(modis: ArchivoEntrada[], viirs: ArchivoEntr
   }
 
   // 6. Mapas: solo observados, por año, celdas de 1 km o bloques de km × km.
-  avisar('Dibujando los mapas', 0.8)
+  avisar('Drawing the maps', 0.8)
   const archivos: Record<string, string> = {
     'monthly_series.csv': serieCsv.join('\n') + '\n',
     'calibrated_series.csv': calCsv.join('\n') + '\n',
@@ -226,7 +226,7 @@ export async function procesarRegion(modis: ArchivoEntrada[], viirs: ArchivoEntr
     const nombre = `cells_${region_id}_${year}.geojson`
     archivos[nombre] = `{"type":"FeatureCollection","features":[${feats.join(',')}]}\n`
     mapas.push(nombre)
-    avisar('Dibujando los mapas', 0.8 + 0.15 * (year - Math.floor(ini / 12) + 1) / (ultimoAno - Math.floor(ini / 12) + 1))
+    avisar('Drawing the maps', 0.8 + 0.15 * (year - Math.floor(ini / 12) + 1) / (ultimoAno - Math.floor(ini / 12) + 1))
   }
   const grandes = mapas.filter(n => archivos[n].length > 8e6)
   if (grandes.length) advertencias.push(`Mapas de más de 8 MB (${grandes.join(', ')}): conviene una celda más grande.`)
@@ -271,6 +271,6 @@ export async function procesarRegion(modis: ArchivoEntrada[], viirs: ArchivoEntr
   const hash: Record<string, string> = {}
   for (const n of files) hash[n] = 'sha256:' + await sha256(archivos[n])
   archivos['manifest.json'] = pyJson({ generated_at: generado, region_id, producto: PRODUCTO, files, hash, sources: entradas, periodo, contract_version: '1.0-region' }) + '\n'
-  avisar('Listo', 1)
+  avisar('Done', 1)
   return { archivos, resumen: { region_id, nombre, periodo, kappa, b1_disponible: kappa !== null, celda_mapa_km: km, zona_horaria: op.zona_horaria, advertencias, area_km2: forma.area_km2 } }
 }

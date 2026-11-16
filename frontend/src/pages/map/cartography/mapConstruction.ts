@@ -4,7 +4,7 @@ import type * as GeoJSON from "geojson";
 import type { MapRuntime } from "./mapRuntime.ts";
 import { percentileColorExpression } from "./juanLayers.ts";
 import type { MapCells } from "../../../services/data/mapExploration.ts";
-import { localOpacity, outlineWidth, outlineOpacity, summarySource, summaryLayers, SUMMARY_SOURCE, LOCAL_ZOOM, SQUARE_IMAGE, squareImage } from './multiscaleLayers'
+import { localOpacity, outlineWidth, outlineOpacity, summarySource, summaryLayers, SUMMARY_SOURCE, LOCAL_ZOOM, registerSquareImage } from './multiscaleLayers'
 import type { SummaryPoints } from '../../../services/data/mapSymbols'
 export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, filteredGeoJson: MapCells, percentileBreaks: {q25:number;q50:number;q75:number}, opacity: number, points: SummaryPoints) {
     const map = new runtime.Map({
@@ -266,9 +266,7 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
       zoom: 1,
     });
 
-    const installSquare = () => { if (!map.hasImage(SQUARE_IMAGE)) map.addImage(SQUARE_IMAGE, squareImage(), {sdf:true}) }
-    map.on('styleimagemissing', event => { if (event.id === SQUARE_IMAGE) installSquare() })
-    map.once('load', installSquare)
+    registerSquareImage(map as unknown as Parameters<typeof registerSquareImage>[0])
     map.addControl(
       new runtime.NavigationControl({
         showCompass: true,

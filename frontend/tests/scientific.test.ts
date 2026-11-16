@@ -110,7 +110,7 @@ test('UI piloto explícito: escala regional, sensor, detalle B1, CSV y métricas
   await act(async () => root.render(createElement(BrowserRouter, null, createElement(MethodPage))))
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 80)) })
   assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'30.8%')
-  await act(async()=>[...host.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent==='Validación')!.click())
+  await act(async()=>[...host.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent==='Validation')!.click())
   assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent,'17.8%')
   assert.equal(host.querySelector('.method-formula strong')!.getAttribute('title'),'0.2936037257560573')
   assert.doesNotMatch(host.textContent!, /DEMO/)

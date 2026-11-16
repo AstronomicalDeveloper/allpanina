@@ -25,7 +25,7 @@ test('persistencia espera commit; abortar avisa y conserva el resultado de sesi√
   await setImmediate()
   assert.equal(settled, false)
   transaction!.onabort!()
-  assert.match((await saving)!, /memoria/)
+  assert.match((await saving)!, /memory/)
   assert.equal(await leerArchivoLocal('a.txt'), 'sesi√≥n')
   assert.equal(closed, 1)
   const success = guardarConjunto(conjunto)

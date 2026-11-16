@@ -69,8 +69,9 @@ test('ayuda de días-celda funciona como desplegable nativo en la leyenda del Ca
 test('leyenda del Mapa explica percentiles y símbolos sin cambiar su clasificación',async t=>{
  mockFiles(t);const runtime=fakeRuntime();const {host}=await mount(t,'/mapa?periodYear=2024&periodMonth=9&scope=month',createElement(MapPage,{runtimeLoader:runtime.loader}))
  const legend=host.querySelector('.map-legend')!
- assert.match(legend.textContent!,/percentiles.*size on screen is enlarged.*does not show the area covered/)
- assert.match(legend.textContent!,/does not measure severity, risk or burned area/)
- assert.equal(legend.querySelectorAll('ol li').length,4)
- assert.ok(legend.querySelector('.cell-days-help'))
+ assert.match(legend.textContent!,/percentiles/);assert.equal(legend.querySelectorAll('ol li').length,4)
+ const reading=host.querySelector('.map-tab--information .map-reading')!
+ assert.match(reading.textContent!,/enlarged and does not show the area covered/)
+ assert.match(reading.textContent!,/does not measure severity, risk or burned area/)
+ assert.ok(host.querySelector('.map-tab--information .cell-days-help'))
 })

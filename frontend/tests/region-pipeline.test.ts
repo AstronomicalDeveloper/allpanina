@@ -76,8 +76,8 @@ test('rechaza NRT, NOAA-20 y región vacía', async () => {
   await assert.rejects(procesarRegion([{ nombre: 'nrt.csv', texto: 'latitude,longitude,acq_date,acq_time,satellite,instrument,confidence,version\n-32.9,-68.8,2020-09-10,1500,Aqua,MODIS,80,6.1NRT\n' }], [ok], { region_id: 'X', poligono: MENDOZA, zona_horaria: 'UTC' }), /NRT/)
   const n20 = { nombre: 'n20.csv', texto: csv([[DENTRO, '2020-09-10', '1500']], 'VIIRS').texto.replace(',N,VIIRS,', ',N20,VIIRS,') }
   await assert.rejects(procesarRegion([ok], [n20], { region_id: 'X', poligono: MENDOZA, zona_horaria: 'UTC' }), /N20/)
-  await assert.rejects(procesarRegion([ok], [ok], { region_id: 'mal id', poligono: MENDOZA, zona_horaria: 'UTC' }), /código/)
-  await assert.rejects(procesarRegion([ok], [ok], { region_id: 'X', poligono: MENDOZA, zona_horaria: 'Marte/Olympus' }), /Zona horaria/)
+  await assert.rejects(procesarRegion([ok], [ok], { region_id: 'mal id', poligono: MENDOZA, zona_horaria: 'UTC' }), /region code/)
+  await assert.rejects(procesarRegion([ok], [ok], { region_id: 'X', poligono: MENDOZA, zona_horaria: 'Marte/Olympus' }), /Unknown time zone/)
 })
 
 test('zip: ida y vuelta; tramos de FIRMS de hasta 5 días', async () => {
@@ -87,9 +87,9 @@ test('zip: ida y vuelta; tramos de FIRMS de hasta 5 días', async () => {
 })
 
 test('rechaza períodos inválidos y tamaños de pedido que no avanzan o exceden FIRMS', () => {
-  for (const n of [0, -1, 1.5, 6, NaN]) assert.throws(() => tramos('2020-01-01', '2020-01-02', n), /pedido/)
-  assert.throws(() => tramos('2020-02-30', '2020-03-01'), /Fecha/)
-  assert.throws(() => tramos('2020-02-01', '2020-01-01'), /anterior/)
+  for (const n of [0, -1, 1.5, 6, NaN]) assert.throws(() => tramos('2020-01-01', '2020-01-02', n), /request/)
+  assert.throws(() => tramos('2020-02-30', '2020-03-01'), /Invalid date/)
+  assert.throws(() => tramos('2020-02-01', '2020-01-01'), /before the start date/)
 })
 
 test('descarga pide fuentes estándar en bloques válidos y explica errores de red', async () => {

@@ -25,9 +25,6 @@ export default function ExplorationPanel({ map, selection, years, onChange, unav
       {map.scope === 'month' && <label>Month<select aria-label="Map month" value={selection.month ?? 1} onChange={event => onChange({ ...selection, month: Number(event.target.value) })}>{MONTH_NAMES.map((name, index) => <option key={name} value={index + 1}>{name}</option>)}</select></label>}</div>
     </fieldset>
     <fieldset><legend>Satellite sensor</legend><div className="map-segment">{(['MODIS', 'VIIRS'] as const).map(sensor => <button key={sensor} aria-pressed={map.sensor === sensor} onClick={() => onChange({ ...selection, sensor })}>{sensor}</button>)}</div></fieldset>
-    {national && (selection.region === 'PE'
-      ? <p className="map-geographic-context">Scope: Peru. The summary comes from the published monthly series, and the layer shows every national 10 km grid square.</p>
-      : <div className="map-geographic-context"><p><strong>Summary ({regionName}):</strong> comes from the monthly series published for this department, not from adding up the map's grid squares.</p><p><strong>Map:</strong> the Peru layer uses 10 km grid squares, clipped to the department boundary only on screen. A border square keeps its full value and may include detections from neighbouring departments: it is not an exact split of the department.</p></div>)}
     <section className="map-observed" aria-label="Observed summary" aria-live="polite"><h3>{map.scope === 'year' ? `Total ${map.year}` : `${MONTH_NAMES[map.month - 1]} ${map.year}`} <small>{map.sensor}</small></h3>
       {unavailable ? <p role="status">No GeoJSON is published for this year and region. Choose another period. A missing file does not mean zero.</p>
         : valid ? <><strong className="map-observed-value">{observedValue === null || observedValue === undefined ? '—' : count.format(observedValue)}</strong><span>observed cell-days</span>{(!national || selection.region === 'PE') && <p>{map.stats.count} {national ? 'national grid squares' : 'cells'} with records · up to {map.stats.maxCell} cell-days per {unit}</p>}{observedValue === 0 && <p>Valid zero: usable period with no detections recorded.</p>}</>
@@ -43,6 +40,5 @@ export default function ExplorationPanel({ map, selection, years, onChange, unav
         <button onClick={() => map.selectCell('')}>Clear selection</button>
       </div>}
     </section>
-    <p className="map-fine-print">Observations, not confirmed fires or burned area. The calibrated estimate (B1) is never applied per cell. Published availability does not measure cloud cover.</p>
   </div>
 }

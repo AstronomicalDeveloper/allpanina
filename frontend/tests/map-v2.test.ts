@@ -146,25 +146,56 @@ test('Mapa v2 distingue cero válido, missing y no publicado en modo DEMO explí
   assert.match(host.querySelector('.map-observed')!.textContent!, /Period not published/)
 })
 
-test('Mapa v2 oculta paneles independientemente, conserva estado y abre el panel inferior', async t => {
+test('F5b: pestañas Explore/Layers/Information conservan estado; panel plegable; hoja móvil de tres alturas', async t => {
   mockFiles(t); const { host, runtime } = await setup(t, '')
-  const left = host.querySelector<HTMLButtonElement>('[aria-controls="map-cartography-content"]')!
-  const right = host.querySelector<HTMLButtonElement>('[aria-controls="map-exploration-content"]')!
-  await act(async () => left.click())
-  assert.equal(host.querySelector<HTMLElement>('#map-cartography-content')!.hidden, true)
-  assert.equal(host.querySelector<HTMLElement>('#map-exploration-content')!.hidden, false)
-  await act(async () => { right.click(); left.click() })
-  assert.equal(host.querySelector<HTMLElement>('#map-cartography-content')!.hidden, false)
-  assert.equal(host.querySelector<HTMLElement>('#map-exploration-content')!.hidden, true)
+  const tabs = [...host.querySelectorAll<HTMLButtonElement>('.map-sidebar [role="tab"]')]
+  assert.deepEqual(tabs.map(b => b.textContent), ['Explore', 'Layers', 'Information'])
+  const panel = (name: string) => host.querySelector<HTMLElement>(`.map-tab--${name}`)!
   const sheet = host.querySelector<HTMLButtonElement>('.map-sheet-handle')!
-  await act(async () => sheet.click()); assert.equal(sheet.getAttribute('aria-expanded'), 'true')
-  await act(async () => sheet.click()); assert.equal(sheet.getAttribute('aria-expanded'), 'false')
+  assert.equal(sheet.getAttribute('aria-expanded'), 'false'); assert.match(sheet.getAttribute('aria-label')!, /minimized/)
+  assert.equal(panel('explore').hidden, false); assert.equal(panel('layers').hidden, true); assert.equal(panel('information').hidden, true)
+  await choose(host, 'Select map cell', observations(runtime).features[0].properties.cell_id)
+  await act(async () => tabs[1].click())
+  assert.equal(panel('layers').hidden, false); assert.equal(panel('explore').hidden, true); assert.equal(tabs[1].getAttribute('aria-selected'), 'true')
+  await act(async () => tabs[1].dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })))
+  assert.equal(panel('information').hidden, false)
+  await act(async () => tabs[0].click())
+  assert.ok(host.querySelector('.map-cell-detail'), 'the inspector keeps the selected cell after switching tabs')
   const relief = [...host.querySelectorAll<HTMLButtonElement>('.map-basemaps button')].find(b => b.textContent!.startsWith('Topographic'))!
   await act(async () => relief.click())
   assert.equal(runtime.maps[0].layouts['basemap-topographic-layer:visibility'], 'visible')
   assert.equal(runtime.maps[0].layouts['basemap-blue-marble-layer:visibility'], 'none')
+  const hide = host.querySelector<HTMLButtonElement>('.map-sidebar-collapse')!
+  assert.equal(hide.getAttribute('aria-label'), 'Hide panel')
+  await act(async () => hide.click())
+  assert.equal(host.querySelector<HTMLElement>('.map-sidebar')!.hidden, true)
+  assert.ok(host.querySelector('.map-workspace--collapsed'))
+  await act(async () => button(host, 'Show panel').click())
+  assert.equal(host.querySelector<HTMLElement>('.map-sidebar')!.hidden, false)
+  assert.equal(sheet.getAttribute('aria-expanded'), 'true'); assert.match(sheet.getAttribute('aria-label')!, /half height/)
+  await act(async () => sheet.click()); assert.ok(host.querySelector('.map-workspace--sheet-full'))
+  await act(async () => sheet.click()); assert.ok(host.querySelector('.map-workspace--sheet-peek')); assert.equal(sheet.getAttribute('aria-expanded'), 'false')
+  await act(async () => sheet.click()); assert.ok(host.querySelector('.map-workspace--sheet-half')); assert.equal(sheet.getAttribute('aria-expanded'), 'true')
   await act(async () => button(host, 'VIIRS').click())
   assert.equal(runtime.maps.length, 1)
+})
+
+test('F5b: línea de tiempo con años, mes y año completo; barras relativas a la serie publicada', async t => {
+  mockFiles(t); const { host } = await setup(t, '?periodYear=2024&periodMonth=9&scope=month&mapSensor=MODIS')
+  const bar = host.querySelector<HTMLElement>('.map-timebar')!
+  assert.equal(bar.getAttribute('aria-label'), 'Timeline')
+  const months = [...bar.querySelectorAll<HTMLButtonElement>('.map-timebar-month')]
+  assert.equal(months.length, 12)
+  assert.equal(months[8].getAttribute('aria-pressed'), 'true')
+  assert.match(months[8].getAttribute('aria-label')!, /^September 2024: [\d,]+ cell-days \(MODIS, published monthly series\)$/)
+  for (const m of months) assert.match(m.getAttribute('aria-label')!, /cell-days|valid zero|no usable data|not published/)
+  await act(async () => months[7].click())
+  assert.equal(new URLSearchParams(window.location.search).get('periodMonth'), '8')
+  assert.equal(new URLSearchParams(window.location.search).get('scope'), 'month')
+  await act(async () => [...bar.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent === 'Whole year')!.click())
+  assert.equal(new URLSearchParams(window.location.search).get('scope'), 'year')
+  const years = [...bar.querySelectorAll<HTMLButtonElement>('.map-timebar-years button')]
+  assert.ok(years.some(b => b.textContent === '2024' && b.getAttribute('aria-pressed') === 'true'))
 })
 
 test('Mapa v2 URL e historial: período compartido, sensores independientes y regreso al Calendario', async t => {

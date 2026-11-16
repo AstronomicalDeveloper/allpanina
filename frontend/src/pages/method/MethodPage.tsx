@@ -9,7 +9,7 @@ import type { Manifest, MethodInfo, ValidationResult, NationalMethod, NationalVa
 import ProcessingSection from './sections/ProcessingSection'
 import EvaluationSection from './sections/EvaluationSection'
 import SourcesSection from './sections/SourcesSection'
-import TechnicalDetail from '../../components/ui/TechnicalDetail'
+import { Published } from './sections/Published'
 
 function MethodContent({ dataRoot, demo, national, region }: { dataRoot: string; demo: boolean; national: boolean; region: string }) {
   const [method, setMethod] = useState<LoadResult<MethodInfo | NationalMethod> | null>(null)
@@ -39,20 +39,21 @@ function MethodContent({ dataRoot, demo, national, region }: { dataRoot: string;
   const conflict=new Set(regions).size>1 || (!national&&Boolean(nationalMethod||nationalValidation)) || (national&&Boolean((rawMethod&&!nationalMethod)||(rawValidation&&!nationalValidation)||(publication&&(!publication.regions?.includes(region)||publication.contract_version!=='1.1'))))
   const errors=[method,validation,manifest,...(national?[calibrated]:[])].filter(result=>result&&!result.ok)
   return <>
-    <header className="method-intro"><div><h1>Método y evaluación</h1><p className="method-lead">Leer las señales del fuego, comprender sus límites.</p><p>AllpaNina permite explorar la historia de las anomalías térmicas observadas por satélite y comparar lo que registran distintos instrumentos.</p></div>
-      <aside className="method-scope" aria-label="Alcance de la publicación"><h2>El conjunto que estás explorando</h2>
-        {publication ? <><strong>{national?region:publication.region_id}</strong>{national&&<p>Publicación nacional: {publication.region_id}</p>}<p>{publication.periodo.desde} — {publication.periodo.hasta}</p><p>{publication.producto}</p></> : <p>Alcance pendiente de lectura del manifiesto.</p>}
-        {info?.region && <p>{info.region}</p>}
-        <p>{national?'Las métricas corresponden a la región y etapa indicadas; describen una evaluación retrospectiva, no confianza futura.':'Las métricas pertenecen al ámbito declarado en los archivos; no acreditan validación para todo Perú.'}</p>
+    <header className="method-intro"><div><h1>Method and evaluation</h1><p className="method-lead">Reading the signals of fire, understanding their limits.</p><p>AllpaNina lets you explore the history of satellite-observed thermal anomalies and compare what different instruments record.</p></div>
+      <aside className="method-scope" aria-label="Publication scope"><h2>The data set you are exploring</h2>
+        {publication ? <><strong>{national?region:publication.region_id}</strong>{national&&<p>National publication: {publication.region_id}</p>}<p>{publication.periodo.desde} — {publication.periodo.hasta}</p><p><Published>{publication.producto}</Published></p></> : <p>Scope pending: the manifest has not been read yet.</p>}
+        {info?.region && <p><Published>{info.region}</Published></p>}
+        <p>{national?'The metrics belong to the region and stage shown; they describe a retrospective evaluation, not confidence for the future.':'The metrics belong to the scope declared in the files; they do not validate the method for all of Peru.'}</p>
       </aside>
     </header>
-    {demo && <p className="method-notice"><strong>DATOS DEMO — NO SON OBSERVACIONES REALES.</strong> Este modo solo comprueba la interfaz; no acredita resultados científicos.</p>}
-    {(method === null || validation === null || manifest === null || (national&&calibrated===null)) && <p role="status">Cargando metodología, evaluación y procedencia…</p>}
-    {errors.map((result, index) => result && !result.ok && <div role="alert" className="method-notice" key={index}><p>No se pudo leer uno de los archivos de la metodología. Las secciones que dependen de él no se muestran ni se rellenan con otros valores.</p><TechnicalDetail detail={result.error} /></div>)}
-    {errors.length > 0 && <button className="method-retry" onClick={() => { setMethod(null); setValidation(null); setManifest(null); setCalibrated(null); setAttempt(attempt + 1) }}>Reintentar carga</button>}
-    {conflict && <p role="alert" className="method-notice">Los archivos declaran regiones diferentes. No se combinan los resultados ni se atribuye una evaluación a otra región. Revisa la entrega científica.</p>}
-    <nav className="method-index" aria-label="Contenido de Método"><a href="#observaciones">De la señal al indicador</a><a href="#evaluacion">Cómo se evalúa</a><a href="#limites">Límites y fuentes</a></nav>
-    {info ? <ProcessingSection method={info} demo={demo} national={national} aggregate={national&&region==='PE'} /> : <section id="observaciones" className="method-section"><h2>De la señal al indicador</h2><p>La explicación del procesamiento estará disponible cuando se pueda leer method.json.</p></section>}
+    {demo && <p className="method-notice"><strong>DEMO DATA — NOT REAL OBSERVATIONS.</strong> This mode only checks the interface; it does not support scientific results.</p>}
+    {(method === null || validation === null || manifest === null || (national&&calibrated===null)) && <p role="status">Loading method, evaluation and provenance…</p>}
+    {errors.map((result, index) => result && !result.ok && <div role="alert" className="method-notice" key={index}><p>One of the method files could not be read. The sections that depend on it are not shown and are not filled with other values.</p>{result.error && <details className="technical-detail"><summary>Technical details</summary><code>{result.error}</code></details>}</div>)}
+    {errors.length > 0 && <button className="method-retry" onClick={() => { setMethod(null); setValidation(null); setManifest(null); setCalibrated(null); setAttempt(attempt + 1) }}>Retry loading</button>}
+    {conflict && <p role="alert" className="method-notice">The files declare different regions. The results are not combined and no evaluation is attributed to another region. Check the scientific delivery.</p>}
+    <nav className="method-index" aria-label="Method contents"><a href="#observations">From signal to indicator</a><a href="#evaluation">How it is evaluated</a><a href="#limits">Limits and sources</a></nav>
+    {(info?.indicator || info?.calibration || info?.limitations?.length) ? <p className="method-language-note">Texts marked <span className="method-original-tag">ES</span> are quoted as published by the science team, in Spanish; numbers and rules are shown unchanged.</p> : null}
+    {info ? <ProcessingSection method={info} demo={demo} national={national} aggregate={national&&region==='PE'} /> : <section id="observations" className="method-section"><h2>From signal to indicator</h2><p>The processing explanation will be available once method.json can be read.</p></section>}
     {national&&!conflict&&<NationalMethodNotes method={nationalMethod} validation={nationalValidation} region={region} calibrated={calibrated?.ok?calibrated.data:null} />}
     <EvaluationSection key={`${dataRoot}-${attempt}-${conflict}`} method={conflict ? null : info} validation={conflict ? null : evaluation} demo={demo} />
     <SourcesSection method={info} manifest={publication} dataRoot={dataRoot} />

@@ -18,13 +18,13 @@ export class RegionShape {
     const all: number[] = []
     let w = Infinity, s = Infinity, e = -Infinity, n = -Infinity, area = 0
     for (const rings of polygons) {
-      if (!Array.isArray(rings) || !rings.length) throw new Error('Polígono vacío o inválido.')
+      if (!Array.isArray(rings) || !rings.length) throw new Error('Empty or invalid polygon.')
       rings.forEach((ring, k) => {
-        if (!Array.isArray(ring) || ring.length < 4) throw new Error('Cada anillo requiere al menos cuatro posiciones.')
+        if (!Array.isArray(ring) || ring.length < 4) throw new Error('Each ring needs at least four positions.')
         for (const point of ring) {
-          if (!Array.isArray(point) || point.length < 2 || !Number.isFinite(point[0]) || !Number.isFinite(point[1]) || Math.abs(point[0]) > 180 || Math.abs(point[1]) > 90) throw new Error('Coordenadas inválidas: usa longitud y latitud WGS84.')
+          if (!Array.isArray(point) || point.length < 2 || !Number.isFinite(point[0]) || !Number.isFinite(point[1]) || Math.abs(point[0]) > 180 || Math.abs(point[1]) > 90) throw new Error('Invalid coordinates: use WGS84 longitude and latitude.')
         }
-        if (ring[0][0] !== ring.at(-1)![0] || ring[0][1] !== ring.at(-1)![1]) throw new Error('El anillo del polígono debe estar cerrado.')
+        if (ring[0][0] !== ring.at(-1)![0] || ring[0][1] !== ring.at(-1)![1]) throw new Error('The polygon ring must be closed.')
         let a = 0
         for (let i = 0; i < ring.length - 1; i++) {
           const [x1, y1] = ring[i], [x2, y2] = ring[i + 1]
@@ -36,8 +36,8 @@ export class RegionShape {
         area += (k === 0 ? 1 : -1) * Math.abs(a) / 2
       })
     }
-    if (!all.length) throw new Error('El polígono de la región está vacío.')
-    if (!Number.isFinite(area) || area <= 0) throw new Error('El polígono debe tener superficie positiva.')
+    if (!all.length) throw new Error('The region polygon is empty.')
+    if (!Number.isFinite(area) || area <= 0) throw new Error('The polygon must have a positive area.')
     this.bbox = [w, s, e, n]
     this.area_km2 = area / 1e6
     this.edges = Float64Array.from(all)
@@ -80,12 +80,12 @@ export class RegionShape {
     if (v?.type === 'FeatureCollection') v.features?.forEach(f => add(f.geometry))
     else if (v?.type === 'Feature') add(v.geometry)
     else add(v)
-    if (!polygons.length) throw new Error('El archivo no tiene polígonos (se espera GeoJSON con Polygon o MultiPolygon).')
+    if (!polygons.length) throw new Error('The file has no polygons (expected GeoJSON with Polygon or MultiPolygon).')
     return new RegionShape(polygons)
   }
 
   static fromBbox([w, s, e, n]: Bbox): RegionShape {
-    if (!(w >= -180 && w < e && e <= 180 && s >= -90 && s < n && n <= 90)) throw new Error('Caja inválida: el orden es oeste, sur, este, norte.')
+    if (!(w >= -180 && w < e && e <= 180 && s >= -90 && s < n && n <= 90)) throw new Error('Invalid box: the order is west, south, east, north.')
     return new RegionShape([[[[w, s], [e, s], [e, n], [w, n], [w, s]]]])
   }
 }

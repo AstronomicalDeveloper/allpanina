@@ -42,29 +42,29 @@ export async function leerZip(buffer: ArrayBuffer): Promise<Record<string, Uint8
   const b = new Uint8Array(buffer), v = new DataView(buffer)
   let e = b.length - 22
   while (e >= 0 && v.getUint32(e, true) !== 0x06054b50) e--
-  if (e < 0) throw new Error('El archivo no es un .zip válido.')
+  if (e < 0) throw new Error('The file is not a valid .zip.')
   const n = v.getUint16(e + 10, true)
   let p = v.getUint32(e + 16, true)
   const out: Record<string, Uint8Array> = {}, dec = new TextDecoder()
   for (let i = 0; i < n; i++) {
-    if (p + 46 > b.length) throw new Error('El .zip está truncado.')
-    if (v.getUint32(p, true) !== 0x02014b50) throw new Error('El .zip está dañado.')
+    if (p + 46 > b.length) throw new Error('The .zip is truncated.')
+    if (v.getUint32(p, true) !== 0x02014b50) throw new Error('The .zip is damaged.')
     const metodo = v.getUint16(p + 10, true), comp = v.getUint32(p + 20, true)
     const ln = v.getUint16(p + 28, true), lx = v.getUint16(p + 30, true), lc = v.getUint16(p + 32, true), local = v.getUint32(p + 42, true)
     const nombre = dec.decode(b.subarray(p + 46, p + 46 + ln))
     const crc = v.getUint32(p + 16, true), size = v.getUint32(p + 24, true)
-    if (v.getUint16(p + 8, true) & 1) throw new Error('No se admiten archivos ZIP cifrados.')
+    if (v.getUint16(p + 8, true) & 1) throw new Error('Encrypted ZIP files are not supported.')
     p += 46 + ln + lx + lc
     if (nombre.endsWith('/')) continue
-    if (Object.hasOwn(out, nombre)) throw new Error(`Nombre de archivo duplicado: ${nombre}`)
-    if (local + 30 > b.length || v.getUint32(local, true) !== 0x04034b50) throw new Error('El .zip está dañado.')
+    if (Object.hasOwn(out, nombre)) throw new Error(`Duplicate file name: ${nombre}`)
+    if (local + 30 > b.length || v.getUint32(local, true) !== 0x04034b50) throw new Error('The .zip is damaged.')
     const inicio = local + 30 + v.getUint16(local + 26, true) + v.getUint16(local + 28, true)
-    if (inicio + comp > b.length) throw new Error('El .zip está truncado.')
+    if (inicio + comp > b.length) throw new Error('The .zip is truncated.')
     const data = b.subarray(inicio, inicio + comp)
     if (metodo === 0) out[nombre] = data.slice()
     else if (metodo === 8) out[nombre] = await inflar(data)
-    else throw new Error(`${nombre}: compresión no soportada (método ${metodo}).`)
-    if (out[nombre].length !== size || crc32(out[nombre]) !== crc) throw new Error(`${nombre}: el contenido del .zip está dañado (CRC o tamaño incorrecto).`)
+    else throw new Error(`${nombre}: unsupported compression (method ${metodo}).`)
+    if (out[nombre].length !== size || crc32(out[nombre]) !== crc) throw new Error(`${nombre}: the .zip content is damaged (wrong CRC or size).`)
   }
   return out
 }
