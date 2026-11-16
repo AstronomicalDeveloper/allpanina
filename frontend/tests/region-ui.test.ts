@@ -1,0 +1,188 @@
+import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+import { test } from 'node:test'
+import { act, createElement } from 'react'
+import { dom, files, mockFiles, mount, choose, navigate, fakeRuntime, click } from './uiHarness'
+import { guardarConjunto, borrarConjunto } from '../src/services/region/store'
+import MapPage from '../src/pages/map/MapPage'
+import EvaluationSection from '../src/pages/method/sections/EvaluationSection'
+import type { ValidationResult } from '../src/types/data'
+
+const mundo = (archivo: string) => readFile(new URL(`../public/cartography/world/${archivo}`, import.meta.url), 'utf8')
+const indice = JSON.parse(await mundo('index.json')) as { paises: { iso3: string; archivo: string; regiones: number }[] }
+async function cartografia(...iso3: string[]) {
+  const out: Record<string, string> = { '/cartography/world/index.json': await mundo('index.json') }
+  for (const iso of iso3) out[`/cartography/world/${iso}.geojson`] = await mundo(`${iso}.geojson`)
+  return out
+}
+const espera = () => act(async () => { await new Promise(r => setTimeout(r, 30)) })
+async function selector(host: HTMLElement) {
+  await espera()
+  const [pais, region] = host.querySelectorAll('select')
+  pais.id = 'test-pais'; region.id = 'test-region'
+  return { pais, region }
+}
+async function subir(input: HTMLInputElement, ...lista: File[]) {
+  Object.defineProperty(input, 'files', { value: lista, configurable: true })
+  await act(async () => { input.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
+  await espera()
+}
+const csv = (sensor: 'MODIS' | 'VIIRS') => new File([`latitude,longitude,acq_date,acq_time,satellite,instrument,confidence,version,type\n-8.4,-74.5,2020-09-10,1500,${sensor === 'MODIS' ? 'Aqua' : 'N'},${sensor},80,2,0\n`], `${sensor}.csv`, { type: 'text/csv' })
+const procesar = (host: HTMLElement) => [...host.querySelectorAll<HTMLButtonElement>('button')].find(b => /^Process/.test(b.textContent ?? ''))!
+
+test('catálogo mundial: todos los países publicados y sus regiones (Perú, Argentina, Brasil, EE. UU.)', async t => {
+  mockFiles(t, await cartografia('PER', 'ARG', 'BRA', 'USA'))
+  const { host } = await mount(t, '/my-region')
+  const { pais, region } = await selector(host)
+  assert.equal(pais.options.length, indice.paises.length + 1)
+  assert.ok(indice.paises.length > 100, 'el índice publicado trae el catálogo mundial')
+  const etiquetas = [...pais.options].map(o => o.textContent)
+  for (const nombre of ['Peru', 'Argentina', 'Brazil', 'United States']) assert.ok(etiquetas.includes(nombre), nombre)
+  for (const iso of ['PER', 'ARG', 'BRA', 'USA']) {
+    await choose(host, '#test-pais', iso); await espera()
+    const esperado = indice.paises.find(p => p.iso3 === iso)!.regiones
+    assert.equal(region.options.length, esperado + 1, iso)
+    assert.equal(region.value, '', `${iso}: al cambiar de país se limpia la región`)
+  }
+  await choose(host, '#test-pais', 'ARG'); await espera()
+  const mendoza = [...region.options].find(o => o.textContent === 'Mendoza')!
+  await choose(host, '#test-region', mendoza.value)
+  assert.equal(host.querySelector<HTMLInputElement>('#zona')!.value, 'America/Argentina/Mendoza')
+  assert.match(host.querySelector('.region-facts')!.textContent!, /AR-M/)
+})
+
+test('cartografía faltante o devuelta como HTML: error claro, reintento y alternativa de polígono', async t => {
+  const base = await cartografia('PER')
+  mockFiles(t, { ...base, '/cartography/world/BRA.geojson': '<!doctype html><html><body>SPA</body></html>' })
+  const { host } = await mount(t, '/my-region')
+  await selector(host)
+  await choose(host, '#test-pais', 'ARG'); await espera()
+  assert.match(host.querySelector('[role="alert"]')!.textContent!, /Not found on this server/)
+  assert.ok([...host.querySelectorAll('button')].some(b => b.textContent === 'Retry'))
+  await choose(host, '#test-pais', 'BRA'); await espera()
+  assert.match(host.querySelector('[role="alert"]')!.textContent!, /Not found on this server: the boundaries of Brazil/)
+  await choose(host, '#test-pais', 'PER'); await espera()
+  assert.equal(host.querySelector('[role="alert"]'), null)
+  assert.equal(host.querySelectorAll('select')[1].options.length, 26)
+})
+
+test('región con contorno dañado en la fuente: aviso claro y el paso de datos sigue bloqueado', async t => {
+  mockFiles(t, await cartografia('NAM'))
+  const { host } = await mount(t, '/my-region')
+  const { region } = await selector(host)
+  await choose(host, '#test-pais', 'NAM'); await espera()
+  await choose(host, '#test-region', 'NA-CNN')
+  assert.equal(region.value, 'NA-CNN')
+  assert.match(host.querySelector('[role="alert"]')!.textContent!, /outline of this region/)
+  assert.equal(host.querySelector<HTMLFieldSetElement>('.region-fieldset')!.disabled, true)
+})
+
+test('sin índice publicado: lo dice y ofrece el polígono propio', async t => {
+  mockFiles(t, {})
+  const { host } = await mount(t, '/my-region')
+  await espera()
+  assert.match(host.querySelector('[role="alert"]')!.textContent!, /country list/)
+})
+
+test('pasos bloqueados de verdad: sin región no se aceptan archivos (input ni arrastrar) ni se procesa', async t => {
+  mockFiles(t, await cartografia('PER'))
+  const { host } = await mount(t, '/my-region')
+  await selector(host)
+  const fieldset = host.querySelector<HTMLFieldSetElement>('.region-fieldset')!
+  assert.equal(fieldset.disabled, true)
+  assert.match(host.textContent!, /First choose a country and a region/)
+  const input = fieldset.querySelector<HTMLInputElement>('input[type="file"]')!
+  assert.ok(input.matches(':disabled'))
+  await subir(input, csv('MODIS'), csv('VIIRS'))
+  const drop = new dom.window.Event('drop', { bubbles: true, cancelable: true })
+  Object.defineProperty(drop, 'dataTransfer', { value: { files: [csv('MODIS')], dropEffect: '' } })
+  await act(async () => { host.querySelector('.region-drop')!.dispatchEvent(drop) })
+  await espera()
+  assert.equal(host.querySelectorAll('.region-files li').length, 0, 'no se agregó ningún archivo')
+  assert.equal(procesar(host).disabled, true)
+  assert.match(host.textContent!, /Complete step 2/)
+})
+
+test('desbloqueo inmediato: región -> archivos (MODIS y VIIRS) -> procesar', async t => {
+  mockFiles(t, await cartografia('PER'))
+  const { host } = await mount(t, '/my-region')
+  const { region } = await selector(host)
+  await choose(host, '#test-pais', 'PER'); await espera()
+  await choose(host, '#test-region', [...region.options].find(o => o.textContent === 'Ucayali')!.value)
+  const fieldset = host.querySelector<HTMLFieldSetElement>('.region-fieldset')!
+  assert.equal(fieldset.disabled, false)
+  assert.match(host.textContent!, /Next: bring the NASA FIRMS data/)
+  const input = fieldset.querySelector<HTMLInputElement>('input[type="file"]')!
+  await subir(input, csv('MODIS'))
+  assert.equal(host.querySelectorAll('.region-files li').length, 1)
+  assert.match(host.textContent!, /the VIIRS file is missing/)
+  assert.equal(procesar(host).disabled, true)
+  await subir(input, csv('VIIRS'))
+  assert.equal(procesar(host).disabled, false)
+  assert.match(host.textContent!, /Next: process the data/)
+})
+
+test('F4b: indicador de cinco pasos refleja el avance y la página está en inglés', async t => {
+  mockFiles(t, await cartografia('PER'))
+  const { host } = await mount(t, '/my-region')
+  const { region } = await selector(host)
+  const current = () => host.querySelector('.region-card.is-current')?.id
+  assert.equal(host.querySelector('.region-stepper'), null)
+  assert.equal(current(), 'step-1')
+  assert.deepEqual([...host.querySelectorAll('.region-card h2')].slice(0, 5).map(h => h.id), ['step-1-title', 'step-2-title', 'step-3-title', 'step-4-title', 'step-5-title'])
+  await choose(host, '#test-pais', 'PER'); await espera()
+  assert.equal(current(), 'step-2')
+  assert.match(host.querySelector('#step-1-title')!.textContent!, /completed/)
+  await choose(host, '#test-region', [...region.options].find(o => o.textContent === 'Ucayali')!.value)
+  assert.equal(current(), 'step-3')
+  assert.match(host.querySelector('.region-facts')!.textContent!, /Ucayali, Peru/)
+  assert.match(host.querySelector('#step-5')!.textContent!, /Results appear here after processing/)
+  for (const el of host.querySelectorAll('.region-page :is(h1, h2, h3, p, label > span, button, summary, legend, li)')) assert.doesNotMatch(el.textContent!, /(región|país|Procesar|archivos|Descargar|Elige)/i, el.textContent!)
+})
+
+test('advertencias del algoritmo se muestran en inglés sin cambiar procedencia.json', async () => {
+  const { englishWarning } = await import('../src/pages/region/regionCopy')
+  assert.equal(englishWarning('No se ofrece B1: pocos datos en train 2013-2022 (Σ VIIRS 1,200, Σ MODIS 300; mínimo 2,000 y 500). Se muestran solo los datos observados.'),
+    'B1 is not offered: too little data in train 2013-2022 (Σ VIIRS 1,200, Σ MODIS 300; minimum 2,000 and 500). Only observed data are shown.')
+  assert.match(englishWarning('Ninguna detección cae dentro de la región: revise el polígono y el área descargada.'), /^No detection falls inside the region/)
+  assert.equal(englishWarning('NRT (near real-time) files were ignored: a.csv. Only the standard archive file is used.'), 'NRT (near real-time) files were ignored: a.csv. Only the standard archive file is used.')
+})
+
+test('polígono propio desbloquea el paso de datos', async t => {
+  mockFiles(t, await cartografia('PER'))
+  const { host } = await mount(t, '/my-region')
+  await selector(host)
+  await click(host, 'Region not listed? Use your own polygon (GeoJSON)')
+  const geo = { type: 'Polygon', coordinates: [[[-69.5, -33.5], [-68, -33.5], [-68, -32], [-69.5, -32], [-69.5, -33.5]]] }
+  await subir(host.querySelector<HTMLInputElement>('input[accept=".geojson,.json,application/geo+json"]')!, new File([JSON.stringify(geo)], 'mendoza.geojson'))
+  await subir(host.querySelector<HTMLInputElement>('input[accept=".geojson,.json,application/geo+json"]')!, new File(['{"type":"Polygon","coordinates":[[[0,0],[1,1],[0,0]]]}'], 'malo.geojson'))
+  assert.match(host.querySelector('[role="alert"]')!.textContent!, /Could not use malo.geojson/)
+  assert.equal(host.querySelector<HTMLFieldSetElement>('.region-fieldset')!.disabled, true, 'un polígono inválido no desbloquea')
+  await subir(host.querySelector<HTMLInputElement>('input[accept=".geojson,.json,application/geo+json"]')!, new File([JSON.stringify(geo)], 'mendoza.geojson'))
+  assert.match(host.querySelector('.region-facts')!.textContent!, /MENDOZA/)
+  assert.equal(host.querySelector<HTMLFieldSetElement>('.region-fieldset')!.disabled, false)
+})
+
+test('conjunto local alimenta Calendario, análisis histórico, Mapa y Método sin fetch científico', async t => {
+  const archivos = Object.fromEntries(Object.entries(files).filter(([k]) => k.startsWith('/data/') && !k.slice(6).includes('/')).map(([k, v]) => [k.slice(6), v]))
+  const aviso = await guardarConjunto({ archivos, region_id: 'PE-UCA', nombre: 'Ucayali local', guardado: new Date().toISOString() })
+  assert.match(aviso!, /memory/)
+  t.after(() => borrarConjunto())
+  t.mock.method(globalThis, 'fetch', async () => { throw new Error('No se deben pedir datos remotos') })
+  const { host } = await mount(t, '/calendario?data=local&mapRegion=PE-UCA&periodYear=2024&periodMonth=9')
+  assert.ok(host.querySelector('.calendar-history'))
+  assert.match(host.textContent!, /Ucayali local/)
+  await navigate('/metodo?data=local&mapRegion=PE-UCA')
+  assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent, '30.8%')
+  const map = await mount(t, '/mapa?data=local&mapRegion=PE-UCA&periodYear=2024', createElement(MapPage, { runtimeLoader: fakeRuntime().loader }))
+  assert.ok(!map.host.querySelector('[role="alert"]'))
+  assert.match(map.host.textContent!, /2024/)
+})
+
+test('Método oculta métricas y residuos de una evaluación no reportable', async t => {
+  const validation = { ...JSON.parse(files['/data/validation.json']), reportable: false } as ValidationResult
+  const { host } = await mount(t, '/metodo', createElement(EvaluationSection, { method: null, validation, demo: false }))
+  assert.match(host.textContent!, /is not reportable/)
+  assert.equal(host.querySelector('.method-wape--B1 strong')!.textContent, 'Not available')
+  assert.equal(host.querySelector('tbody')!.children.length, 0)
+})

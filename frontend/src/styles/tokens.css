@@ -1,1 +1,23 @@
-:root { --forest:#163B35; --fire:#E77648; --page:#F9F7F2; --soft:#D8E7DE; --ink:#273D3A; font-family:"Segoe UI",system-ui,sans-serif; color:var(--ink); background:var(--page); }
+/* Compatibility names used by F4/F4b/F5b; the canonical palette lives in app.css @theme. */
+:root {
+  --night: var(--color-night);
+  --orbit: var(--color-orbit);
+  --rule: var(--color-rule);
+  --paper: var(--color-paper);
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --ember: var(--color-ember);
+  --cinder: var(--color-cinder);
+  --zero-light: var(--color-zero);
+  --fire-1: var(--color-fire-1); --fire-2: var(--color-fire-2); --fire-3: var(--color-fire-3);
+  --fire-4: var(--color-fire-4); --fire-5: var(--color-fire-5); --fire-6: var(--color-fire-6);
+  --fire-7: var(--color-fire-7); --fire-8: var(--color-fire-8); --fire-9: var(--color-fire-9);
+  --glow-1: var(--color-glow-1); --glow-2: var(--color-glow-2); --glow-3: var(--color-glow-3);
+  --glow-4: var(--color-glow-4); --glow-5: var(--color-glow-5); --glow-6: var(--color-glow-6);
+  --glow-7: var(--color-glow-7); --glow-8: var(--color-glow-8); --glow-9: var(--color-glow-9);
+  --topbar-h: var(--height-bar);
+  --forest: var(--color-night);
+  --fire: var(--color-cinder);
+  --page: var(--color-paper);
+  --soft: #E3E9F2;
+}

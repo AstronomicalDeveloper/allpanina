@@ -1,0 +1,296 @@
+[
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "limitations[0]",
+    "source": "VIIRS S-NPP: NOAA anunci\u00f3 el cese de entrega de todos los productos el 1 nov 2026; NASA indica cese de datos cient\u00edficos nuevos el 2 nov 2026. El archivo hist\u00f3rico no se ve afectado. Se us\u00f3 el producto est\u00e1ndar, con rezago de 2-3 meses.",
+    "english": "New Suomi NPP VIIRS science delivery ended in November 2026. The historical archive remains available; this publication uses the standard product with a two-to-three-month delay."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "limitations[1]",
+    "source": "MODIS cambia de versi\u00f3n V6 a V6.1 en febrero de 2023 (Terra 17 feb, Aqua 23 feb), al inicio del periodo de validaci\u00f3n. Un salto en esas fechas puede ser cambio de algoritmo y no de incendios.",
+    "english": "MODIS changed from V6 to V6.1 in February 2023 (Terra on 17 February, Aqua on 23 February), at the start of validation. A discontinuity may reflect the processing change rather than fire activity."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "limitations[2]",
+    "source": "VIIRS versi\u00f3n 2: algunos puntos de fuente est\u00e1tica (type 2) quedaron marcados como type 0 (corregido por NASA en la versi\u00f3n 3, mayo 2025). El filtro type = 0 puede conservar algunas fuentes est\u00e1ticas.",
+    "english": "VIIRS version 2 misclassified some static sources as type 0; NASA corrected this in version 3 in May 2025. Filtering type 0 can retain static sources."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "limitations[3]",
+    "source": "El \u00e1rea geod\u00e9sica del pol\u00edgono INEI (~105,100 km\u00b2) difiere ~2.7% del \u00e1rea del Compendio Estad\u00edstico INEI (~102,400 km\u00b2); se reporta, no se corrige.",
+    "english": "The geodesic area of the INEI polygon (about 105,100 square kilometres) differs by about 2.7% from the INEI statistical compendium (about 102,400). This difference is reported without correction."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "limitations[4]",
+    "source": "El indicador cuenta detecciones satelitales de anomal\u00edas t\u00e9rmicas, no incendios confirmados ni superficie quemada.",
+    "english": "Thermal detections are not confirmed fires or burned area."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "limitations[5]",
+    "source": "FIRMS no entrega cobertura de nubes: un mes con 0 detecciones puede reflejar ausencia de fuego o falta de observaci\u00f3n.",
+    "english": "FIRMS provides no cloud-cover information. Zero detections can reflect no fire or a lack of observation."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "limitations[6]",
+    "source": "B1 puede subestimar los meses pico de temporadas extremas: en 2024-09 (el mes con m\u00e1s actividad del periodo, en validaci\u00f3n) B1 estim\u00f3 1,639 celdas-d\u00eda frente a 2,323 de MODIS (\u221229%). Casi todo el sesgo negativo en validaci\u00f3n viene de septiembre y octubre de 2024.",
+    "english": "B1 can underestimate extreme-season peaks. In September 2024 it estimated 1,639 cell-days against 2,323 MODIS cell-days (29% lower). Most negative validation bias comes from September and October 2024."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "limitations[7]",
+    "source": "\u03ba var\u00eda de a\u00f1o a a\u00f1o (0.26 a 0.34 en train; 0.35 en 2024 y 0.24 en el test 2025-2026) y se usa un solo factor global para toda la regi\u00f3n y todo el periodo.",
+    "english": "The annual ratio varies: 0.26-0.34 during training, 0.35 in 2024 and 0.24 in the 2025-2026 test. The pilot uses one fixed regional factor across the period."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "limitations[8]",
+    "source": "En el test (2025-01 a 2026-07), un periodo de poca actividad (~96 celdas-d\u00eda MODIS por mes frente a ~314 en validaci\u00f3n), B1 sobreestim\u00f3 en 14 de 19 meses (sesgo +22.9) y su WAPE subi\u00f3 a 0.31, frente a 0.18 en validaci\u00f3n. El error absoluto fue menor (MAE 29.7 frente a 55.8). Cinco meses concentran el 71% del error; 2025-09 aporta un tercio (+39%).",
+    "english": "In the January 2025-July 2026 test, MODIS averaged about 96 cell-days per month versus 314 in validation. B1 overestimated 14 of 19 months (bias +22.9). WAPE increased to 0.31 from 0.18 while MAE decreased to 29.7 from 55.8. Five months account for 71% of error; September 2025 contributes about one third (+39%)."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "limitations[9]",
+    "source": "B1 se valida a escala regi\u00f3n-mes. No debe aplicarse a celdas individuales del mapa; el mapa muestra solo valores observados.",
+    "english": "B1 is validated at region-month scale, never for individual map cells. The map displays observed values only."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "limitations[10]",
+    "source": "Un error retrospectivo de B1 no es un porcentaje de confianza para meses futuros.",
+    "english": "Retrospective B1 error is not a confidence percentage for future months."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "indicator",
+    "source": "cell_days: n\u00famero de pares celda-d\u00eda con al menos una detecci\u00f3n de fuego activo en la regi\u00f3n, por mes y sensor. Celda de 1 km x 1 km en EPSG:6933; d\u00eda calendario en hora de Lima (UTC-5). Terra y Aqua cuentan una sola vez por celda-d\u00eda.",
+    "english": "Cell-days count cell-and-day pairs with at least one usable detection per region, month and sensor. Cells are 1 km by 1 km in EPSG:6933; days use Lima time (UTC-5). Terra and Aqua count once per cell-day."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "calibration",
+    "source": "B0 = VIIRS sin factor. B1 = B0 * kappa, con kappa = suma(cell_days MODIS en train) / suma(cell_days VIIRS en train): un solo factor global para la regi\u00f3n, ajustado una vez sobre todo el periodo train.",
+    "english": "B0 is unscaled VIIRS. B1 = B0 times kappa; kappa is the training sum of MODIS cell-days divided by the training sum of VIIRS cell-days. The pilot fits one fixed regional factor."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[0]",
+    "source": "El \u03ba cambia de un departamento a otro (de 0.164 a 0.337 entre los de \u03ba propio, en train).",
+    "english": "Training factors differ between departments: 0.164-0.337 among departments with their own factor."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[1]",
+    "source": "El \u03ba tambi\u00e9n cambia de un a\u00f1o a otro dentro de cada regi\u00f3n, y un \u03ba fijo no sigue esos cambios; el rango anual de cada regi\u00f3n est\u00e1 en regions[].kappa_anual_rango.",
+    "english": "The ratio also varies between years within a region. A fixed factor does not follow those changes; annual ranges are available in the source files."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[2]",
+    "source": "El estrato agrupado (8 departamentos con poca actividad) tiene error alto en validaci\u00f3n: WAPE B1 de Arequipa 0,59 y de Lima 0,52. Su \u03ba propio es muy inestable a\u00f1o a a\u00f1o y se usa uno com\u00fan para los 8.",
+    "english": "The group of eight low-activity departments has high validation error: B1 WAPE is 0.59 for Arequipa and 0.52 for Lima. Their own annual ratios are unstable, so the group uses one common factor."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[3]",
+    "source": "El \u03ba nacional \u00fanico tiene menor WAPE que el \u03ba estratificado en 4 departamentos en validaci\u00f3n (\u00c1ncash, Cajamarca, Huancavelica, Pasco); la estratificada gana en el agregado de los 25 y en los dem\u00e1s departamentos reportables.",
+    "english": "A single national factor has lower validation WAPE than stratified calibration in Ancash, Cajamarca, Huancavelica and Pasco. Stratified calibration performs better in the aggregate and the other reportable departments."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[4]",
+    "source": "3 departamentos no llegan al m\u00ednimo de \u03a3 MODIS \u2265 50 en validaci\u00f3n y no tienen m\u00e9tricas propias (Callao, Moquegua, Tacna); sus meses s\u00ed cuentan dentro de PE y PE-SIN-25 (DECISIONS.md \u00a711.3).",
+    "english": "Callao, Moquegua and Tacna do not reach the minimum of 50 MODIS cell-days in validation and have no individual metrics. Their monthly values still contribute to national aggregates."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[5]",
+    "source": "Callao tiene \u03a3 MODIS = 0 en train: no tiene \u03ba propio y su \u03ba anual no est\u00e1 definido.",
+    "english": "Callao has zero MODIS cell-days in training, so its own factor and annual ratio are undefined."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[6]",
+    "source": "Las celdas cuyo centro cae fuera de los 25 pol\u00edgonos INEI no cuentan (2,619 de 824,137 celdas-d\u00eda entre 2013 y 2024, 0.3%).",
+    "english": "Cells whose centres fall outside the 25 INEI polygons are excluded: 2,619 of 824,137 cell-days in 2013-2024 (0.3%)."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[7]",
+    "source": "B1 se valida a escala regi\u00f3n-mes. No debe aplicarse a celdas individuales del mapa.",
+    "english": "B1 is validated at region-month scale and must not be applied to individual map cells."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[8]",
+    "source": "El indicador cuenta detecciones satelitales de anomal\u00edas t\u00e9rmicas, no incendios confirmados ni superficie quemada.",
+    "english": "Thermal detections are not confirmed fires or burned area."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[9]",
+    "source": "MODIS cambia de versi\u00f3n V6 a V6.1 en febrero de 2023, al inicio de validaci\u00f3n.",
+    "english": "MODIS changed from V6 to V6.1 in February 2023, at the start of validation."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[10]",
+    "source": "FIRMS no entrega cobertura de nubes: un mes con 0 detecciones puede reflejar ausencia de fuego o falta de observaci\u00f3n.",
+    "english": "FIRMS provides no cloud-cover information. Zero detections can reflect no fire or a lack of observation."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[11]",
+    "source": "\u03ba fijo con 2013-2022 no sigue un cambio de r\u00e9gimen de MODIS: la raz\u00f3n anual MODIS/VIIRS de PE fue 0.222 a 0.286 entre 2013 y 2024, 0.191 en 2025 y 0.176 en 2026 (ene-jul). En el test B1 qued\u00f3 por encima de MODIS en los 19 meses, en PE y en PE-SIN-25. Los resultados de 2025-2026 no deben leerse como la precisi\u00f3n normal del m\u00e9todo; para usar B1 hacia adelante hay que recalibrar y volver a validar.",
+    "english": "A factor fitted to 2013-2022 does not follow a MODIS regime change. The national annual MODIS/VIIRS ratio was 0.222-0.286 in 2013-2024, 0.191 in 2025 and 0.176 in January-July 2026. B1 exceeded MODIS in all 19 test months in both national aggregates. These test results do not represent normal future accuracy; forward use requires recalibration and validation."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[12]",
+    "source": "En a\u00f1os de mucha actividad, B1 subestima el pico: en setiembre de 2024 (validaci\u00f3n) estim\u00f3 611 celdas-d\u00eda en San Mart\u00edn frente a 885 de MODIS (\u221231%) y 1,639 en Ucayali frente a 2,323 (\u221229%). Es el caso opuesto al test, donde con poca actividad sobreestim\u00f3: un \u03ba fijo no sigue la intensidad de cada temporada (REVISION_P11.md, anexo A.2).",
+    "english": "B1 underestimates high-activity peaks: in September 2024 it estimated 611 cell-days against 885 MODIS cell-days in San Martin (31% lower), and 1,639 against 2,323 in Ucayali (29% lower). It overestimated the low-activity test period. A fixed factor does not track seasonal intensity."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[13]",
+    "source": "Hip\u00f3tesis no probada: la deriva orbital de Terra y Aqua afecta el muestreo del ciclo diurno y el tama\u00f1o y espaciado de p\u00edxel de MODIS (L. Giglio, LANCE UWG, mayo de 2025); es compatible con la ca\u00edda de la raz\u00f3n MODIS/VIIRS, pero no se prob\u00f3 que sea la causa.",
+    "english": "Unproven hypothesis: orbital drift of Terra and Aqua affects MODIS sampling of the daily cycle and pixel size and spacing (L. Giglio, LANCE UWG, May 2025). This is consistent with the declining MODIS/VIIRS ratio, but has not been established as its cause."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[14]",
+    "source": "Hubo mucha menos actividad en el test: MODIS promedio mensual de PE baj\u00f3 de 1,349 celdas-d\u00eda en validaci\u00f3n a 467 en test. El WAPE se infla por el denominador peque\u00f1o (WAPE B1 de PE-SIN-25: 0.122 en validaci\u00f3n, 0.326 en test), aunque el MAE de PE baj\u00f3 (164.0 a 143.8). Con MODIS bajo, departamentos de poca actividad (Pasco, Hu\u00e1nuco, Amazonas, Piura) dan WAPE altos aunque el MAE sea de pocas celdas-d\u00eda.",
+    "english": "National monthly MODIS activity decreased from 1,349 cell-days in validation to 467 in test. A small denominator raises WAPE: Peru excluding Ucayali had B1 WAPE 0.122 in validation and 0.326 in test, while national MAE decreased from 164.0 to 143.8. Low-activity departments can have high WAPE with an MAE of only a few cell-days."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[15]",
+    "source": "PE-25 (Ucayali) no es una evaluaci\u00f3n ciega: su test ya se vio en T29. PE tampoco lo es del todo; la lectura principal de generalizaci\u00f3n es PE-SIN-25.",
+    "english": "Ucayali is not a blind evaluation: its test was examined earlier. The national aggregate also includes it; Peru excluding Ucayali is the main separate assessment of generalisation."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[16]",
+    "source": "4 departamentos no llegan al m\u00ednimo de \u03a3 MODIS \u2265 50 en test y no tienen m\u00e9tricas de test (Callao, Moquegua, Tacna, Tumbes); sus meses s\u00ed cuentan dentro de PE y PE-SIN-25 (DECISIONS.md \u00a711.3).",
+    "english": "Callao, Moquegua, Tacna and Tumbes do not reach 50 MODIS cell-days in test and have no individual test metrics. Their months still contribute to national aggregates."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[17]",
+    "source": "VIIRS S-NPP: FIRMS dej\u00f3 de producir datos nuevos el 2 de noviembre de 2026, a las 13:00 UTC (NASA Earthdata, \u00abTransitioning from Suomi NPP VIIRS\u00bb). La serie hasta 2026-07 no se afecta; cualquier actualizaci\u00f3n necesita otro VIIRS.",
+    "english": "FIRMS stopped producing new Suomi NPP VIIRS data on 2 November 2026 at 13:00 UTC (NASA Earthdata). The series through July 2026 is unaffected; updates require another VIIRS source."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "limitations[18]",
+    "source": "Un error retrospectivo de B1 no es un porcentaje de confianza para meses futuros.",
+    "english": "Retrospective B1 error is not a confidence percentage for future months."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "indicator",
+    "source": "cell_days: n\u00famero de pares celda-d\u00eda con al menos una detecci\u00f3n de fuego activo en la regi\u00f3n, por mes y sensor. Celda de 1 km x 1 km en EPSG:6933; d\u00eda calendario en hora de Lima (UTC-5). Terra y Aqua cuentan una sola vez por celda-d\u00eda.",
+    "english": "Cell-days count cell-and-day pairs with at least one usable detection per region, month and sensor. Cells are 1 km by 1 km in EPSG:6933; days use Lima time (UTC-5). Terra and Aqua count once per cell-day."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "calibration",
+    "source": "B0 = VIIRS sin factor. B1 = B0 \u00d7 \u03ba del estrato de la regi\u00f3n, con \u03ba = suma(cell_days MODIS en train) / suma(cell_days VIIRS en train), calculado una sola vez con train 2013-01:2022-12. 17 departamentos usan su propio \u03ba; 8 (PE-04, PE-07, PE-09, PE-11, PE-15, PE-18, PE-23, PE-24) usan el \u03ba del estrato agrupado (suma de los 8). B1 de PE es la suma de los B1 de los 25 departamentos y B1 de PE-SIN-25 la suma de los 24 sin PE-25 (contrato v1.1 D); el \u03ba nacional solo es la alternativa (b) de DECISIONS.md \u00a711.3 y una referencia en resultados.",
+    "english": "B0 is unscaled VIIRS. B1 = B0 times the regional stratum factor, fitted once on January 2013-December 2022. Seventeen departments use their own factor and eight use a pooled factor. National B1 sums department estimates; Peru excluding Ucayali sums the other 24. The national reference factor is not applied to that aggregate."
+  },
+  {
+    "file": "peru/validation.json",
+    "sha256": "b2b259928bf830abfdcc53641693343c82699f0dc9738f8fe60644677c7f1d1e",
+    "field": "regions[0].nota",
+    "source": "incluye a Ucayali (PE-25), cuyo test ya se vio en T29; el resultado limpio es PE-SIN-25",
+    "english": "Includes Ucayali, whose test was examined earlier. Peru excluding Ucayali provides a separate assessment."
+  },
+  {
+    "file": "peru/validation.json",
+    "sha256": "b2b259928bf830abfdcc53641693343c82699f0dc9738f8fe60644677c7f1d1e",
+    "field": "regions[8].motivo",
+    "source": "\u03a3 MODIS en test = 0, por debajo del m\u00ednimo de 50 (DECISIONS.md \u00a711.3)",
+    "english": "The MODIS test total is 0 cell-days, below the reporting minimum of 50."
+  },
+  {
+    "file": "peru/validation.json",
+    "sha256": "b2b259928bf830abfdcc53641693343c82699f0dc9738f8fe60644677c7f1d1e",
+    "field": "regions[19].motivo",
+    "source": "\u03a3 MODIS en test = 26, por debajo del m\u00ednimo de 50 (DECISIONS.md \u00a711.3)",
+    "english": "The MODIS test total is 26 cell-days, below the reporting minimum of 50."
+  },
+  {
+    "file": "peru/validation.json",
+    "sha256": "b2b259928bf830abfdcc53641693343c82699f0dc9738f8fe60644677c7f1d1e",
+    "field": "regions[24].motivo",
+    "source": "\u03a3 MODIS en test = 7, por debajo del m\u00ednimo de 50 (DECISIONS.md \u00a711.3)",
+    "english": "The MODIS test total is 7 cell-days, below the reporting minimum of 50."
+  },
+  {
+    "file": "peru/validation.json",
+    "sha256": "b2b259928bf830abfdcc53641693343c82699f0dc9738f8fe60644677c7f1d1e",
+    "field": "regions[25].motivo",
+    "source": "\u03a3 MODIS en test = 38, por debajo del m\u00ednimo de 50 (DECISIONS.md \u00a711.3)",
+    "english": "The MODIS test total is 38 cell-days, below the reporting minimum of 50."
+  },
+  {
+    "file": "peru/validation.json",
+    "sha256": "b2b259928bf830abfdcc53641693343c82699f0dc9738f8fe60644677c7f1d1e",
+    "field": "regions[26].nota",
+    "source": "test ya visto en T29 (piloto Ucayali); no es una evaluaci\u00f3n ciega",
+    "english": "The Ucayali pilot test was examined earlier and is not a blind evaluation."
+  },
+  {
+    "file": "method.json",
+    "sha256": "3a4f977b4ae600109d16bdbddc6032df4ce6fbab3cc5de7222836f88558e0f15",
+    "field": "region",
+    "source": "Departamento de Ucayali, Per\u00fa. Celda incluida si su centro cae dentro del pol\u00edgono oficial INEI 2023 (docs/region/ucayali_inei_2023.geojson).",
+    "english": "Ucayali department, Peru. A cell is included when its centre lies inside the official INEI 2023 polygon."
+  },
+  {
+    "file": "peru/method.json",
+    "sha256": "52f4cacdea8ac97d609d79283aef1f9a9d001d8df14d2d06f1ff710f3fc1a60b",
+    "field": "region",
+    "source": "Per\u00fa (PE) = suma de los 25 departamentos INEI 2023. Cada celda de 1 km pertenece al departamento que contiene su centro (docs/region/departamentos_inei_2023.geojson); las celdas fuera de los 25 pol\u00edgonos no cuentan.",
+    "english": "Peru is the sum of 25 INEI 2023 departments. Each 1 km cell belongs to the department containing its centre; cells outside all 25 polygons are excluded."
+  }
+]

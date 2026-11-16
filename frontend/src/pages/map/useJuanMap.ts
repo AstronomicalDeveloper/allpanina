@@ -8,13 +8,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CellsData } from '../../types/data.ts'
 import type { MapSelection } from '../../types/selection.ts'
 import type * as MapLibre from 'maplibre-gl'
-import { MONTHS } from '../../services/data/calendar.ts'
+import { formatMonthLong } from '../../ui/format'
 import { cellPopup, cellsBounds, filterCells } from '../../services/data/map.ts'
 import { buildMapYear } from '../../services/data/mapExploration.ts'
 import type { MapCellProperties, MapCells, MapYear } from '../../services/data/mapExploration.ts'
 import { loadMapRuntime } from './cartography/mapRuntime.ts'
 import type { RuntimeLoader } from './cartography/mapRuntime.ts'
-import { applyBasemap, applyOverlayVisibility, buildGraticuleGeoJSON, calculatePercentile, percentileColorExpression } from './cartography/juanLayers.ts'
+import { BASEMAP_FALLBACK, BASEMAP_OPTIONS, BASEMAP_SOURCE_IDS, applyBasemap, applyOverlayVisibility, buildGraticuleGeoJSON, calculatePercentile, paletteFor, percentileColorExpression } from './cartography/juanLayers.ts'
 import type { BaseMapId, OverlayState } from './cartography/juanLayers.ts'
 import { prepareSummaryPoints } from '../../services/data/mapSymbols'
 import { SUMMARY_SOURCE, POINT_LAYER, LOCAL_ZOOM, localOpacity, symbolOpacity } from './cartography/multiscaleLayers'
@@ -28,6 +28,19 @@ interface Props {
   runtimeLoader?: RuntimeLoader
 }
 type Properties = MapCellProperties
+/** Map problem: a plain message and, separately, the original technical detail. */
+type MapIssue = { message: string; detail?: string }
+const problem = (message: string, error?: unknown): MapIssue => ({ message, detail: error === undefined ? undefined : error instanceof Error ? error.message : String(error) })
+/** Tile errors tolerated from one provider before switching away from it (a single missing tile is not an outage). */
+export const PROVIDER_FAILURES = 3
+const basemapLabel = (id: BaseMapId) => BASEMAP_OPTIONS.find(option => option.id === id)?.label ?? id
+/** Reference layers by MapLibre source id, with the name the user sees. */
+const OVERLAY_SOURCES: Record<string, { key: keyof OverlayState; label: string }> = {
+  'overlay-basic-reference': { key: 'basic', label: 'References and boundaries' },
+  'overlay-basic-peru': { key: 'basic', label: 'References and boundaries' },
+  'overlay-detailed': { key: 'detailed', label: 'Detailed cartography of Peru' },
+  'overlay-protected': { key: 'protectedAreas', label: 'Protected natural areas' },
+}
 
 export default function useJuanMap({ data, model, selection, runtimeLoader = loadMapRuntime, national = false }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -43,8 +56,10 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
   const [cursorCoords, setCursorCoords] = useState<{ lat: number | null; lon: number | null }>({ lat: null, lon: null })
   const [selected, setSelected] = useState<{ key: string; properties: Properties } | null>(null)
   const [ready, setReady] = useState(false)
-  const [issue, setIssue] = useState('')
+  const [issue, setIssue] = useState<MapIssue | null>(null)
   const [shareNotice, setShareNotice] = useState<{ text: string; copied: boolean } | null>(null)
+  /** Provider problems that the map already worked around (other base map, layer turned off). Not an error. */
+  const [notice, setNotice] = useState('')
   const shareMessage = shareNotice?.text ?? ''
   useEffect(() => {
     if (!shareNotice?.copied) return
@@ -56,7 +71,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
     if(!national)return
     let active=true
     void loadDepartmentNavigation().then(value=>{if(active)setNavigation(value)})
-      .catch(error=>{if(active)setIssue(`No se pudieron cargar los límites para enfocar el departamento: ${String(error)}. No se muestran celdas departamentales hasta recuperar los límites.`)})
+      .catch(error=>{if(active)setIssue(problem('Department boundaries could not be loaded, so the department cannot be focused. Department cells are hidden until they load.', error))})
     return ()=>{active=false}
   },[national,attempt])
   const year = selection.year ?? 0, month = selection.month ?? 1, sensor = selection.sensor
@@ -72,7 +87,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
   const [representation, setRepresentation] = useState<'summary' | 'local'>('summary')
   const usableMonths = yearModel.coverage[sensor].filter(m => m.status === 'ok').length
   const coverageKnown = yearModel.coverage[sensor].some(m => m.status !== 'unknown')
-  const periodLabel = scope === 'year' ? `Acumulado ${year} · ${coverageKnown ? `${usableMonths}/12 meses publicados utilizables` : 'cobertura no disponible'}` : `${MONTHS[month - 1]} ${year}`
+  const periodLabel = scope === 'year' ? `Total ${year} · ${coverageKnown ? `${usableMonths}/12 usable published months` : 'coverage not available'}` : formatMonthLong(year, month)
   const monthStatus = yearModel.coverage[sensor][month - 1]?.status
   const cellsById = useMemo(() => new Map(filteredGeoJson.features.map(f => [f.properties.cell_id, f])), [filteredGeoJson])
   const selectedCell = selected?.key === selectionKey && cellsById.get(selected.properties.cell_id)?.properties === selected.properties ? selected.properties : null
@@ -92,15 +107,16 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
     let instance: MapLibre.Map | null = null
     let popup: MapLibre.Popup | null = null
     let observer: ResizeObserver | null = null
+    let popupDismissTimer: ReturnType<typeof setTimeout> | undefined
     let timeout: ReturnType<typeof setTimeout> | undefined
     const resize = () => instance?.resize()
-    const contextLost = (event: Event) => { event.preventDefault(); setReady(false); setIssue('Se perdió el contexto WebGL. Reintenta el mapa.') }
+    const contextLost = (event: Event) => { event.preventDefault(); setReady(false); setIssue(problem('The browser lost the WebGL context. Retry the map.')) }
     void runtimeLoader().then(runtime => {
       if (cancelled || !mapContainer.current) return
       const current = latest.current
       const map = createJuanMap(runtime, mapContainer.current, current.filteredGeoJson, current.percentileBreaks, current.opacity, current.summaryPoints)
       instance = map; mapRef.current = map
-      popup = new runtime.Popup({ closeButton: false, closeOnClick: false, offset: 10 })
+      popup = new runtime.Popup({ closeButton: true, closeOnClick: false, offset: 16, maxWidth: '300px' })
       popupRef.current = popup
       const updateRepresentation = () => setRepresentation(map.getZoom() >= LOCAL_ZOOM ? 'local' : 'summary')
       map.on('zoomend', updateRepresentation)
@@ -113,17 +129,45 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
         const coverage = latest.current.coverage
         return cellPopup(properties, { national: latest.current.national, coveredMonths: coverage.some(month => month.status === 'unknown') ? undefined : coverage.filter(month => month.status === 'ok').length })
       }
+      let clickedCell: string | null = null
+      let clickedPoint: { x: number; y: number } | undefined
+      let overPopup = false
+      const keepCellPopup = () => { clearTimeout(popupDismissTimer); popupDismissTimer = undefined }
+      const dismissCellPopup = () => { keepCellPopup(); clickedCell = null; popup?.remove() }
+      const deferDismiss = () => {
+        if (!clickedCell || overPopup || popupDismissTimer) return
+        popupDismissTimer = setTimeout(dismissCellPopup, 650)
+      }
+      const enterPopup = () => { overPopup = true; keepCellPopup() }
+      const leavePopup = () => { overPopup = false; deferDismiss() }
+      map.on('mousemove', event => {
+        if (!clickedCell || !clickedPoint || !event.point) return
+        if (Math.hypot(event.point.x - clickedPoint.x, event.point.y - clickedPoint.y) <= 120) keepCellPopup()
+        else deferDismiss()
+      })
       for (const layer of ['celdas-fill', POINT_LAYER, DEPARTMENT_SQUARE_LAYER]) {
       map.on('mousemove', layer, event => {
         const feature = pick(event)
-        if (feature) { map.getCanvas().style.cursor = 'pointer'; popup?.setLngLat(event.lngLat).setDOMContent(popupContent(feature.properties)).addTo(map) }
+        map.getCanvas().style.cursor = feature ? 'pointer' : ''
+        if (feature?.properties.cell_id === clickedCell) keepCellPopup()
       })
-      map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = ''; popup?.remove() })
+      map.on('mouseleave', layer, event => {
+        map.getCanvas().style.cursor = ''
+        if (clickedPoint && event?.point && Math.hypot(event.point.x - clickedPoint.x, event.point.y - clickedPoint.y) <= 120) keepCellPopup()
+        else deferDismiss()
+      })
       map.on('click', layer, event => {
         const feature = pick(event)
         if (feature) {
+          keepCellPopup()
+          overPopup = false
+          clickedPoint = event.point
+          clickedCell = feature.properties.cell_id
           setSelected({ key: latest.current.selectionKey, properties: feature.properties })
           popup?.setLngLat(event.lngLat).setDOMContent(popupContent(feature.properties)).addTo(map)
+          const element = popup?.getElement?.()
+          element?.addEventListener('pointerenter', enterPopup)
+          element?.addEventListener('pointerleave', leavePopup)
         }
       })
       }
@@ -134,7 +178,35 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
         lastCoordinateUpdate = now
         setCursorCoords({ lat: Number(event.lngLat.lat.toFixed(3)), lon: Number(event.lngLat.lng.toFixed(3)) })
       })
-      map.on('error', event => { if (!cancelled) setIssue(`Recurso cartográfico o WebGL no disponible: ${event.error?.message ?? 'Error del mapa'}. Las celdas locales no se sustituyen.`) })
+      // Provider errors never remove the observations already drawn (C4). A failing base map is replaced by
+      // the next one; a failing reference layer is turned off; anything else is reported with a retry.
+      const failures = new Map<string, number>()
+      map.on('error', event => {
+        if (cancelled) return
+        const sourceId = (event as { sourceId?: unknown }).sourceId
+        if (typeof sourceId === 'string' && (sourceId.startsWith('basemap-') || sourceId in OVERLAY_SOURCES)) {
+          const count = (failures.get(sourceId) ?? 0) + 1
+          failures.set(sourceId, count)
+          if (count !== PROVIDER_FAILURES) return
+          const current = latest.current.baseMap
+          if (sourceId.startsWith('basemap-')) {
+            if (current === 'none' || BASEMAP_SOURCE_IDS[current] !== sourceId) return
+            let next = BASEMAP_FALLBACK[current]
+            while (next && next !== 'none' && (failures.get(BASEMAP_SOURCE_IDS[next]) ?? 0) >= PROVIDER_FAILURES) next = BASEMAP_FALLBACK[next]
+            const target = next ?? 'none'
+            setBaseMap(target)
+            setNotice(target === 'none'
+              ? `${basemapLabel(current)} base map is not available. The observations are shown on a plain background.`
+              : `${basemapLabel(current)} base map is not available; showing ${basemapLabel(target)}.`)
+          } else {
+            const overlay = OVERLAY_SOURCES[sourceId]
+            setOverlays(previous => ({ ...previous, [overlay.key]: false }))
+            setNotice(`The layer “${overlay.label}” is not available right now and was turned off.`)
+          }
+          return
+        }
+        setIssue(problem('A map resource (graphics or style) could not be loaded. Check the connection or retry; the observations are not replaced.', event.error ?? 'Map error'))
+      })
       const refreshGrid = () => {
         if (!latest.current.overlays.graticule) return
         const source = map.getSource('graticule-grid') as MapLibre.GeoJSONSource | undefined
@@ -154,10 +226,10 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
       map.getCanvas().addEventListener('webglcontextlost', contextLost)
       if (typeof ResizeObserver !== 'undefined') { observer = new ResizeObserver(resize); observer.observe(mapContainer.current) }
       window.addEventListener('resize', resize)
-      timeout = setTimeout(() => { if (!cancelled) setIssue('La carga cartográfica tarda demasiado. Comprueba la conexión o elige otro fondo.') }, 20000)
-    }).catch(error => { if (!cancelled) setIssue(`No se pudo iniciar el mapa WebGL/worker: ${error instanceof Error ? error.message : 'Error desconocido'}`) })
+      timeout = setTimeout(() => { if (!cancelled) setIssue(problem('The map is taking too long to load. Check the connection or choose another base map.')) }, 20000)
+    }).catch(error => { if (!cancelled) setIssue(problem('The map could not start in this browser. Reload the page or try another browser.', error)) })
     return () => {
-      cancelled = true; clearTimeout(timeout); observer?.disconnect()
+      cancelled = true; clearTimeout(timeout); clearTimeout(popupDismissTimer); observer?.disconnect()
       window.removeEventListener('resize', resize)
       instance?.getCanvas().removeEventListener('webglcontextlost', contextLost)
       renderedSummary.current = null; focusedRegion.current = null
@@ -184,7 +256,7 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
       if (!cancelled) for (const layer of layers) map.setLayoutProperty(layer, 'visibility', 'visible')
     }
     void focusDepartment().catch(error => {
-      if (!cancelled) setIssue(`No se pudo enfocar o destacar el departamento: ${String(error)}`)
+      if (!cancelled) setIssue(problem('The selected department could not be focused or highlighted.', error))
     })
     return () => { cancelled = true }
   }, [national, ready, navigation, selection.region])
@@ -205,15 +277,16 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
       renderedSummary.current = summaryPoints
       for (const layer of observedLayers) map.setLayoutProperty(layer, 'visibility', layer === 'celdas-line' && departmentSelected ? 'none' : 'visible')
     } })
-      .catch(error => { if (!cancelled) setIssue(`No se pudo actualizar el resumen cartográfico: ${String(error)}`) })
+      .catch(error => { if (!cancelled) setIssue(problem('The map summary could not be updated. Retry the map.', error)) })
     return () => { cancelled = true }
   }, [ready, filteredGeoJson, summaryPoints, departmentSelected])
   useEffect(() => {
     const map = mapRef.current
     if (!map || (!ready && !map.isStyleLoaded())) return
-    map.setPaintProperty('celdas-fill', 'fill-color', percentileColorExpression(percentileBreaks.q25, percentileBreaks.q50, percentileBreaks.q75))
+    const palette = paletteFor(baseMap)
+    map.setPaintProperty('celdas-fill', 'fill-color', percentileColorExpression(percentileBreaks.q25, percentileBreaks.q50, percentileBreaks.q75, palette))
     map.setPaintProperty('celdas-fill', 'fill-opacity', localOpacity(opacity))
-    map.setPaintProperty(POINT_LAYER, 'icon-color', percentileColorExpression(percentileBreaks.q25, percentileBreaks.q50, percentileBreaks.q75))
+    map.setPaintProperty(POINT_LAYER, 'icon-color', percentileColorExpression(percentileBreaks.q25, percentileBreaks.q50, percentileBreaks.q75, palette))
     map.setPaintProperty(POINT_LAYER, 'icon-opacity', symbolOpacity(opacity))
     applyBasemap(map, baseMap); applyOverlayVisibility(map, overlays)
     if (overlays.graticule) (map.getSource('graticule-grid') as MapLibre.GeoJSONSource).setData(buildGraticuleGeoJSON(map.getBounds(), map.getZoom()))
@@ -228,10 +301,10 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
     updateSquares()
     if (!department) return
     map.on('zoomend', updateSquares)
-    map.setPaintProperty(DEPARTMENT_SQUARE_LAYER, 'fill-color', percentileColorExpression(percentileBreaks.q25, percentileBreaks.q50, percentileBreaks.q75))
+    map.setPaintProperty(DEPARTMENT_SQUARE_LAYER, 'fill-color', percentileColorExpression(percentileBreaks.q25, percentileBreaks.q50, percentileBreaks.q75, paletteFor(baseMap)))
     map.setPaintProperty(DEPARTMENT_SQUARE_LAYER, 'fill-opacity', symbolOpacity(opacity))
     return () => { map.off('zoomend', updateSquares) }
-  }, [ready, department, filteredGeoJson, percentileBreaks, opacity])
+  }, [ready, department, filteredGeoJson, percentileBreaks, opacity, baseMap])
   useEffect(() => {
     const root = rootRef.current
     const sync = () => { setIsFullScreen(document.fullscreenElement === rootRef.current); mapRef.current?.resize() }
@@ -247,26 +320,29 @@ export default function useJuanMap({ data, model, selection, runtimeLoader = loa
   }
   const toggleFullscreen = async () => {
     try { if (document.fullscreenElement === rootRef.current) await document.exitFullscreen(); else await rootRef.current?.requestFullscreen() }
-    catch { setIssue('El navegador no permite pantalla completa.') }
+    catch { setIssue(problem('This browser does not allow full screen.')) }
   }
   const copyLink = async () => {
     const url = new URL(window.location.href)
-    url.pathname = '/mapa'
+    url.pathname = '/map'
     url.searchParams.delete('view')
     if (!url.searchParams.has('calendarSeries')) url.searchParams.set('calendarSeries', url.searchParams.get('sensor') ?? 'MODIS')
     for (const [key, value] of Object.entries({ mapRegion: selection.region, periodYear: String(year), periodMonth: String(month), sensor, mapSensor: sensor, scope, mapScope: scope })) url.searchParams.set(key, value)
-    try { await navigator.clipboard.writeText(url.toString()); setShareNotice({ text: 'Enlace de región, período y sensor copiado.', copied: true }) }
-    catch { setShareNotice({ text: `Copia este enlace: ${url.toString()}`, copied: false }) }
+    try { await navigator.clipboard.writeText(url.toString()); setShareNotice({ text: 'Link to this region, period and sensor copied.', copied: true }) }
+    catch { setShareNotice({ text: `Copy this link: ${url.toString()}`, copied: false }) }
   }
   const selectCell = (id: string) => {
     const feature = cellsById.get(id)
     setSelected(feature ? { key: selectionKey, properties: feature.properties } : null)
   }
-  return { rootRef, mapContainer, baseMap, setBaseMap, overlays, setOverlays, opacity, setOpacity,
-    isFullScreen, cursorCoords, selectedCell, selectCell, ready, issue, shareMessage, representation,
+  /** Choosing a base map or layer by hand clears an earlier provider notice. */
+  const chooseBaseMap = (id: BaseMapId) => { setNotice(''); setBaseMap(id) }
+  const chooseOverlays = (next: OverlayState) => { setNotice(''); setOverlays(next) }
+  return { rootRef, mapContainer, baseMap, setBaseMap: chooseBaseMap, overlays, setOverlays: chooseOverlays, opacity, setOpacity, notice, dismissNotice: () => setNotice(''),
+    isFullScreen, cursorCoords, selectedCell, selectCell, ready, issue: issue?.message ?? '', issueDetail: issue?.detail, shareMessage, representation,
     scope, year, month, sensor, yearModel, filteredGeoJson, usableMonths, periodLabel, monthStatus,
     percentileBreaks, stats, resetView, toggleFullscreen, copyLink,
     dismissShare: () => setShareNotice(null),
-    retry: () => { setReady(false); setIssue(''); setAttempt(attempt + 1) } }
+    retry: () => { setReady(false); setIssue(null); setAttempt(attempt + 1) } }
 }
 export type MapController = Omit<ReturnType<typeof useJuanMap>, 'rootRef' | 'mapContainer'>

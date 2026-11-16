@@ -8,7 +8,7 @@ import {buildMapYear} from '../src/services/data/mapExploration'
 import {territorialClip} from '../src/services/data/territorialClip'
 import {clipDepartmentCells,departmentSquares} from '../src/services/data/departmentCells'
 import MapPage from '../src/pages/map/MapPage'
-import GeographicSelection from '../src/components/ui/GeographicSelection'
+import ScopePicker from '../src/shell/ScopePicker'
 import {departmentView,nationalNavigationBounds,validateDepartmentNavigation,loadDepartmentNavigation} from '../src/services/data/departmentNavigation'
 import {DEPARTMENT_SOURCE,DEPARTMENT_SQUARE_SOURCE} from '../src/pages/map/cartography/departmentLayers'
 import type {CellsData} from '../src/types/data'
@@ -53,23 +53,23 @@ test('límite territorial discreto; PE elimina el resaltado',()=>{
 })
 test('Callao se enfoca una vez; cámara manual y cambios de sensor/mes no fuerzan otro encuadre',async t=>{
  const fetch=mockFiles(t),runtime=fakeRuntime()
- const {host}=await mount(t,'/mapa?mapRegion=PE-07&periodYear=2024&periodMonth=9&scope=month',createElement('div',null,createElement(GeographicSelection),createElement(MapPage,{runtimeLoader:runtime.loader})),'peru')
+ const {host}=await mount(t,'/mapa?mapRegion=PE-07&periodYear=2024&periodMonth=9&scope=month',createElement('div',null,createElement(ScopePicker),createElement(MapPage,{runtimeLoader:runtime.loader})),'peru')
  const map=runtime.maps[0]
  assert.deepEqual(map.fitted,originalBounds('PE-07'))
  assert.equal(map.fits.length,1)
  assert.equal((map.sources[DEPARTMENT_SOURCE].data as typeof navigation).features[0].properties.region_id,'PE-07')
  const observations=map.sources['celdas-observadas'].data as CellsData
  assert.equal(host.querySelector('.map-observed-value')!.textContent,'0')
- assert.match(host.querySelector('.map-provenance')!.textContent!, /GeoJSON WGS84 · PE · cobertura nacional/)
+ assert.match(host.querySelector('.map-provenance')!.textContent!, /GeoJSON WGS84 · Peru · national coverage/)
  assert.ok(!host.textContent!.includes('Ver Perú completo'))
  const all=JSON.parse(files['/data/peru/cells_PE_2024.geojson']) as CellsData
  const period={...all,features:all.features.filter(f=>f.properties.month===9&&f.properties.sensor_group==='MODIS')}
  assert.deepEqual(observations,clipDepartmentCells(period,navigation.features.find(f=>f.properties.region_id==='PE-07')!))
  await act(async()=>{map.zoom=12;map.emit('zoomend');map.emit('moveend')})
- await click(host,'VIIRS');await choose(host,'[aria-label="Mes del mapa"]','8')
+ await click(host,'VIIRS');await choose(host,'[aria-label="Map month"]','8')
  assert.equal(map.fits.length,1)
- await click(host,'Encuadrar');assert.deepEqual(map.fitted,originalBounds('PE-07'))
- await choose(host,'[aria-label="Ámbito geográfico"]','PE-25')
+ await click(host,'Zoom to scope');assert.deepEqual(map.fitted,originalBounds('PE-07'))
+ await choose(host,'[aria-label="Area"]','PE-25')
  assert.deepEqual(map.fitted,originalBounds('PE-25'))
  assert.equal(runtime.maps.length,1)
  const ucayali=navigation.features.find(f=>f.properties.region_id==='PE-25')!
@@ -80,19 +80,19 @@ test('Callao se enfoca una vez; cámara manual y cambios de sensor/mes no fuerza
  assert.deepEqual(map.sources['celdas-observadas'].data,visible)
  assert.ok((map.sources[DEPARTMENT_SQUARE_SOURCE].data as CellsData).features.length>0)
  assert.equal((map.sources[DEPARTMENT_SOURCE].data as typeof navigation).features[0].properties.region_id,'PE-25')
- await choose(host,'[aria-label="Ámbito geográfico"]','PE-16')
+ await choose(host,'[aria-label="Area"]','PE-16')
  assert.deepEqual(map.fitted,originalBounds('PE-16'))
- await choose(host,'[aria-label="Ámbito geográfico"]','PE')
+ await choose(host,'[aria-label="Area"]','PE')
  assert.deepEqual(map.fitted,originalBounds('PE'))
  assert.equal((map.sources[DEPARTMENT_SQUARE_SOURCE].data as {features:unknown[]}).features.length,0)
  assert.deepEqual(map.sources['celdas-observadas'].data,viirsAugust)
- await choose(host,'[aria-label="Ámbito geográfico"]','PE-25')
- await choose(host,'[aria-label="Año del mapa"]','2026')
- await choose(host,'[aria-label="Mes del mapa"]','7')
+ await choose(host,'[aria-label="Area"]','PE-25')
+ await choose(host,'[aria-label="Map year"]','2026')
+ await choose(host,'[aria-label="Map month"]','7')
  const next=runtime.maps.at(-1)!
  const nextData=JSON.parse(files['/data/peru/cells_PE_2026.geojson']) as CellsData
  assert.deepEqual(next.sources['celdas-observadas'].data,clipDepartmentCells({...nextData,features:nextData.features.filter(f=>f.properties.month===7&&f.properties.sensor_group==='VIIRS')},ucayali))
- await click(host,'Anual')
+ await click(host,'Yearly')
  assert.deepEqual(next.sources['celdas-observadas'].data,clipDepartmentCells(buildMapYear(nextData,{region:'PE',year:2026}).annual.VIIRS,ucayali))
  assert.ok(fetch.mock.calls.every(call=>!String(call.arguments[0]).includes('/docs/region/')))
 })

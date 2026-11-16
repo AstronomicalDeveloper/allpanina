@@ -348,3 +348,7 @@ crash.log
 
 # Monthly descriptive historical analysis
 !/docs/ANALISIS_HISTORICO.md
+!/docs/AUDITORIA_MI_REGION.md
+
+# Git fetch metadata belongs in .git, never in the project sources.
+/FETCH_HEAD

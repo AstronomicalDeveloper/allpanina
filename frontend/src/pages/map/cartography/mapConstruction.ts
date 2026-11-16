@@ -4,7 +4,7 @@ import type * as GeoJSON from "geojson";
 import type { MapRuntime } from "./mapRuntime.ts";
 import { percentileColorExpression } from "./juanLayers.ts";
 import type { MapCells } from "../../../services/data/mapExploration.ts";
-import { localOpacity, outlineWidth, outlineOpacity, summarySource, summaryLayers, SUMMARY_SOURCE, LOCAL_ZOOM, SQUARE_IMAGE, squareImage } from './multiscaleLayers'
+import { localOpacity, outlineWidth, outlineOpacity, summarySource, summaryLayers, SUMMARY_SOURCE, LOCAL_ZOOM, registerSquareImage } from './multiscaleLayers'
 import type { SummaryPoints } from '../../../services/data/mapSymbols'
 export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, filteredGeoJson: MapCells, percentileBreaks: {q25:number;q50:number;q75:number}, opacity: number, points: SummaryPoints) {
     const map = new runtime.Map({
@@ -78,7 +78,7 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
           },
 
           // --------------------------------------------------------------
-          // CELDAS OBSERVADAS
+          // OBSERVED CELLS
           // --------------------------------------------------------------
           'celdas-observadas': {
             type: 'geojson',
@@ -86,7 +86,7 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
           },
 
           // --------------------------------------------------------------
-          // OVERLAY: CUADRÍCULA
+          // OVERLAY: GRATICULE
           // --------------------------------------------------------------
           'graticule-grid': {
             type: 'geojson',
@@ -97,7 +97,7 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
           },
 
           // --------------------------------------------------------------
-          // OVERLAY: REFERENCIAS GLOBALES BÁSICAS
+          // OVERLAY: BASIC WORLD REFERENCES
           // --------------------------------------------------------------
           'overlay-basic-reference': {
             type: 'raster',
@@ -109,7 +109,7 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
           },
 
           // --------------------------------------------------------------
-          // OVERLAY: CARTOGRAFÍA BÁSICA PERÚ
+          // OVERLAY: BASIC CARTOGRAPHY, PERU
           // --------------------------------------------------------------
           'overlay-basic-peru': {
             type: 'raster',
@@ -117,11 +117,11 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
               'https://geoservidorperu.minam.gob.pe/arcgis/rest/services/ServicioBase/MapServer/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256%2C256&format=png32&transparent=true&layers=show%3A8%2C11%2C12%2C13%2C14&f=image',
             ],
             tileSize: 256,
-            attribution: 'Información cartográfica © MINAM Perú',
+            attribution: 'Base cartography © MINAM Peru',
           },
 
           // --------------------------------------------------------------
-          // OVERLAY: CARTOGRAFÍA DETALLADA PERÚ
+          // OVERLAY: DETAILED CARTOGRAPHY, PERU
           // --------------------------------------------------------------
           'overlay-detailed': {
             type: 'raster',
@@ -129,20 +129,19 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
               'https://geoservidorperu.minam.gob.pe/arcgis/rest/services/ServicioBase/MapServer/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256%2C256&format=png32&transparent=true&layers=show%3A0%2C1%2C7%2C8%2C9%2C10%2C11%2C12%2C13%2C14&f=image',
             ],
             tileSize: 256,
-            attribution: 'Cartografía detallada © MINAM Perú',
+            attribution: 'Detailed cartography © MINAM Peru',
           },
 
           // --------------------------------------------------------------
-          // OVERLAY: ÁREAS NATURALES PROTEGIDAS UCAYALI
+          // OVERLAY: PROTECTED NATURAL AREAS, ALL OF PERU (C7)
           // --------------------------------------------------------------
           'overlay-protected': {
             type: 'raster',
             tiles: [
-              'https://geoservidorperu.minam.gob.pe/arcgis/rest/services/ServicioANP/MapServer/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256%2C256&format=png32&transparent=true&layers=show%3A6&layerDefs=%7B%226%22%3A%22UBICA_POLI%20LIKE%20%27%25UCAYALI%25%27%22%7D&f=image',
+              'https://geoservidorperu.minam.gob.pe/arcgis/rest/services/ServicioANP/MapServer/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256%2C256&format=png32&transparent=true&layers=show%3A6&f=image',
             ],
             tileSize: 256,
-            attribution:
-              'Áreas Naturales Protegidas © MINAM Perú — filtro de ubicación Ucayali',
+            attribution: 'Protected natural areas © MINAM Peru',
           },
         },
 
@@ -151,22 +150,25 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
             id: 'bg-fallback',
             type: 'background',
             paint: {
-              'background-color': '#14213D',
+              'background-color': '#0B1736',
             },
           },
 
-          // Fondos base.
+          // Base maps.
           {
             id: 'basemap-blue-marble-layer',
             type: 'raster',
             source: 'basemap-blue-marble',
             layout: { visibility: 'visible' },
+            // Darkened satellite: the observations are the only bright element (A4).
+            paint: { 'raster-brightness-max': 0.72, 'raster-saturation': -0.25 },
           },
           {
             id: 'basemap-firefly-layer',
             type: 'raster',
             source: 'basemap-firefly',
             layout: { visibility: 'none' },
+            paint: { 'raster-brightness-max': 0.8 },
           },
           {
             id: 'basemap-streets-layer',
@@ -181,7 +183,7 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
             layout: { visibility: 'none' },
           },
 
-          // Cuadrícula geográfica.
+          // Graticule.
           {
             id: 'graticule-grid-layer',
             type: 'line',
@@ -195,7 +197,7 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
             },
           },
 
-          // Capas de referencia.
+          // Reference layers.
           {
             id: 'overlay-basic-reference-layer',
             type: 'raster',
@@ -225,7 +227,7 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
             paint: { 'raster-opacity': 0.72 },
           },
 
-          // Celdas de observación.
+          // Observed cells.
           {
             id: 'celdas-fill',
             type: 'fill',
@@ -247,7 +249,7 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
             source: 'celdas-observadas',
             minzoom: LOCAL_ZOOM,
             paint: {
-              'line-color': '#fff4df',
+              'line-color': '#FFEBB8',
               'line-width': outlineWidth,
               'line-opacity': outlineOpacity,
             },
@@ -264,9 +266,7 @@ export function createJuanMap(runtime: MapRuntime, container: HTMLDivElement, fi
       zoom: 1,
     });
 
-    const installSquare = () => { if (!map.hasImage(SQUARE_IMAGE)) map.addImage(SQUARE_IMAGE, squareImage(), {sdf:true}) }
-    map.on('styleimagemissing', event => { if (event.id === SQUARE_IMAGE) installSquare() })
-    map.once('load', installSquare)
+    registerSquareImage(map as unknown as Parameters<typeof registerSquareImage>[0])
     map.addControl(
       new runtime.NavigationControl({
         showCompass: true,

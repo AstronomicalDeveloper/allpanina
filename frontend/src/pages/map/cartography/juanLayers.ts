@@ -5,40 +5,48 @@ export type BaseMapId =
   | 'blue-marble'
   | 'firefly'
   | 'streets'
-  | 'topographic';
+  | 'topographic'
+  | 'none';
 
 export const BASEMAP_OPTIONS: {
   id: BaseMapId;
   label: string;
   description: string;
 }[] = [
-  {
-    id: 'blue-marble',
-    label: 'Blue Marble',
-    description: 'Satélite natural',
-  },
-  {
-    id: 'firefly',
-    label: 'Firefly',
-    description: 'Satélite desaturado',
-  },
-  {
-    id: 'streets',
-    label: 'Streets',
-    description: 'Calles y carreteras',
-  },
-  {
-    id: 'topographic',
-    label: 'Topographic',
-    description: 'Relieve y topografía',
-  },
+  { id: 'blue-marble', label: 'Satellite', description: 'Blue Marble · NASA GIBS' },
+  { id: 'firefly', label: 'Dark satellite', description: 'Firefly · Esri' },
+  { id: 'topographic', label: 'Topographic', description: 'Esri' },
+  { id: 'none', label: 'None', description: 'Plain background' },
 ];
 
-const BASEMAP_LAYER_IDS: Record<BaseMapId, string> = {
+/**
+ * If a base map provider fails, the map switches to the next one (C4):
+ * Blue Marble -> Firefly -> Topographic -> none. Observations stay on screen.
+ */
+export const BASEMAP_FALLBACK: Record<BaseMapId, BaseMapId | null> = {
+  'blue-marble': 'firefly',
+  firefly: 'topographic',
+  streets: 'topographic',
+  topographic: 'none',
+  none: null,
+};
+
+/** Light base maps need the light fire scale; dark ones (and none) the dark scale. */
+export const LIGHT_BASEMAPS: ReadonlySet<BaseMapId> = new Set(['streets', 'topographic']);
+
+const BASEMAP_LAYER_IDS: Record<Exclude<BaseMapId, 'none'>, string> = {
   'blue-marble': 'basemap-blue-marble-layer',
   firefly: 'basemap-firefly-layer',
   streets: 'basemap-streets-layer',
   topographic: 'basemap-topographic-layer',
+};
+
+/** Source id of each base map, as declared in the map style (used to detect provider errors). */
+export const BASEMAP_SOURCE_IDS: Record<Exclude<BaseMapId, 'none'>, string> = {
+  'blue-marble': 'basemap-blue-marble',
+  firefly: 'basemap-firefly',
+  streets: 'basemap-streets',
+  topographic: 'basemap-topographic',
 };
 
 export interface OverlayState {
@@ -71,7 +79,7 @@ export function buildGraticuleGeoJSON(
 
   const features: GeoJSON.Feature<GeoJSON.LineString>[] = [];
 
-  // Meridianos.
+  // Meridians.
   for (
     let lon = Math.ceil(west / step) * step;
     lon <= east;
@@ -97,7 +105,7 @@ export function buildGraticuleGeoJSON(
     });
   }
 
-  // Paralelos.
+  // Parallels.
   for (
     let lat = Math.ceil(south / step) * step;
     lat <= north;
@@ -130,7 +138,7 @@ export function buildGraticuleGeoJSON(
 }
 
 // ============================================================================
-// 7. CLASIFICACIÓN POR PERCENTILES
+// 7. PERCENTILE CLASSES
 // ============================================================================
 
 export function calculatePercentile(
@@ -155,25 +163,41 @@ export function calculatePercentile(
   );
 }
 
+/**
+ * Four percentile classes with the fire scale of the visual system (A2). On dark base maps the scale is
+ * inverted (intense = light, like embers); on light base maps intense = dark. Same breaks, same values.
+ */
+export const OBSERVATION_COLORS = {
+  dark: ['#96350F', '#DE6216', '#FCA548', '#FFEBB8'],
+  light: ['#FFC062', '#EF781E', '#B23A0E', '#5A1909'],
+} as const;
+export type ObservationPalette = keyof typeof OBSERVATION_COLORS;
+
+export function paletteFor(baseMap: BaseMapId): ObservationPalette {
+  return LIGHT_BASEMAPS.has(baseMap) ? 'light' : 'dark';
+}
+
 export function percentileColorExpression(
   q25: number,
   q50: number,
   q75: number,
+  palette: ObservationPalette = 'dark',
 ): MapLibre.ExpressionSpecification {
+  const [c1, c2, c3, c4] = OBSERVATION_COLORS[palette];
   return [
     'case',
     ['<=', ['get', 'cell_days'], q25],
-    '#FEE2E2',
+    c1,
     ['<=', ['get', 'cell_days'], q50],
-    '#FCA5A5',
+    c2,
     ['<=', ['get', 'cell_days'], q75],
-    '#EF4444',
-    '#991B1B',
+    c3,
+    c4,
   ];
 }
 
 // ============================================================================
-// 8. CONTROL DE VISIBILIDAD DE CAPAS
+// 8. LAYER VISIBILITY
 // ============================================================================
 
 export function applyOverlayVisibility(
@@ -204,7 +228,7 @@ export function applyBasemap(
   selected: BaseMapId,
 ) {
   (
-    Object.keys(BASEMAP_LAYER_IDS) as BaseMapId[]
+    Object.keys(BASEMAP_LAYER_IDS) as Exclude<BaseMapId, 'none'>[]
   ).forEach((id) => {
     const layerId = BASEMAP_LAYER_IDS[id];
 
@@ -217,4 +241,3 @@ export function applyBasemap(
     }
   });
 }
-
