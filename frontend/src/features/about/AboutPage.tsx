@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ButtonLink, Notice, Panel } from '../../ui'
+import { ButtonAnchor, ButtonLink, Panel } from '../../ui'
 import { REPOSITORY_URL, ROUTES } from '../../shell/routes'
 
 /** Integrantes y responsabilidades, según el plan del equipo (AllpaNina v1.3, §2). Sin datos inventados. */
@@ -50,14 +50,21 @@ export default function AboutPage() {
           <p className="m-0 text-sm text-muted">{person.role}</p>
         </li>)}
       </ul>
-      <Notice tone="exploratory" title="Pending: affiliations and short bios">
-        <p>Each member will add their own. Names and the roles agreed in the team plan are shown.</p>
-      </Notice>
     </section>
 
     <section aria-labelledby="about-space-apps" className="flex flex-col gap-3">
       <h2 id="about-space-apps" className={h2}>NASA Space Apps Challenge 2026</h2>
       <p className={prose}>AllpaNina is the team's project for the NASA Space Apps Challenge 2026, on comparing MODIS and VIIRS fire detections. The code and the data processing are public in the <External href={REPOSITORY_URL}>project repository</External>.</p>
+      <Panel surface="dark" aria-labelledby="about-pitch" className="mt-3 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2">
+          <h3 id="about-pitch" className="m-0 font-display text-2xl font-semibold text-white">Our Space Apps pitch</h3>
+          <p className="m-0 max-w-[48ch] text-base text-mist">Meet AllpaNina in our team's video pitch.</p>
+        </div>
+        <ButtonAnchor variant="glow" className="shrink-0" href="https://youtu.be/cLklSmmtuvg">
+          <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+          Watch pitch on YouTube
+        </ButtonAnchor>
+      </Panel>
     </section>
 
     <section aria-labelledby="about-credits" className="grid gap-8 md:grid-cols-2">
