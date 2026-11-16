@@ -10,6 +10,8 @@ function stratum(v:unknown) {if(!['propio','agrupado','nacional'].includes(Strin
 export function validateMethodDocument(value: unknown): MethodInfo | NationalMethod {
  const root=object(value,'method')
  if(root.contract_version===undefined)return validateMethod(value)
+ // Modo región (contrato v1.0-region): mismos campos que una región v1.0.
+ if(root.contract_version==='1.0-region'){const {contract_version:_,...region}=root;void _;return validateMethod(region)}
  if(root.contract_version!=='1.1')throw new Error('contract_version de method no soportada')
  // Reuse v1 validation for shared scientific fields; regional results have a different envelope.
  validateMethod({...root,resultados:undefined,kappa:undefined})

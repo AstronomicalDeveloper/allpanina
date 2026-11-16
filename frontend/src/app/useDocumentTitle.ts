@@ -1,18 +1,20 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { ROUTES, cleanPath } from '../shell/routes'
 
 const SITE = 'AllpaNina'
 const titles: Record<string, string> = {
-  '/': `${SITE} · Detecciones térmicas satelitales`,
-  '/calendario': `Calendario histórico · ${SITE}`,
-  '/mapa': `Mapa de observaciones · ${SITE}`,
-  '/metodo': `Método y evaluación · ${SITE}`,
+  [ROUTES.home]: `${SITE} · Satellite thermal detections in Peru`,
+  [ROUTES.calendar]: `Calendar · ${SITE}`,
+  [ROUTES.map]: `Map · ${SITE}`,
+  [ROUTES.method]: `Method · ${SITE}`,
+  [ROUTES.myRegion]: `My region · ${SITE}`,
+  [ROUTES.about]: `About · ${SITE}`,
 }
 
 /** Título de la pestaña según la ruta; las rutas desconocidas se identifican como tales. */
 export function titleFor(pathname: string): string {
-  const key = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname
-  return titles[key] ?? `Página no encontrada · ${SITE}`
+  return titles[cleanPath(pathname)] ?? `Page not found · ${SITE}`
 }
 
 export default function useDocumentTitle() {

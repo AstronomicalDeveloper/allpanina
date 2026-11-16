@@ -1,8 +1,30 @@
 # AllpaNina · C2 — Plan de refactorización del frontend
 
 **Fecha:** 15-nov-2026 · **Responsable:** Marco (con Claude) · **Base:** `AUDITORIA_C1.md` (misma carpeta)
-**Rama de trabajo:** `refactor/frontend-experience`, creada desde `feat/peru-integration` (`a4c59f2`, Landry) e integrada con los cambios de la Fase 1 (publicados antes en `refactor/frontend-v2`, `6555baf`). Fase 1 y C5 se hicieron primero sobre `refactor/frontend-v2` (`0526391`) y se unieron después a la integración nacional de Landry.
-**Estado:** plan escrito. **Fase 1** ejecutada (`6555baf`). **C5** (claridad científica en la interfaz, ver Fase 1b) ejecutada después. Las fases 2 y 3 **no** están hechas.
+**Rama de trabajo:** `refactor/frontend-fase2` (al 15-nov apunta al mismo commit que `main`, `384654f`). El nombre `refactor/frontend-experience` que figuraba en versiones anteriores de este plan no existe en el repositorio remoto. Fase 1 y C5 se hicieron primero sobre `refactor/frontend-v2` (`0526391`, `6555baf`) y se unieron después a la integración nacional de Landry (`feat/peru-integration`, fusionada en `main` por el PR #8).
+**Estado:** plan escrito. **Fase 1** y **Fase 1b (C5)** ejecutadas y en `main`. **Fase 2** parcial: parte la resolvió Landry durante la integración nacional. **Fase 3** pendiente. El detalle está en la sección 0.
+
+## 0. Estado verificado (15-nov-2026, sobre `main` `384654f`)
+
+Verificado en un clon de trabajo limpio: `npm ci` correcto; `npm test` 185 de 185; `npm run lint` sin errores; `npm run build` correcto (solo un aviso de tamaño por `maplibre-gl`, que se carga únicamente en `/mapa`). **No verificado todavía:** capturas a 390 y 1440 px, navegación con teclado, contraste ni lector de pantalla (todo eso es C6).
+
+| # | Estado | Evidencia o pendiente |
+|---|---|---|
+| 1.1–1.6 | ✅ Hecho | `index.html` con `lang="es"` y título propio; `public/favicon.svg`; `useDocumentTitle.ts`; landing en `/`; `/?…` redirige a `/calendario`; `router.test.ts` y `landing.test.ts` |
+| 1b.1, 1b.3 | ✅ Hecho | `CellDaysHelp` con `purpose`; contexto de la celda en `ExplorationPanel.tsx`; `clarity.test.ts` y `map-ui.test.ts` |
+| 2.1 Nombres de región | ✅ Hecho (Landry, A3) | `GeographicSelection.tsx` y `CalendarPage.tsx` toman el `nombre` de `peru/method.json` |
+| 2.2 Textos del mapa nacional | ✅ Hecho | Los textos de 10 km ya existían (`CartographyPanel`, `ExplorationPanel`, `AnnualCellDetail`, `MapWorkspace`). En el modo nacional el inspector ahora se llama «Inspector de cuadrícula» y explica que su valor suma días-celda de 1 km; el piloto conserva «Inspector de celda». Prueba en `peru-stage2.test.ts` |
+| 2.3 Capa «Áreas protegidas · Ucayali» | ✅ Hecho (Marco, con autorización del equipo para resolver este punto) | `CartographyPanel.tsx`: la capa solo se ofrece en el piloto, porque su fuente está filtrada a Ucayali y en el mapa nacional sugeriría que el resto del país no tiene áreas protegidas. El texto del panel lo explica. Pruebas en `peru-stage2.test.ts` y `map-ui.test.ts` |
+| 2.4 Mensajes de error | ✅ Hecho (Marco, con autorización del equipo) | Nuevo `components/ui/TechnicalDetail.tsx`: cada aviso muestra un mensaje comprensible y deja el error original (archivo, código HTTP, causa) en un desplegable «Detalle técnico». Aplicado en `GeographicSelection.tsx`, `CalendarPage.tsx`, `MapPage.tsx`, `MapWorkspace.tsx` y `MethodPage.tsx`; `useJuanMap.ts` separa el mensaje (`issue`) del detalle (`issueDetail`). No cambian lectores ni validadores. Prueba en `map-ui.test.ts` |
+| 2.5 Párrafo nacional en Método | ✅ Hecho (Landry, A5) | `NationalMethodNotes.tsx` |
+| 2.6 Menú «Acerca de» (nuevo) | ✅ Hecho (Marco) | `Navbar.tsx`: el enlace al manifiesto sigue al conjunto de datos activo (Perú v1.1, piloto Ucayali v1.0 o DEMO) y lo nombra; el texto de ayuda obsoleto se sustituyó por una descripción de las tres vistas. Prueba en `app-header.test.ts` |
+| 3.1 Leyenda del mapa | ✅ Hecho | `percentileLegend.ts`: tramos en enteros (`cell_days` es entero por validación, así que v ≤ q equivale a v ≤ ⌊q⌋); un tramo vacío dice «Sin valores en este tramo». Los cortes y colores del mapa no cambian. Pruebas en `legend-format.test.ts`, incluida una que comprueba que cada valor cae en el tramo de su color |
+| 3.2 Escala del calendario | ✅ Hecho | `calendarScaleTicks` en `calendarPresentation.ts`: marcas enteras; el máximo manual conserva su decimal. El control «Escala» explica de dónde sale el máximo por defecto. Pruebas en `legend-format.test.ts` y `calendar-v2.test.ts` |
+| 3.3 Móvil del mapa | ⬜ Sin verificar | Requiere capturas con el mapa base real |
+| 3.4 Tokens y orden del código | ⬜ Pendiente | `tokens.css` sin ampliar; `juanLayers.ts` sin renombrar |
+| 3.5 Contexto comparativo | ✅ Cubierto (Landry) | `HistoricalAnalysis.tsx`: mismo mes en años anteriores |
+
+**Revisión del recorte departamental (C5 / precaución A7):** según `frontend/README.md`, al elegir un departamento el mapa «oculta las celdas exteriores y recorta visualmente las fronterizas». Se revisó y el comportamiento no se cambió: el resumen sale del CSV y las cuadrículas fronterizas conservan su valor completo. Sí se reescribió el texto de ámbito en `ExplorationPanel.tsx`: con un departamento separa «Resumen» (serie publicada del departamento, no suma de cuadrículas) de «Mapa» (cuadrículas nacionales de 10 km recortadas solo visualmente, que pueden incluir detecciones de departamentos vecinos); con Perú ya no muestra la advertencia de recorte, que ahí no aplica.
 
 ## 1. Reglas que este plan respeta
 
@@ -61,7 +83,9 @@ No se inicia hasta que Landry confirme los lectores v1.1 y el selector de regió
 
 ## 3. Fuera de alcance de Marco (se deja a Landry)
 
-H1, H2, H4 (lectores, validadores, contrato v1.2), H12 (`package-lock.json` con 24 paquetes en un espejo bloqueable) y H13 (compresión HTTP de los GeoJSON, A8).
+H1, H2, H4 (lectores, validadores, contrato v1.2) y H13 (compresión HTTP de los GeoJSON, A8).
+
+**H12 (resuelto por Marco, con autorización del equipo):** las 24 URLs `resolved` de `package-lock.json` que apuntaban a `registry.npmmirror.com` ahora apuntan a `registry.npmjs.org`. Solo cambian esas líneas: los hashes de integridad son los mismos, así que npm exige exactamente los mismos archivos. **No verificado desde este entorno:** su red rechaza las descargas del registro oficial (también las de los 284 paquetes que ya venían de ahí). La comprobación real será el primer `npm ci` en GitHub Actions.
 
 ## 4. Verificación común de cada fase
 

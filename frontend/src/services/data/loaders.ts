@@ -1,15 +1,40 @@
+import { leerArchivoLocal } from '../region/store.ts'
 import { validateMethodDocument, validateValidationDocument } from './peruValidators'
 import { parseCalibratedSeries, parseMonthlySeries, validateCells, validateManifest, validateMethod, validateValidation } from './validators.ts'
 
 export type LoadResult<T> = { ok: true; data: T } | { ok: false; error: string }
 
+/**
+ * Caché de archivos publicados ya leídos y validados, por URL, para no volver a descargarlos al pasar
+ * de una página a otra. Un texto solo entra después de que su validador lo acepta, así «Reintentar»
+ * nunca recibe un archivo malo guardado. No guarda peticiones en curso (cada página conserva y
+ * cancela la suya), no se aplica a `local:` (Mi región cambia al procesar otra región) y se vacía
+ * si cambia `fetch` (por ejemplo, en las pruebas).
+ */
+const textCache = new Map<string, string>()
+let cachedFetch: typeof fetch | undefined
+export function clearDataCache() { textCache.clear() }
+function cachedText(url: string): string | undefined {
+  if (cachedFetch !== globalThis.fetch) { textCache.clear(); cachedFetch = globalThis.fetch }
+  return textCache.get(url)
+}
+
 async function readText(url: string, signal?: AbortSignal): Promise<string> {
+  if (url.startsWith('local:')) return leerArchivoLocal(decodeURIComponent(url.slice('local:'.length).replace(/^\/+/, '')))
   const response = await fetch(url, { signal })
   if (!response.ok) throw new Error(`HTTP ${response.status}`)
   return response.text()
 }
 async function load<T>(url: string, parse: (text: string) => T, signal?: AbortSignal): Promise<T> {
-  try { return parse(await readText(url, signal)) }
+  try {
+    const cacheable = !url.startsWith('local:')
+    const cached = cacheable ? cachedText(url) : undefined
+    if (cached !== undefined) return parse(cached)
+    const text = await readText(url, signal)
+    const parsed = parse(text)
+    if (cacheable) textCache.set(url, text)
+    return parsed
+  }
   catch (error) { throw new Error(`${url}: ${error instanceof Error ? error.message : 'Error de lectura'}`, { cause: error }) }
 }
 export function loadJson<T>(url: string, validate: (value: unknown) => T, signal?: AbortSignal): Promise<T> {

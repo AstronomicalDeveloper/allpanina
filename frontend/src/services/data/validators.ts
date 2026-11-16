@@ -59,7 +59,8 @@ export function parseMonthlySeries(text: string): MonthlyRecord[] {
     if ((status === 'ok') !== (cell_days !== null)) fail(path, 'ok requiere cell_days; missing requiere vacío')
     dateOnly(row.updated_at, `${path}.updated_at`)
     return { ...base(row, path), sensor_group: choice(row.sensor_group, sensors, `${path}.sensor_group`), cell_days,
-      status, source_version: string(row.source_version, `${path}.source_version`), updated_at: row.updated_at }
+      // Contrato: un mes missing no tiene versión de fuente (vacío); un mes ok sí.
+      status, source_version: status === 'ok' ? string(row.source_version, `${path}.source_version`) : row.source_version, updated_at: row.updated_at }
   })
   unique(records.map(r => JSON.stringify([r.region_id, r.year, r.month, r.sensor_group])), 'monthly_series')
   return records
@@ -70,7 +71,7 @@ export function parseCalibratedSeries(text: string): CalibratedRecord[] {
     const status = choice(row.status, ['ok', 'missing'] as const, `${path}.status`)
     if ((status === 'ok') !== (value !== null)) fail(path, 'ok requiere value; missing requiere vacío')
     return { ...base(row, path), method: choice(row.method, methods, path), value,
-      split: choice(row.split, ['train', 'valid', 'test'] as const, path), status,
+      split: choice(row.split, ['train', 'valid', 'test', 'sin_validar'] as const, path), status,
       residual: numeric(row.residual, `${path}.residual`, -Infinity) }
   })
   unique(records.map(r => JSON.stringify([r.region_id, r.year, r.month, r.method])), 'calibrated_series')
@@ -89,8 +90,7 @@ function strings(value: unknown, path: string) { return array(value, path).map((
 export function validateManifest(value: unknown): Manifest {
   const row = object(value, 'manifest')
   string(row.region_id, 'region_id'); string(row.producto, 'producto')
-  if (row.contract_version !== undefined) {
-    choice(row.contract_version, ['1.1'], 'contract_version')
+  if (row.contract_version !== undefined && choice(row.contract_version, ['1.1', '1.0-region'], 'contract_version') === '1.1') {
     const regions = strings(row.regions, 'regions'); unique(regions, 'regions')
     const expected = ['PE', ...Array.from({length:25}, (_,i)=>`PE-${String(i+1).padStart(2,'0')}`)]
     if (row.region_id !== 'PE' || regions.length !== 26 || expected.some(id=>!regions.includes(id))) fail('regions', 'se requieren PE y los 25 departamentos')
@@ -121,13 +121,14 @@ export function validateMethod(value: unknown): MethodInfo {
   if (row.region_id !== undefined) string(row.region_id, 'region_id')
   if (row.region !== undefined) string(row.region, 'region')
   if (row.estado !== undefined) string(row.estado, 'estado')
-  if (row.kappa !== undefined) number(row.kappa, 'kappa', 0)
+  if (row.kappa !== undefined && row.kappa !== null) number(row.kappa, 'kappa', 0)
   if (row.resultados !== undefined) {
     const results = object(row.resultados, 'resultados')
     if (results.valid !== undefined) {
       const valid = object(results.valid, 'resultados.valid')
       string(valid.periodo, 'valid.periodo'); number(valid.n_meses, 'valid.n_meses', 0, true)
       for (const name of methods) {
+        if (valid[name] === undefined && valid.reportable === false) continue   // modo región sin datos suficientes
         const metrics = object(valid[name], `valid.${name}`)
         for (const key of ['mae', 'wape', 'bias']) if (metrics[key] !== null) number(metrics[key], `valid.${name}.${key}`, key === 'bias' ? -Infinity : 0)
       }
